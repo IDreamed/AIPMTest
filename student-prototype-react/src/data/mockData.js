@@ -1,0 +1,439 @@
+export const navItems = [
+  { label: "首页", path: "#/" },
+  { label: "试卷中心", path: "#/papers" },
+  { label: "考试中心", path: "#/exams" },
+  { label: "学习中心", path: "#/learning" },
+  { label: "个人中心", path: "#/profile" },
+];
+
+export const news = [
+  {
+    id: "news-1",
+    type: "政策解读",
+    title: "2026 年职教高考计算机类备考重点说明",
+    date: "2026-04-27",
+    summary: "围绕考试范围、题型变化和基础复习节奏，给出阶段性备考建议。",
+    content:
+      "本阶段复习建议以基础知识点巩固和典型题训练为主，重点关注数学基础、英语阅读和专业综合中的高频模块。平台将陆续开放配套推荐课程、公开测评和学校联考活动，帮助学生建立稳定的学习节奏。",
+  },
+  {
+    id: "news-2",
+    type: "考试通知",
+    title: "春季公开测评开放通知",
+    date: "2026-04-26",
+    summary: "本次公开测评面向注册用户开放，可用于体验平台在线考试流程。",
+    content:
+      "春季公开测评面向注册用户开放，考试结束后可查看个人成绩。公开考试用于帮助学生体验平台考试流程，并引导学生进一步申请入校或联系管理员开通学习权限。",
+  },
+  {
+    id: "news-3",
+    type: "平台公告",
+    title: "学校联考成绩排行功能上线说明",
+    date: "2026-04-25",
+    summary: "联考结束后，授权学校和学生可查看单场考试排行、成绩和答题记录。",
+    content:
+      "学校联考排行归属于单场考试，学生可在考试详情中查看成绩、排行和自己的答题记录。考试中心本身只展示考试列表和考试状态。",
+  },
+  {
+    id: "news-4",
+    type: "备考指南",
+    title: "文化课基础薄弱学生如何安排第一轮复习",
+    date: "2026-04-24",
+    summary: "建议从高频基础知识点和典型题入手，结合推荐课程试看和班级课程学习。",
+    content:
+      "基础薄弱学生优先完成高频知识点的理解和基础题训练，再逐步进入综合题。班级课程由老师编排，试卷中心用于大类试卷训练。",
+  },
+];
+
+export const prototypeRoles = [
+  {
+    key: "visitor",
+    label: "游客",
+    summary: "可浏览首页、资讯、试卷和考试活动，刷题与学习需注册并加入班级。",
+    cta: "登录/注册",
+    href: "#/login",
+  },
+  {
+    key: "registered",
+    label: "注册用户",
+    summary: "已注册但未加入班级，可提交入校申请，暂未解锁班级课程和大类试卷。",
+    cta: "完善申请",
+    href: "#/school-apply",
+  },
+  {
+    key: "student",
+    label: "班级学生",
+    summary: "已加入班级，可学习班级课程、参加班级考试，并刷所在班级绑定大类试卷。",
+    cta: "进入学习",
+    href: "#/learning",
+  },
+];
+
+export const recommendedCourses = [
+  {
+    title: "数学基础冲刺课",
+    lessons: "可试看 3 课时",
+    duration: "每课时 10 分钟",
+    subject: "文化课",
+    audience: "适合基础薄弱、需要快速补齐函数与数列模块的学生。",
+    highlight: "函数、数列、几何高频题型串讲",
+    accent: "linear-gradient(130deg, #2563eb, #0891b2)",
+  },
+  {
+    title: "英语阅读提分课",
+    lessons: "可试看 2 课时",
+    duration: "每课时 8 分钟",
+    subject: "文化课",
+    audience: "适合希望熟悉职教高考阅读题节奏和选项判断方法的学生。",
+    highlight: "长难句拆解与阅读定位训练",
+    accent: "linear-gradient(130deg, #0f766e, #16a34a)",
+  },
+  {
+    title: "语文应用文写作",
+    lessons: "可试看 1 课时",
+    duration: "每课时 12 分钟",
+    subject: "热门推荐",
+    audience: "适合考前集中熟悉通知、申请、倡议等常见应用文模板。",
+    highlight: "应用文结构模板与失分点提醒",
+    accent: "linear-gradient(130deg, #c2410c, #d97706)",
+  },
+  {
+    title: "计算机基础入门",
+    lessons: "可试看 2 课时",
+    duration: "每课时 10 分钟",
+    subject: "专业课",
+    audience: "适合电子与信息类学生快速梳理计算机基础概念和常见考点。",
+    highlight: "计算机组成、网络基础与信息安全",
+    accent: "linear-gradient(130deg, #4338ca, #2563eb)",
+  },
+  {
+    title: "数据库专项突破",
+    lessons: "可试看 2 课时",
+    duration: "每课时 9 分钟",
+    subject: "专业课",
+    audience: "适合需要集中突破 E-R 模型、关系模型和 SQL 基础的学生。",
+    highlight: "数据库模型与 SQL 高频题讲练",
+    accent: "linear-gradient(130deg, #7c3aed, #db2777)",
+  },
+  {
+    title: "数学函数专题课",
+    lessons: "可试看 2 课时",
+    duration: "每课时 10 分钟",
+    subject: "文化课",
+    audience: "适合函数概念、图像性质和基础运算掌握不稳定的学生。",
+    highlight: "函数图像、性质判断与基础运算",
+    accent: "linear-gradient(130deg, #1d4ed8, #0e7490)",
+  },
+  {
+    title: "英语完形填空训练",
+    lessons: "可试看 1 课时",
+    duration: "每课时 8 分钟",
+    subject: "文化课",
+    audience: "适合希望提升语境判断、词义辨析和选项排除能力的学生。",
+    highlight: "语境线索定位与选项排除方法",
+    accent: "linear-gradient(130deg, #047857, #65a30d)",
+  },
+  {
+    title: "专业综合考前串讲",
+    lessons: "可试看 3 课时",
+    duration: "每课时 12 分钟",
+    subject: "热门推荐",
+    audience: "适合考前按模块回顾专业综合核心知识点和典型题型的学生。",
+    highlight: "核心知识点回顾与综合题拆解",
+    accent: "linear-gradient(130deg, #be123c, #ea580c)",
+  },
+];
+
+export const cultureSubjects = [
+  { name: "语文", papers: 4, exams: 1 },
+  { name: "数学", papers: 4, exams: 1 },
+  { name: "英语", papers: 4, exams: 1 },
+];
+
+export const categories = [
+  { name: "农林牧渔类", unlocked: false, source: "", papers: 42, subjects: "语文 / 数学 / 专业综合", description: "按职教高考大类展示试卷，加入绑定该大类的班级后可刷题。" },
+  { name: "资源环境与安全类", unlocked: false, source: "", papers: 36, subjects: "数学 / 英语 / 专业综合", description: "按职教高考大类展示试卷，加入绑定该大类的班级后可刷题。" },
+  { name: "能源动力与材料类", unlocked: false, source: "", papers: 38, subjects: "数学 / 专业综合", description: "按职教高考大类展示试卷，加入绑定该大类的班级后可刷题。" },
+  { name: "土木建筑类", unlocked: false, source: "", papers: 54, subjects: "数学 / 专业综合", description: "按职教高考大类展示试卷，加入绑定该大类的班级后可刷题。" },
+  { name: "水利类", unlocked: false, source: "", papers: 28, subjects: "数学 / 专业综合", description: "按职教高考大类展示试卷，加入绑定该大类的班级后可刷题。" },
+  { name: "装备制造类", unlocked: false, source: "", papers: 76, subjects: "数学 / 英语 / 专业综合", description: "按职教高考大类展示试卷，加入绑定该大类的班级后可刷题。" },
+  { name: "生物与化工类", unlocked: false, source: "", papers: 44, subjects: "数学 / 专业综合", description: "按职教高考大类展示试卷，加入绑定该大类的班级后可刷题。" },
+  { name: "轻工纺织类", unlocked: false, source: "", papers: 31, subjects: "语文 / 英语 / 专业综合", description: "按职教高考大类展示试卷，加入绑定该大类的班级后可刷题。" },
+  { name: "食品药品与粮食类", unlocked: false, source: "", papers: 40, subjects: "数学 / 专业综合", description: "按职教高考大类展示试卷，加入绑定该大类的班级后可刷题。" },
+  { name: "交通运输类", unlocked: false, source: "", papers: 58, subjects: "数学 / 英语 / 专业综合", description: "按职教高考大类展示试卷，加入绑定该大类的班级后可刷题。" },
+  { name: "电子与信息类", unlocked: true, source: "高三计算机冲刺班", papers: 128, subjects: "数学 / 英语 / 专业综合", description: "当前账号已通过班级解锁该大类试卷，可筛选并进入具体试卷刷题。" },
+  { name: "医药卫生类", unlocked: false, source: "", papers: 72, subjects: "语文 / 英语 / 专业综合", description: "按职教高考大类展示试卷，加入绑定该大类的班级后可刷题。" },
+  { name: "财经商贸类", unlocked: false, source: "", papers: 96, subjects: "英语 / 专业综合", description: "可浏览试卷资源概况，加入绑定该大类的班级后可刷题。" },
+  { name: "旅游类", unlocked: false, source: "", papers: 82, subjects: "数学 / 专业综合", description: "适用于旅游相关专业备考，权限同样由所在班级决定。" },
+  { name: "文化艺术类", unlocked: false, source: "", papers: 35, subjects: "语文 / 英语 / 专业综合", description: "按职教高考大类展示试卷，加入绑定该大类的班级后可刷题。" },
+  { name: "新闻传播类", unlocked: false, source: "", papers: 24, subjects: "语文 / 英语 / 专业综合", description: "按职教高考大类展示试卷，加入绑定该大类的班级后可刷题。" },
+  { name: "教育与体育类", unlocked: false, source: "", papers: 46, subjects: "语文 / 英语 / 专业综合", description: "按职教高考大类展示试卷，加入绑定该大类的班级后可刷题。" },
+  { name: "公安与司法类", unlocked: false, source: "", papers: 22, subjects: "语文 / 数学 / 专业综合", description: "按职教高考大类展示试卷，加入绑定该大类的班级后可刷题。" },
+  { name: "公共管理与服务类", unlocked: false, source: "", papers: 30, subjects: "语文 / 英语 / 专业综合", description: "按职教高考大类展示试卷，加入绑定该大类的班级后可刷题。" },
+];
+
+export const papers = [
+  { title: "语文基础模拟卷（一）", category: "文化课", subject: "语文", type: "一轮复习", year: "2025", meta: "35 题 / 50 分钟", unlocked: true, studyStatus: "未开始" },
+  { title: "数学基础模拟卷（一）", category: "文化课", subject: "数学", type: "一轮复习", year: "2025", meta: "45 题 / 60 分钟", unlocked: true, studyStatus: "进行中", lastPractice: "上次做到 18/45 · 04-27" },
+  { title: "英语阅读提升卷", category: "文化课", subject: "英语", type: "二轮专题", year: "2025", meta: "35 题 / 45 分钟", unlocked: true, studyStatus: "已结束", lastPractice: "得分 82 · 04-26" },
+  { title: "电子与信息类专业综合卷（一）", category: "电子与信息类", subject: "专业课", type: "一轮复习", year: "2025", meta: "50 题 / 70 分钟", unlocked: true, studyStatus: "进行中", lastPractice: "上次做到 22/50 · 04-27" },
+  { title: "数据库基础专项训练", category: "电子与信息类", subject: "专业课", type: "二轮专题", year: "2024", meta: "30 题 / 40 分钟", unlocked: true, studyStatus: "未开始" },
+  { title: "英语阅读提升卷（二）", category: "文化课", subject: "英语", type: "三轮冲刺", year: "2024", meta: "35 题 / 45 分钟", unlocked: true, studyStatus: "未开始" },
+  { title: "旅游类综合模拟卷", category: "旅游类", subject: "专业课", type: "模拟测试", year: "2025", meta: "50 题 / 70 分钟", unlocked: false, studyStatus: "未开始" },
+  { title: "数学强化模拟卷（二）", category: "文化课", subject: "数学", type: "三轮冲刺", year: "2024", meta: "40 题 / 60 分钟", unlocked: true, studyStatus: "已结束", lastPractice: "得分 76 · 04-24" },
+  { title: "装备制造类专业综合卷", category: "装备制造类", subject: "专业课", type: "模拟测试", year: "2025", meta: "50 题 / 70 分钟", unlocked: false, studyStatus: "未开始" },
+  { title: "英语专项训练卷（二）", category: "文化课", subject: "英语", type: "真题汇编", year: "2023", meta: "35 题 / 45 分钟", unlocked: true, studyStatus: "已结束", lastPractice: "得分 88 · 04-20" },
+  { title: "土木建筑类专业基础卷", category: "土木建筑类", subject: "专业课", type: "真题汇编", year: "2024", meta: "45 题 / 65 分钟", unlocked: false, studyStatus: "未开始" },
+  { title: "语文应用文写作卷", category: "文化课", subject: "语文", type: "二轮专题", year: "2024", meta: "32 题 / 50 分钟", unlocked: true, studyStatus: "进行中", lastPractice: "上次做到 12/32 · 04-25" },
+];
+
+export const exams = [
+  {
+    id: "public-spring",
+    title: "春季数学公开测评",
+    type: "公开考试",
+    subject: "数学",
+    category: "文化课",
+    time: "04-27 09:00 - 18:00",
+    status: "进行中",
+    statusTone: "green",
+    summary: "面向注册用户开放，适合体验平台考试流程。",
+    permission: "registered",
+    submitted: false,
+    participationStatus: {
+      registered: "可参加",
+    },
+    rankEnabled: false,
+    score: "-",
+  },
+  {
+    id: "school-computer",
+    title: "电子与信息类学校联考",
+    type: "学校联考",
+    subject: "专业课",
+    category: "电子与信息类",
+    time: "05-08 09:00",
+    status: "未开始",
+    statusTone: "amber",
+    summary: "面向授权学校和指定班级开放，开启学校排名与个人排名。",
+    permission: "student",
+    submitted: false,
+    participationStatus: {
+      student: "待开始",
+    },
+    rankEnabled: true,
+    score: "-",
+  },
+  {
+    id: "school-stage",
+    title: "电子与信息类阶段联考",
+    type: "学校联考",
+    subject: "专业课",
+    category: "电子与信息类",
+    time: "05-06 14:00 - 17:00",
+    status: "进行中",
+    statusTone: "green",
+    summary: "面向电子与信息类授权班级开放，用于模拟学生可参加联考状态。",
+    permission: "student",
+    submitted: false,
+    participationStatus: {
+      student: "可参加",
+    },
+    rankEnabled: true,
+    score: "-",
+  },
+  {
+    id: "public-culture",
+    title: "文化课阶段诊断",
+    type: "公开考试",
+    subject: "语文",
+    category: "文化课",
+    time: "04-18 09:00",
+    status: "已结束",
+    statusTone: "gray",
+    summary: "已结束，学生可查看成绩、答题记录和单场排行。",
+    permission: "registered",
+    submitted: true,
+    participationStatus: {
+      registered: "查看成绩",
+    },
+    rankEnabled: false,
+    score: "84",
+  },
+  {
+    id: "school-joint",
+    title: "三校联合模拟考试",
+    type: "学校联考",
+    subject: "专业课",
+    category: "电子与信息类",
+    time: "04-12 08:30",
+    status: "已结束",
+    statusTone: "gray",
+    summary: "联考活动已结束，无权限用户只能查看考试介绍。",
+    permission: "student",
+    submitted: true,
+    participationStatus: {
+      student: "查看成绩",
+    },
+    rankEnabled: true,
+    score: "286",
+  },
+  {
+    id: "public-english",
+    title: "英语公开诊断测试",
+    type: "公开考试",
+    subject: "英语",
+    category: "文化课",
+    time: "04-10 09:00",
+    status: "已结束",
+    statusTone: "gray",
+    summary: "已结束，未交卷用户不生成成绩和答题记录。",
+    permission: "registered",
+    submitted: false,
+    participationStatus: {
+      registered: "未参加",
+    },
+    rankEnabled: false,
+    score: "-",
+  },
+];
+
+export const classes = [
+  {
+    name: "高三计算机冲刺班",
+    school: "示范中职学校",
+    category: "电子与信息类",
+    courses: 4,
+    exams: 2,
+    progress: "62%",
+  },
+  {
+    name: "文化课周末提升班",
+    school: "平台轻教务班级",
+    category: "文化课强化",
+    courses: 2,
+    exams: 1,
+    progress: "38%",
+  },
+];
+
+export const classExams = [
+  {
+    title: "函数与数列阶段测试",
+    course: "数学基础强化",
+    type: "阶段测试",
+    status: "待完成",
+    statusTone: "amber",
+    deadline: "04-30 22:00 前",
+    meta: "20 题 / 30 分钟",
+    scope: "函数概念、函数图像、数列基础",
+    score: "-",
+  },
+  {
+    title: "数据库基础随堂测",
+    course: "数据库基础",
+    type: "随堂测试",
+    status: "已完成",
+    statusTone: "green",
+    deadline: "04-24 22:00 前",
+    meta: "10 题 / 15 分钟",
+    scope: "E-R 模型、关系模型",
+    score: "86",
+  },
+  {
+    title: "函数基础课堂练习",
+    course: "数学基础强化",
+    type: "课堂练习",
+    status: "已完成",
+    statusTone: "green",
+    deadline: "04-22 21:00 前",
+    meta: "10 题 / 15 分钟",
+    scope: "函数概念、函数值计算",
+    score: "90",
+  },
+  {
+    title: "英语阅读专项小测",
+    course: "英语阅读提分",
+    type: "专项小测",
+    status: "已完成",
+    statusTone: "green",
+    deadline: "04-20 20:00 前",
+    meta: "12 题 / 20 分钟",
+    scope: "阅读定位、主旨判断",
+    score: "78",
+  },
+  {
+    title: "数学基础结业测试",
+    course: "数学基础强化",
+    type: "结业测试",
+    status: "未开始",
+    statusTone: "gray",
+    deadline: "05-08 20:00 开始",
+    meta: "35 题 / 50 分钟",
+    scope: "函数、数列、立体几何",
+    score: "-",
+  },
+];
+
+export const classCourse = {
+  title: "数学基础强化",
+  publisher: "王老师",
+  className: "高三计算机冲刺班",
+  category: "电子与信息类",
+  progress: "62%",
+  currentLesson: "函数概念与表示",
+  summary: "围绕职教高考数学基础模块，按函数、数列、几何三个单元组织讲解、资料和练习。",
+  detail: [
+    "课程面向基础薄弱或需要系统复习的学生，重点梳理高频概念、常见题型和易错点。",
+    "老师已将资源库中的课程内容、知识点切片、课件和课堂练习重新编排为班级学习任务。",
+    "完成目录中的课时学习和绑定测试后，学习记录、错题和完成状态会进入个人学习中心。",
+  ],
+};
+
+export const courseCatalog = [
+  {
+    title: "函数基础",
+    lessons: [
+      { title: "函数概念与表示", type: "视频", duration: "18 分钟", status: "学习中", statusTone: "amber" },
+      { title: "函数图像与性质", type: "图文", duration: "12 分钟", status: "未开始", statusTone: "gray" },
+      { title: "函数基础课堂练习", type: "练习", duration: "10 题", status: "未开始", statusTone: "gray" },
+    ],
+  },
+  {
+    title: "数列基础",
+    lessons: [
+      { title: "等差数列基础", type: "视频", duration: "16 分钟", status: "未开始", statusTone: "gray" },
+      { title: "等比数列基础", type: "课件", duration: "PPT", status: "未开始", statusTone: "gray" },
+    ],
+  },
+  {
+    title: "立体几何入门",
+    lessons: [
+      { title: "空间图形识别", type: "视频", duration: "14 分钟", status: "已学完", statusTone: "green" },
+      { title: "几何基础练习", type: "练习", duration: "12 题", status: "未开始", statusTone: "gray" },
+    ],
+  },
+];
+
+export const coursePapers = [
+  { title: "函数基础随堂练习", scope: "函数概念、函数值、图像判断", meta: "10 题 / 15 分钟", status: "待完成", statusTone: "amber" },
+  { title: "数列基础阶段测试", scope: "等差数列、等比数列", meta: "20 题 / 30 分钟", status: "未开始", statusTone: "gray" },
+  { title: "数学基础结业测试", scope: "函数、数列、立体几何", meta: "35 题 / 50 分钟", status: "未开始", statusTone: "gray" },
+];
+
+export const courseMaterials = [
+  { title: "函数基础讲义.pdf", type: "PDF", size: "2.4MB" },
+  { title: "函数图像与性质.pptx", type: "PPT", size: "5.8MB" },
+  { title: "数列公式速记表.pdf", type: "PDF", size: "1.1MB" },
+];
+
+export const learningRecords = [
+  { time: "今天 14:20", title: "数学基础强化", detail: "完成：函数概念与表示 · 视频课时，学习时长 18 分钟。", status: "已完成" },
+  { time: "昨天 19:40", title: "英语阅读提分课", detail: "完成课堂练习 10 题，正确率 80%。", status: "课堂练习" },
+  { time: "04-24 20:10", title: "数据库基础", detail: "学习：E-R 模型与关系判断，课时进度 60%。", status: "学习中" },
+];
+
+export const wrongQuestions = [
+  { title: "函数值计算题", source: "试卷刷题", point: "函数", status: "未掌握", detail: "我的答案 B，正确答案 C" },
+  { title: "E-R 模型判断", source: "考试", point: "数据库", status: "已掌握", detail: "考试联考第 8 题" },
+];

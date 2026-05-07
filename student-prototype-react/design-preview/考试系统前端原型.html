@@ -1,0 +1,1191 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>职教高考学生端原型</title>
+    <style>
+      :root {
+        --ink: #0f172a;
+        --body: #334155;
+        --muted: #64748b;
+        --line: #d8e0ea;
+        --wash: #f5f7fb;
+        --surface: #ffffff;
+        --soft: #f8fafc;
+        --blue: #2563eb;
+        --blue-soft: #eff6ff;
+        --teal: #0f766e;
+        --green: #15803d;
+        --green-soft: #f0fdf4;
+        --amber: #b45309;
+        --amber-soft: #fffbeb;
+        --red: #b91c1c;
+        --red-soft: #fef2f2;
+        --cyan: #0e7490;
+        --cyan-soft: #ecfeff;
+        --radius: 8px;
+        --shadow: 0 12px 28px rgba(15, 23, 42, 0.06);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        background: var(--wash);
+        color: var(--ink);
+        font-family: "Microsoft YaHei", "PingFang SC", "Segoe UI", Arial, sans-serif;
+        font-size: 15px;
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      button,
+      input,
+      select,
+      textarea {
+        font: inherit;
+      }
+
+      button {
+        cursor: pointer;
+      }
+
+      .app-header {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        border-bottom: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.96);
+        backdrop-filter: blur(12px);
+      }
+
+      .container {
+        width: min(1180px, calc(100% - 40px));
+        margin: 0 auto;
+      }
+
+      .topbar {
+        min-height: 68px;
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr) auto;
+        gap: 18px;
+        align-items: center;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 230px;
+      }
+
+      .brand-mark {
+        width: 36px;
+        height: 36px;
+        display: grid;
+        place-items: center;
+        border-radius: var(--radius);
+        background: linear-gradient(135deg, var(--blue), var(--teal));
+        color: white;
+        font-weight: 700;
+      }
+
+      .brand-title {
+        display: block;
+        font-size: 16px;
+        font-weight: 700;
+      }
+
+      .brand-subtitle {
+        display: block;
+        color: var(--muted);
+        font-size: 12px;
+        margin-top: 2px;
+      }
+
+      .nav {
+        display: flex;
+        gap: 4px;
+        min-width: 0;
+        overflow-x: auto;
+        justify-content: center;
+        scrollbar-width: thin;
+      }
+
+      .nav a,
+      .segmented button {
+        min-height: 38px;
+        border: 0;
+        border-radius: var(--radius);
+        background: transparent;
+        color: var(--body);
+        padding: 9px 13px;
+        white-space: nowrap;
+      }
+
+      .nav a:hover,
+      .nav a.active,
+      .segmented button:hover,
+      .segmented button.active {
+        background: var(--blue-soft);
+        color: var(--blue);
+      }
+
+      .top-actions {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 8px;
+      }
+
+      .main {
+        padding: 30px 0 56px;
+      }
+
+      h1,
+      h2,
+      h3,
+      p {
+        letter-spacing: 0;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: 28px;
+        line-height: 1.25;
+      }
+
+      h2 {
+        margin: 0 0 12px;
+        font-size: 21px;
+        line-height: 1.35;
+      }
+
+      h3 {
+        margin: 0 0 10px;
+        font-size: 17px;
+      }
+
+      p {
+        color: var(--body);
+        line-height: 1.75;
+      }
+
+      .page-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        gap: 18px;
+        margin-bottom: 22px;
+      }
+
+      .page-head p {
+        margin: 9px 0 0;
+        color: var(--muted);
+      }
+
+      .hero {
+        min-height: 460px;
+        display: grid;
+        grid-template-columns: minmax(0, 1.08fr) minmax(300px, 0.92fr);
+        gap: 28px;
+        align-items: stretch;
+        overflow: hidden;
+        border-radius: var(--radius);
+        background:
+          linear-gradient(125deg, rgba(15, 23, 42, 0.98), rgba(30, 64, 175, 0.78)),
+          linear-gradient(135deg, #0f172a, #1e3a8a 58%, #0f766e);
+        color: white;
+        padding: 42px;
+      }
+
+      .hero-copy {
+        align-self: center;
+      }
+
+      .hero h1 {
+        max-width: 780px;
+        font-size: 40px;
+        line-height: 1.22;
+      }
+
+      .hero p {
+        max-width: 720px;
+        color: rgba(255, 255, 255, 0.82);
+      }
+
+      .hero-stack {
+        display: grid;
+        gap: 14px;
+        align-content: center;
+      }
+
+      .hero-tile {
+        border: 1px solid rgba(255, 255, 255, 0.22);
+        border-radius: var(--radius);
+        background: rgba(255, 255, 255, 0.1);
+        padding: 18px;
+      }
+
+      .hero-tile p {
+        margin: 6px 0 0;
+        color: rgba(255, 255, 255, 0.74);
+      }
+
+      .section {
+        margin-top: 30px;
+      }
+
+      .card,
+      .soft-panel {
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: var(--surface);
+      }
+
+      .card {
+        padding: 20px;
+        box-shadow: var(--shadow);
+      }
+
+      .soft-panel {
+        padding: 16px;
+      }
+
+      .surface {
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: var(--surface);
+        padding: 16px;
+      }
+
+      .grid {
+        display: grid;
+        gap: 16px;
+      }
+
+      .grid-2 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .grid-3 {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .grid-4 {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+
+      .split {
+        grid-template-columns: minmax(0, 1fr) 300px;
+      }
+
+      .course-hero {
+        grid-template-columns: 260px minmax(0, 1fr) 150px;
+        align-items: center;
+      }
+
+      .answer-layout {
+        grid-template-columns: minmax(0, 1fr) 280px;
+      }
+
+      .muted {
+        color: var(--muted);
+      }
+
+      .meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 14px;
+      }
+
+      .tag {
+        display: inline-flex;
+        align-items: center;
+        min-height: 26px;
+        border-radius: 999px;
+        background: #f1f5f9;
+        color: #475569;
+        font-size: 12px;
+        padding: 0 10px;
+        white-space: nowrap;
+      }
+
+      .tag.blue {
+        background: var(--blue-soft);
+        color: var(--blue);
+      }
+
+      .tag.green {
+        background: var(--green-soft);
+        color: var(--green);
+      }
+
+      .tag.amber {
+        background: var(--amber-soft);
+        color: var(--amber);
+      }
+
+      .tag.red {
+        background: var(--red-soft);
+        color: var(--red);
+      }
+
+      .tag.cyan {
+        background: var(--cyan-soft);
+        color: var(--cyan);
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 40px;
+        border: 1px solid var(--blue);
+        border-radius: var(--radius);
+        background: var(--blue);
+        color: white;
+        padding: 9px 15px;
+        white-space: nowrap;
+      }
+
+      .btn:hover {
+        background: #1d4ed8;
+      }
+
+      .btn.secondary {
+        border-color: var(--line);
+        background: white;
+        color: var(--ink);
+      }
+
+      .btn.secondary:hover {
+        background: #f8fafc;
+      }
+
+      .btn.ghost {
+        border-color: transparent;
+        background: var(--blue-soft);
+        color: var(--blue);
+      }
+
+      .btn.warning {
+        border-color: #d97706;
+        background: #d97706;
+      }
+
+      .note {
+        display: none;
+        margin-top: 12px;
+        border: 1px dashed #f59e0b;
+        border-radius: var(--radius);
+        background: var(--amber-soft);
+        color: #78350f;
+        padding: 10px 12px;
+        line-height: 1.65;
+        font-size: 14px;
+      }
+
+      body.show-notes .note {
+        display: block;
+      }
+
+      input,
+      select,
+      textarea {
+        min-height: 40px;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: white;
+        color: var(--ink);
+        padding: 8px 11px;
+      }
+
+      textarea {
+        min-height: 110px;
+        resize: vertical;
+      }
+
+      .filters,
+      .segmented {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: white;
+        padding: 10px;
+      }
+
+      .filters {
+        padding: 14px;
+      }
+
+      .table {
+        overflow: hidden;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: white;
+      }
+
+      .table-head,
+      .table-row {
+        display: grid;
+        grid-template-columns: 1.35fr 0.95fr 0.9fr 0.9fr 1fr;
+        gap: 14px;
+        align-items: center;
+        padding: 14px 16px;
+      }
+
+      .table-head {
+        background: var(--soft);
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .table-row {
+        border-top: 1px solid var(--line);
+      }
+
+      .table-row > span {
+        min-width: 0;
+      }
+
+      .stat {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        min-height: 88px;
+      }
+
+      .stat b {
+        font-size: 25px;
+      }
+
+      .cover {
+        min-height: 150px;
+        display: grid;
+        place-items: center;
+        border-radius: var(--radius);
+        background: linear-gradient(135deg, var(--blue), var(--teal));
+        color: white;
+        text-align: center;
+        padding: 20px;
+      }
+
+      .player {
+        min-height: 300px;
+        display: grid;
+        place-items: center;
+        border-radius: var(--radius);
+        background: #0f172a;
+        color: white;
+        text-align: center;
+        padding: 24px;
+      }
+
+      .lesson-row {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 90px 110px 120px;
+        gap: 12px;
+        align-items: center;
+      }
+
+      .question-option {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        padding: 14px;
+      }
+
+      .question-option:hover {
+        border-color: var(--blue);
+        background: var(--blue-soft);
+      }
+
+      .numbers {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 8px;
+        margin-top: 14px;
+      }
+
+      .num {
+        height: 36px;
+        display: grid;
+        place-items: center;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+      }
+
+      .num.done {
+        border-color: var(--green);
+        background: var(--green);
+        color: white;
+      }
+
+      .num.current {
+        border-color: var(--blue);
+        background: var(--blue-soft);
+        color: var(--blue);
+      }
+
+      .modal {
+        position: fixed;
+        inset: 0;
+        z-index: 50;
+        display: none;
+        place-items: center;
+        background: rgba(15, 23, 42, 0.48);
+        padding: 24px;
+      }
+
+      .modal.open {
+        display: grid;
+      }
+
+      .modal-box {
+        width: min(620px, 100%);
+        max-height: calc(100vh - 48px);
+        overflow: auto;
+        border-radius: var(--radius);
+        background: white;
+        padding: 24px;
+        box-shadow: 0 18px 60px rgba(15, 23, 42, 0.22);
+      }
+
+      @media (max-width: 960px) {
+        .topbar {
+          grid-template-columns: 1fr auto;
+          padding: 12px 0;
+        }
+
+        .nav {
+          grid-column: 1 / -1;
+          justify-content: flex-start;
+          order: 3;
+        }
+
+        .hero,
+        .grid-2,
+        .grid-3,
+        .grid-4,
+        .split,
+        .course-hero,
+        .answer-layout {
+          grid-template-columns: 1fr;
+        }
+
+        .hero {
+          min-height: auto;
+          padding: 30px;
+        }
+
+        .hero h1 {
+          font-size: 32px;
+        }
+
+        .table-head {
+          display: none;
+        }
+
+        .table-row {
+          grid-template-columns: 1fr;
+          gap: 10px;
+        }
+      }
+
+      @media (max-width: 620px) {
+        .container {
+          width: calc(100% - 28px);
+        }
+
+        .brand {
+          min-width: 0;
+        }
+
+        .brand-title {
+          font-size: 15px;
+        }
+
+        .brand-subtitle {
+          display: none;
+        }
+
+        .top-actions {
+          justify-content: flex-start;
+        }
+
+        .page-head {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+
+        .hero {
+          padding: 24px;
+        }
+
+        .hero h1 {
+          font-size: 28px;
+        }
+
+        .lesson-row {
+          grid-template-columns: 1fr;
+        }
+
+        .filters > *,
+        .top-actions select {
+          width: 100%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="app-header">
+      <div class="container topbar">
+        <a class="brand" href="#/">
+          <span class="brand-mark">职</span>
+          <span>
+            <span class="brand-title">职教高考学习平台</span>
+            <span class="brand-subtitle">学生端组件化原型</span>
+          </span>
+        </a>
+        <nav id="nav" class="nav"></nav>
+        <div class="top-actions">
+          <select id="roleSelect" aria-label="切换原型身份">
+            <option value="visitor">游客</option>
+            <option value="registered">注册用户</option>
+            <option value="student">班级学生</option>
+          </select>
+          <button id="noteToggle" class="btn secondary" type="button">标注</button>
+        </div>
+      </div>
+    </header>
+
+    <main id="app" class="container main"></main>
+
+    <div id="modal" class="modal">
+      <div class="modal-box">
+        <div class="page-head">
+          <h2 id="modalTitle"></h2>
+          <button class="btn secondary" data-close-modal type="button">关闭</button>
+        </div>
+        <p id="modalContent"></p>
+      </div>
+    </div>
+
+    <script>
+      const navItems = [
+        { label: "首页", path: "#/" },
+        { label: "试卷中心", path: "#/papers" },
+        { label: "考试中心", path: "#/exams" },
+        { label: "学习中心", path: "#/learning" },
+        { label: "个人中心", path: "#/profile" },
+      ];
+
+      const roles = {
+        visitor: {
+          label: "游客",
+          summary: "可浏览首页、资讯、试卷目录和考试活动；刷题、考试、班级学习需要登录并加入班级。",
+          cta: "登录/注册",
+          href: "#/login",
+        },
+        registered: {
+          label: "注册用户",
+          summary: "已有账号但未加入班级，可提交入校申请，暂未解锁班级课程和专业大类试卷。",
+          cta: "完善申请",
+          href: "#/school-apply",
+        },
+        student: {
+          label: "班级学生",
+          summary: "已加入班级，可学习班级课程、参加班级考试，并刷所在班级绑定大类试卷。",
+          cta: "进入学习",
+          href: "#/learning",
+        },
+      };
+
+      const state = {
+        role: localStorage.getItem("prototype-role") || "visitor",
+        notes: localStorage.getItem("prototype-notes") === "true",
+        courseIndex: 0,
+        courseTab: "目录",
+        subject: "专业课",
+        examSubject: "全部",
+        examCategory: "电子与信息类",
+      };
+
+      const news = [
+        { type: "政策解读", title: "2026 年职教高考计算机类备考重点说明", date: "2026-04-27", summary: "围绕考试范围、题型变化和基础复习节奏，给出阶段性备考建议。" },
+        { type: "考试通知", title: "春季公开测评开放通知", date: "2026-04-26", summary: "本次公开测评面向注册用户开放，可用于体验平台在线考试流程。" },
+        { type: "平台公告", title: "学校联考成绩排行功能上线说明", date: "2026-04-25", summary: "联考结束后，授权学校和学生可查看单场考试排行、成绩和答题记录。" },
+        { type: "备考指南", title: "文化课基础薄弱学生如何安排第一轮复习", date: "2026-04-24", summary: "建议从高频基础知识点和典型题入手，结合推荐课程试听和班级课程学习。" },
+      ];
+
+      const courses = [
+        { title: "数学基础冲刺课", subject: "文化课", lessons: "可试听 3 课时", duration: "每课时 10 分钟", highlight: "函数、数列、几何高频题型串讲", gradient: "linear-gradient(130deg,#2563eb,#0891b2)" },
+        { title: "英语阅读提分课", subject: "文化课", lessons: "可试听 2 课时", duration: "每课时 8 分钟", highlight: "长难句拆解与阅读定位训练", gradient: "linear-gradient(130deg,#0f766e,#16a34a)" },
+        { title: "语文应用文写作", subject: "热门推荐", lessons: "可试听 1 课时", duration: "每课时 12 分钟", highlight: "应用文结构模板与失分点提醒", gradient: "linear-gradient(130deg,#c2410c,#d97706)" },
+      ];
+
+      const categories = [
+        { name: "电子与信息类", unlocked: true, source: "高三计算机冲刺班", papers: 128 },
+        { name: "装备制造类", unlocked: false, source: "", papers: 76 },
+        { name: "财经商贸类", unlocked: false, source: "", papers: 96 },
+        { name: "旅游类", unlocked: false, source: "", papers: 82 },
+        { name: "医药卫生类", unlocked: false, source: "", papers: 72 },
+        { name: "土木建筑类", unlocked: false, source: "", papers: 54 },
+      ];
+
+      const papers = [
+        { title: "语文基础模拟卷（一）", category: "文化课", subject: "语文", type: "一轮复习", year: "2025", meta: "35 题 / 50 分钟", unlocked: true, status: "未开始" },
+        { title: "数学基础模拟卷（一）", category: "文化课", subject: "数学", type: "一轮复习", year: "2025", meta: "45 题 / 60 分钟", unlocked: true, status: "进行中" },
+        { title: "英语阅读提升卷", category: "文化课", subject: "英语", type: "二轮专题", year: "2025", meta: "35 题 / 45 分钟", unlocked: true, status: "已结束" },
+        { title: "电子与信息类专业综合卷（一）", category: "电子与信息类", subject: "专业课", type: "一轮复习", year: "2025", meta: "50 题 / 70 分钟", unlocked: true, status: "进行中" },
+        { title: "数据库基础专项训练", category: "电子与信息类", subject: "专业课", type: "二轮专题", year: "2024", meta: "30 题 / 40 分钟", unlocked: true, status: "未开始" },
+        { title: "旅游类综合模拟卷", category: "旅游类", subject: "专业课", type: "模拟测试", year: "2025", meta: "50 题 / 70 分钟", unlocked: false, status: "未开始" },
+      ];
+
+      const exams = [
+        { id: "public-spring", title: "春季数学公开测评", type: "公开考试", subject: "数学", category: "文化课", time: "04-27 09:00 - 18:00", status: "进行中", permission: "registered", submitted: false, rank: false, score: "-" },
+        { id: "school-computer", title: "电子与信息类学校联考", type: "学校联考", subject: "专业课", category: "电子与信息类", time: "05-08 09:00", status: "未开始", permission: "student", submitted: false, rank: true, score: "-" },
+        { id: "public-culture", title: "文化课阶段诊断", type: "公开考试", subject: "语文", category: "文化课", time: "04-18 09:00", status: "已结束", permission: "registered", submitted: true, rank: false, score: "84" },
+        { id: "school-joint", title: "三校联合模拟考试", type: "学校联考", subject: "专业课", category: "电子与信息类", time: "04-12 08:30", status: "已结束", permission: "student", submitted: true, rank: true, score: "286" },
+        { id: "public-english", title: "英语公开诊断测试", type: "公开考试", subject: "英语", category: "文化课", time: "04-10 09:00", status: "已结束", permission: "registered", submitted: false, rank: false, score: "-" },
+      ];
+
+      const courseCatalog = [
+        { title: "函数基础", lessons: [["函数概念与表示", "视频", "18 分钟", "学习中"], ["函数图像与性质", "图文", "12 分钟", "未开始"], ["函数基础课堂练习", "练习", "10 题", "未开始"]] },
+        { title: "数列基础", lessons: [["等差数列基础", "视频", "16 分钟", "未开始"], ["等比数列基础", "课件", "PPT", "未开始"]] },
+        { title: "立体几何入门", lessons: [["空间图形识别", "视频", "14 分钟", "已学完"], ["几何基础练习", "练习", "12 题", "未开始"]] },
+      ];
+
+      const $app = document.querySelector("#app");
+      const $nav = document.querySelector("#nav");
+      const $role = document.querySelector("#roleSelect");
+      const $note = document.querySelector("#noteToggle");
+      const $modal = document.querySelector("#modal");
+
+      const currentRole = () => roles[state.role] || roles.visitor;
+      const escapeHtml = (value) => String(value).replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[char]));
+      const note = (text) => `<div class="note"><strong>原型标注：</strong>${escapeHtml(text)}</div>`;
+      const tag = (text, tone = "") => `<span class="tag ${tone}">${escapeHtml(text)}</span>`;
+      const meta = (html) => `<div class="meta">${html}</div>`;
+      const card = (html, extra = "") => `<section class="card ${extra}">${html}</section>`;
+      const panel = (html, extra = "") => `<div class="soft-panel ${extra}">${html}</div>`;
+      const btn = (text, href = "", tone = "") => href ? `<a class="btn ${tone}" href="${href}">${escapeHtml(text)}</a>` : `<button class="btn ${tone}" type="button">${escapeHtml(text)}</button>`;
+      const statusTone = (status) => status === "进行中" || status === "学习中" || status === "待完成" ? "amber" : status === "已结束" || status === "已完成" || status === "已学完" || status === "已交卷" ? "green" : "";
+
+      function head(title, desc = "", action = "") {
+        return `<div class="page-head"><div><h1>${escapeHtml(title)}</h1>${desc ? `<p>${escapeHtml(desc)}</p>${note(desc)}` : ""}</div>${action}</div>`;
+      }
+
+      function segmented(items, active, attr) {
+        return `<div class="segmented">${items.map((item) => `<button class="${item === active ? "active" : ""}" data-${attr}="${escapeHtml(item)}" type="button">${escapeHtml(item)}</button>`).join("")}</div>`;
+      }
+
+      function table(headers, rows) {
+        return `<div class="table"><div class="table-head">${headers.map((h) => `<span>${escapeHtml(h)}</span>`).join("")}</div>${rows.map((row) => `<div class="table-row">${row.map((cell) => `<span>${cell}</span>`).join("")}</div>`).join("")}</div>`;
+      }
+
+      function activeNav(hash, path) {
+        if (path === "#/") return hash === "#/" || hash.startsWith("#/news") || hash.startsWith("#/course-preview");
+        if (path === "#/papers") return hash.startsWith("#/papers") || hash.startsWith("#/paper-answer");
+        if (path === "#/exams") return hash.startsWith("#/exams") || hash.startsWith("#/exam-");
+        if (path === "#/learning") return hash.startsWith("#/learning") || hash.startsWith("#/class") || hash.startsWith("#/course-study") || hash.startsWith("#/qa") || hash.startsWith("#/wrong-book");
+        if (path === "#/profile") return hash.startsWith("#/profile") || hash.startsWith("#/school-apply") || hash.startsWith("#/login");
+        return hash.startsWith(path);
+      }
+
+      function renderChrome() {
+        const hash = location.hash || "#/";
+        $nav.innerHTML = navItems.map((item) => `<a class="${activeNav(hash, item.path) ? "active" : ""}" href="${item.path}">${escapeHtml(item.label)}</a>`).join("");
+        $role.value = state.role;
+        document.body.classList.toggle("show-notes", state.notes);
+        $note.classList.toggle("ghost", state.notes);
+        $note.textContent = state.notes ? "隐藏标注" : "标注";
+      }
+
+      function renderHome() {
+        const course = courses[state.courseIndex];
+        const tiles = [
+          ["资源覆盖", "文化课、专业课、视频、音频、PDF、PPT、题目与试卷统一沉淀。"],
+          ["班级学习", "学生权限以班级为边界，课程、考试、答疑和错题都围绕班级展开。"],
+          ["考试活动", "公开考试用于获客转化，学校联考用于规模化考试运营。"],
+        ];
+        return `
+          <section class="hero">
+            <div class="hero-copy">
+              <h1>面向职教高考的标准化课程与考试服务平台</h1>
+              <p>平台通过标准化课程、知识点切片素材、试卷练习和公开联考，帮助学校快速组织教学，帮助学生围绕班级完成课程学习、刷题训练和考试复盘。</p>
+              ${meta(btn("进入试卷中心", "#/papers") + btn("查看考试活动", "#/exams", "secondary"))}
+            </div>
+            <div class="hero-stack">${tiles.map(([title, text]) => `<div class="hero-tile"><strong>${title}</strong><p>${text}</p></div>`).join("")}</div>
+          </section>
+
+          <section class="section">
+            ${head("推荐课程", "首页推荐课程为轮播图，由平台运营配置，可设置试听课时和每个课时的试听时长。")}
+            <div class="grid split">
+              ${card(`<a class="surface" style="display:block;min-height:270px;color:white;background:${course.gradient}" href="#/course-preview">
+                ${tag(course.subject)}
+                <h2 style="margin-top:46px;color:white">${escapeHtml(course.title)}</h2>
+                <p style="color:rgba(255,255,255,.82)">${escapeHtml(course.highlight)}</p>
+                ${meta(tag(course.lessons) + tag(course.duration) + tag("点击试听", "amber"))}
+              </a>`)}
+              ${card(`<div class="grid">${courses.map((item, index) => `<button class="surface" style="text-align:left;${index === state.courseIndex ? "border-color:var(--blue);background:var(--blue-soft)" : ""}" data-course-index="${index}" type="button"><strong>${escapeHtml(item.title)}</strong><p class="muted">${escapeHtml(item.highlight)}</p></button>`).join("")}</div>`)}
+            </div>
+          </section>
+
+          <section class="section">
+            ${head("资讯中心", "首页展示最新资讯，点击标题可弹窗查看摘要，查看更多进入资讯列表。", btn("查看更多资讯", "#/news", "ghost"))}
+            <div class="grid">${news.slice(0, 3).map((item, index) => card(`<div class="grid split"><div><strong>${escapeHtml(item.title)}</strong><p>${escapeHtml(item.summary)}</p></div><div>${btn("查看", "", "secondary").replace("<button", `<button data-news="${index}"`)}</div></div>`)).join("")}</div>
+          </section>
+        `;
+      }
+
+      function renderNews() {
+        return `
+          ${head("资讯中心", "承载平台资讯、政策解读、备考方法、考试通知和开通咨询信息。", btn("联系管理员", "#/profile", "ghost"))}
+          <div class="filters"><select><option>全部分类</option><option>政策解读</option><option>备考指南</option></select><input placeholder="搜索资讯标题" /></div>
+          <div class="grid">${news.map((item) => card(`${meta(tag(item.type, "cyan") + tag(item.date))}<h3>${escapeHtml(item.title)}</h3><p>${escapeHtml(item.summary)}</p>`)).join("")}</div>
+        `;
+      }
+
+      function courseShell(mode) {
+        const isClass = mode === "class";
+        const title = isClass ? "数学基础强化" : "数学基础冲刺课";
+        const desc = isClass ? "班级课程学习页，详情展示课程介绍，目录展示课程内容，试卷展示课程内测验题库。" : "首页推荐课程详情页，展示试听规则、课时目录和咨询开通入口。";
+        const tabs = ["详情", "目录", "试卷", "课件"];
+        return `
+          ${head(title, desc, isClass ? btn("向老师提问", "#/qa", "ghost") : btn("联系管理员开通", "#/profile", "ghost"))}
+          ${card(`<div class="grid course-hero">
+            <div class="cover"><div><strong>${title}</strong><br /><span>${isClass ? "高三计算机冲刺班" : "推荐课程"}</span></div></div>
+            <div>${meta(tag(isClass ? "班级课程" : "推荐课程", "blue") + tag("发布人：平台/老师") + tag(isClass ? "进度 62%" : "可试听 3 课时", isClass ? "green" : "amber"))}<h2>函数概念与表示</h2><p>围绕职教高考数学基础模块，提供函数、数列、几何等高频内容。</p>${note(isClass ? "课程没有价格；考试活动仍归考试中心或班级测验处理。" : "推荐课程用于首页获客和体验，不等同于老师分配的班级课程。")}</div>
+            ${btn(isClass ? "继续学习" : "开始试听", "#/course-study")}
+          </div>`)}
+          <section class="section">${segmented(tabs, state.courseTab, "course-tab")}</section>
+          ${renderCourseTab(isClass)}
+        `;
+      }
+
+      function renderCourseTab(isClass) {
+        if (state.courseTab === "详情") {
+          return card(`<h3>课程介绍</h3><p>本课程面向需要快速补齐数学基础的学生，按知识点组织讲解、课件和练习，帮助学生熟悉平台课程学习方式。</p>`, "section");
+        }
+        if (state.courseTab === "试卷") {
+          const rows = [
+            ["函数基础随堂练习", "函数概念、函数值、图像判断", "10 题 / 15 分钟", "待完成"],
+            ["数列基础阶段测试", "等差数列、等比数列", "20 题 / 30 分钟", "未开始"],
+            ["数学基础结业测试", "函数、数列、立体几何", "35 题 / 50 分钟", "未开始"],
+          ];
+          return `<div class="grid section">${rows.map(([title, scope, metaText, status]) => card(`<h3>${title}</h3><p>${scope}</p>${meta(tag(metaText) + tag(status, statusTone(status)) + btn(status === "待完成" ? "开始测试" : "查看", "#/class-exam-answer", status === "待完成" ? "" : "secondary"))}`)).join("")}${note("这里的“试卷”是课程绑定的测验题库或练习，不是考试中心的正式考试活动。")}</div>`;
+        }
+        if (state.courseTab === "课件") {
+          return card(`<h3>课件资源</h3><div class="grid">${["函数基础讲义.pdf / PDF / 2.4MB", "函数图像与性质.pptx / PPT / 5.8MB", "数列公式速记表.pdf / PDF / 1.1MB"].map((item) => panel(`<strong>${item}</strong>`)).join("")}</div>`, "section");
+        }
+        return `<div class="grid section">${courseCatalog.map((chapter) => card(`<h3>${escapeHtml(chapter.title)}</h3><div class="grid">${chapter.lessons.map(([name, type, duration, status]) => panel(`<div class="lesson-row"><div><strong>${escapeHtml(name)}</strong><p class="muted">${escapeHtml(duration)}</p></div>${tag(type)}${tag(status, statusTone(status))}${btn(type === "练习" ? "去练习" : status === "已学完" ? "复习" : "学习", type === "练习" ? "#/class-exam-answer" : "#/course-study", status === "学习中" ? "" : "secondary")}</div>`)).join("")}</div>`)).join("")}</div>`;
+      }
+
+      function renderPapers() {
+        const isStudent = state.role === "student";
+        const subjects = ["语文", "数学", "英语", "专业课"];
+        const rows = papers.filter((paper) => state.subject === "专业课" ? paper.subject === "专业课" && paper.category === "电子与信息类" : paper.subject === state.subject);
+        const categoryBlock = state.subject === "专业课" ? card(`<div class="grid split">
+          <div><h2>大类筛选</h2><input style="width:100%" placeholder="搜索大类名称" /><div class="grid" style="margin-top:14px">${categories.map((category) => `<button class="surface" style="text-align:left;${category.name === "电子与信息类" ? "border-color:var(--blue);background:var(--blue-soft)" : ""}" type="button"><strong>${escapeHtml(category.name)}</strong><span class="muted"> / ${category.papers} 套</span></button>`).join("")}</div>${note(isStudent ? "班级学生只显示当前班级已绑定的大类。" : "游客和注册用户可浏览全部专业大类，但刷题权限需要加入绑定大类的班级。")}</div>
+          <div class="surface"><h2>电子与信息类</h2>${meta(tag("128 套试卷") + tag("数学 / 英语 / 专业综合") + tag(isStudent ? "已解锁" : "未解锁", isStudent ? "green" : "amber"))}<div class="grid grid-3 section">${card(`<span class="muted">总试卷</span><b>128</b>`, "stat")}${card(`<span class="muted">已展示</span><b>${rows.length}</b>`, "stat")}${card(`<span class="muted">可刷题</span><b>${isStudent ? rows.length : 0}</b>`, "stat")}</div></div>
+        </div>`) : "";
+        return `
+          ${head("试卷中心", "", state.role === "visitor" ? btn("登录/注册", "#/login", "ghost") : state.role === "registered" ? btn("申请入校", "#/school-apply", "ghost") : "")}
+          ${segmented(subjects, state.subject, "subject")}
+          <div class="section">${categoryBlock}</div>
+          <div class="filters section"><select><option>全部分类</option><option>一轮复习</option><option>二轮专题</option></select><select><option>全部年份</option><option>2025</option><option>2024</option></select></div>
+          ${table(["试卷", "大类", "题量/时长", "学习状态", "操作"], rows.map((paper) => [
+            `<strong>${escapeHtml(paper.title)}</strong><p class="muted">${paper.type} / ${paper.year}</p>`,
+            escapeHtml(paper.category),
+            escapeHtml(paper.meta),
+            isStudent && paper.unlocked ? tag(paper.status, statusTone(paper.status)) : tag("-"),
+            isStudent && paper.unlocked ? btn(paper.status === "进行中" ? "继续刷题" : paper.status === "已结束" ? "查看解析" : "开始刷题", "#/paper-answer", paper.status === "已结束" ? "ghost" : "") : btn("暂无权限", currentRole().href, "secondary"),
+          ]))}
+        `;
+      }
+
+      function hasExamPermission(exam) {
+        return exam.permission === "registered" ? state.role !== "visitor" : state.role === "student";
+      }
+
+      function participation(exam) {
+        if (!hasExamPermission(exam)) return ["无权限", ""];
+        if (exam.status === "未开始") return ["未开始", "amber"];
+        if (exam.status === "进行中") return ["可参加", "green"];
+        return exam.submitted ? ["已交卷", "green"] : ["未参加", ""];
+      }
+
+      function examAction(exam) {
+        const detail = `#/exam-detail?id=${exam.id}`;
+        if (!hasExamPermission(exam)) return btn("查看详情", detail, "secondary");
+        if (exam.status === "进行中") return btn("查看详情", detail, "secondary") + btn("进入考试", "#/exam-answer");
+        if (exam.status === "已结束" && exam.submitted) return btn("查看成绩", detail, "secondary");
+        return btn("查看详情", detail, "secondary");
+      }
+
+      function renderExams() {
+        const subjects = ["全部", "语文", "数学", "英语", "专业课"];
+        const isProfessional = state.examSubject === "专业课";
+        const rows = exams.filter((exam) => {
+          const subjectMatched = state.examSubject === "全部" || exam.subject === state.examSubject;
+          const categoryMatched = !isProfessional || exam.category === state.examCategory;
+          return subjectMatched && categoryMatched;
+        });
+        const availableCategories = state.role === "student" ? categories.filter((category) => category.unlocked) : categories;
+        const categoryFilter = isProfessional ? `<select data-exam-category-select>${availableCategories.map((category) => `<option ${category.name === state.examCategory ? "selected" : ""}>${escapeHtml(category.name)}</option>`).join("")}</select>` : "";
+        return `
+          ${head("考试中心", "公开考试与学校联考统一展示，排行和成绩归属于具体考试。")}
+          ${card(`${tag("当前身份：" + currentRole().label, state.role === "student" ? "green" : state.role === "registered" ? "blue" : "amber")}${note("不做报名流程；有权限且考试进行中即可进入考试。交卷前不生成成绩、答题记录或排行。")}`)}
+          <section class="section">${segmented(subjects, state.examSubject, "exam-subject")}</section>
+          <div class="filters section">${categoryFilter}<select><option>全部考试</option><option>公开考试</option><option>学校联考</option></select><select><option>全部状态</option><option>未开始</option><option>进行中</option><option>已结束</option></select><input placeholder="搜索考试名称" /></div>
+          ${table(["考试", "科目/大类", "时间", "参加状态", "操作"], rows.map((exam) => {
+            const p = participation(exam);
+            return [
+              `<strong>${escapeHtml(exam.title)}</strong><p class="muted">${escapeHtml(exam.type)}</p>`,
+              escapeHtml(exam.subject === "专业课" ? exam.category : exam.subject),
+              escapeHtml(exam.time),
+              `${tag(exam.status, statusTone(exam.status))}<div style="margin-top:8px">${tag(p[0], p[1])}</div>`,
+              examAction(exam),
+            ];
+          }))}
+        `;
+      }
+
+      function renderExamDetail() {
+        const params = new URLSearchParams((location.hash.split("?")[1] || ""));
+        const exam = exams.find((item) => item.id === params.get("id")) || exams[1];
+        const p = participation(exam);
+        const canSeeResult = hasExamPermission(exam) && exam.status === "已结束" && exam.submitted;
+        return `
+          ${head(exam.title, "展示考试时间、参与范围、权限状态、介绍、排行规则和参加入口。", hasExamPermission(exam) && exam.status === "进行中" ? btn("进入考试", "#/exam-answer") : "")}
+          <div class="grid grid-4">${card(`<span class="muted">考试类型</span><b>${exam.type}</b>`, "stat")}${card(`<span class="muted">科目</span><b>${exam.subject === "专业课" ? exam.category : exam.subject}</b>`, "stat")}${card(`<span class="muted">状态</span><b>${exam.status}</b>`, "stat")}${card(`<span class="muted">参加状态</span><b>${p[0]}</b>`, "stat")}</div>
+          ${card(`<h2>考试介绍</h2><p>${exam.type === "学校联考" ? "本场学校联考面向已授权学校及指定班级开放，用于统一检验阶段性教学效果。" : "本场公开考试面向注册用户开放，用于体验正式考试流程并完成阶段性自测。"}</p>${note("正式考试不保存中途题目进度，交卷前才算参加考试。")}`, "section")}
+          <div class="grid grid-3 section">${card(`<h3>我的成绩</h3><p>${canSeeResult ? "总分 " + exam.score : p[0]}</p>${tag(canSeeResult ? "已出分" : "暂无", canSeeResult ? "green" : "")}`)}${card(`<h3>我的答题</h3><p>${canSeeResult ? "已生成答题记录" : "暂无记录"}</p>${canSeeResult ? btn("查看答题记录", "#/exam-answer", "ghost") : tag("无记录")}`)}${card(`<h3>本场排行</h3><p>${canSeeResult && exam.rank ? "个人第 12，学校第 3" : "暂无排行"}</p>${tag(exam.rank ? "开启排行" : "未开启排行", exam.rank ? "blue" : "")}`)}</div>
+          ${exam.rank ? `<section class="section">${head("单场考试排行", "考试中心不单独展示全局排行，排行进入具体考试后查看。")}${canSeeResult ? table(["排名", "考生", "学校", "成绩", "状态"], [["1", "李同学", "示范中职学校", "296", tag("已出分", "green")], ["2", "王同学", "东方职业学校", "291", tag("已出分", "green")], ["12", "我", "示范中职学校", exam.score, tag("我的成绩", "blue")]]) : card(`<p>暂无排行</p>${note("已交卷且考试开启排行后，才展示单场考试排行。")}`)}</section>` : ""}
+        `;
+      }
+
+      function renderLearning() {
+        if (state.role !== "student") {
+          const isVisitor = state.role === "visitor";
+          return `
+            ${head("学习中心", "学习中心是登录后的学生工作台，未登录或未加入学校班级时不展示学习数据。")}
+            ${card(`<div class="grid split"><div>${tag("当前身份：" + currentRole().label, isVisitor ? "amber" : "blue")}<h2>${isVisitor ? "登录后查看学习中心" : "暂无学习身份"}</h2><p>${isVisitor ? "登录或注册后，学生可以查看自己的学校班级、待完成任务、课程、测试、错题本和学习记录。" : "你已注册账号，但还没有加入任何学校班级。申请通过后，这里会展示当前学习身份和班级安排。"}</p>${note(currentRole().summary)}${meta(btn(currentRole().cta, currentRole().href) + btn(isVisitor ? "先浏览试卷" : "查看入校申请", isVisitor ? "#/papers" : "#/school-apply", "secondary"))}</div><div class="surface"><strong>开通后可查看</strong><p>当前学校班级、学习任务摘要、班级课程、班级测试、班级答疑、个人错题本和学习记录。</p></div></div>`)}
+          `;
+        }
+
+        const tasks = [
+          ["课程学习", "数学基础强化", "继续课时：函数概念与表示，课程进度 62%", "#/course-study", "继续学习", "blue"],
+          ["试卷练习", "电子与信息类专业综合卷（一）", "上次做到 22/50，继续完成本套练习", "#/paper-answer", "继续刷题", "cyan"],
+          ["考试安排", "春季数学公开测评", "正在进行，今日 18:00 结束，尚未交卷", "#/exam-answer", "进入考试", "green"],
+          ["班级答疑", "老师已回复 E-R 模型判断问题", "查看回复并决定是否继续追问", "#/qa", "查看答疑", ""],
+        ];
+        return `
+          ${head("学习中心", "顶部下拉选择当前学校班级，用于班级内容和专业课权限上下文。", btn("申请新的学校班级", "#/school-apply", "ghost"))}
+          ${card(`<label class="grid"><span class="muted">当前学校班级</span><select><option>示范中职学校 / 高三计算机冲刺班 / 电子与信息类</option><option>平台轻教务班级 / 文化课周末提升班 / 文化课强化</option></select></label>${meta(tag("电子与信息类", "blue") + tag("专业课试卷已授权", "green"))}`)}
+          <div class="grid grid-4 section">${card(`<span class="muted">待处理事项</span><b>11</b>`, "stat")}${card(`<span class="muted">本周学习</span><b>4.5h</b>`, "stat")}${card(`<span class="muted">累计错题</span><b>38</b>`, "stat")}${card(`<span class="muted">学校班级</span><b>2</b>`, "stat")}</div>
+          <section class="section">${head("学习任务摘要", "课程学习来自班级课程，试卷练习来自试卷中心，考试安排来自考试中心。")}<div class="grid">${tasks.map(([group, title, detail, href, action, tone]) => card(`<div class="grid split"><div>${tag(group, tone)}<h3 style="margin-top:12px">${escapeHtml(title)}</h3><p>${escapeHtml(detail)}</p></div><div>${btn(action, href, tone ? "" : "secondary")}</div></div>`)).join("")}</div></section>
+          <section class="section">${head("当前班级学习", "展示当前学校班级下的班级课程、班级测试和班级答疑。")}<div class="grid grid-3">${card(`<h3>班级课程</h3><p>老师已分配 4 门课程，最近学习到数学基础强化。</p>${meta(tag("2 门进行中", "blue") + btn("进入课程", "#/course-study"))}`)}${card(`<h3>班级测试</h3><p>1 场待完成，3 场已完成，平均分 85。</p>${meta(tag("待完成 1", "amber") + btn("查看测试", "#/class-exam", "ghost"))}`)}${card(`<h3>班级答疑</h3><p>一对一留言给老师，查看待回复和已回复问题。</p>${meta(tag("已回复 1", "green") + btn("进入答疑", "#/qa", "ghost"))}`)}</div></section>
+          <section class="section">${head("个人学习资产", "错题本和学习记录汇总学生个人全部学习数据。")}<div class="grid grid-2">${card(`<h3>错题本</h3><p>汇总刷题、考试、班级测试和课堂练习中的错题。</p>${meta(tag("待掌握 24", "amber") + btn("查看错题", "#/wrong-book", "ghost"))}`)}${card(`<h3>学习记录</h3><p>记录课程学习、刷题、测试和考试完成情况。</p>${meta(tag("最近 3 条") + btn("查看记录", "#/learning-record", "ghost"))}`)}</div></section>
+        `;
+      }
+
+      function renderClassExam() {
+        const rows = [
+          ["函数与数列阶段测试", "数学基础强化", "20 题 / 30 分钟", "待完成"],
+          ["数据库基础随堂测", "数据库基础", "10 题 / 15 分钟", "已完成"],
+          ["英语阅读专项小测", "英语阅读提分", "12 题 / 20 分钟", "已完成"],
+        ];
+        return `
+          ${head("班级测试", "", btn("返回班级", "#/class-detail", "secondary"))}
+          <div class="grid grid-3">${card(`<span class="muted">待完成</span><b>1</b>`, "stat")}${card(`<span class="muted">已完成</span><b>2</b>`, "stat")}${card(`<span class="muted">平均分</span><b>85</b>`, "stat")}</div>
+          <div class="grid section">${rows.map(([title, course, metaText, status]) => card(`<h3>${title}</h3><p>${course} / ${metaText}</p>${meta(tag(status, statusTone(status)) + btn(status === "待完成" ? "开始测试" : "查看记录", "#/class-exam-answer", status === "待完成" ? "" : "secondary"))}`)).join("")}</div>
+          ${note("班级测试服务班级教学闭环，不进入公开考试/联考详情页。")}
+        `;
+      }
+
+      function renderClassDetail() {
+        return `
+          ${head("班级档案", "班级详情弱化为档案页，主要学习内容已经前置到学习中心。", btn("返回学习中心", "#/learning", "secondary"))}
+          ${card(`${tag("当前学校班级", "green")}<h2 style="margin-top:14px">示范中职学校</h2><p>高三计算机冲刺班 / 电子与信息类</p>${meta(tag("专业课试卷权限已开通") + tag("学习进度 62%") + btn("继续学习", "#/course-study"))}`)}
+          <div class="grid grid-4 section">${card(`<span class="muted">班级课程</span><b>4</b>`, "stat")}${card(`<span class="muted">班级测试</span><b>3</b>`, "stat")}${card(`<span class="muted">答疑待回复</span><b>1</b>`, "stat")}${card(`<span class="muted">学习进度</span><b>62%</b>`, "stat")}</div>
+        `;
+      }
+
+      function renderAnswer(kind) {
+        const isExam = kind === "exam";
+        const isClass = kind === "class";
+        const title = isExam ? "考试答题页" : isClass ? "函数与数列阶段测试" : "试卷刷题答题页";
+        const desc = isExam ? "强调倒计时、交卷确认和考试结束状态。" : isClass ? "班级测试答题页保留保存进度和提交测试。" : "练习场景，可提交后查看结果和错题解析。";
+        const options = isExam ? ["A. E-R 模型", "B. 线性模型", "C. 物理模型", "D. 编译模型"] : ["A. 5", "B. 6", "C. 7", "D. 8"];
+        return `
+          ${head(title, desc, isExam ? btn("交卷", "", "warning") : "")}
+          <div class="grid answer-layout">
+            ${card(`${meta(tag("单选题") + tag(isExam ? "第 8 / 60 题" : "第 1 / 45 题") + tag(isExam ? "剩余 01:12:36" : isClass ? "已保存" : "函数", isExam ? "red" : isClass ? "green" : "cyan"))}<h2>${isExam ? "在数据库设计中，用于描述实体之间关系的模型通常称为：" : "已知函数 f(x)=2x+1，则 f(3) 的值为多少？"}</h2><div class="grid">${options.map((item) => `<label class="question-option"><input type="radio" name="q" />${escapeHtml(item)}</label>`).join("")}</div>${meta(btn("上一题", "", "secondary") + btn(isClass ? "保存并下一题" : "下一题") + (isExam ? btn("交卷", "", "warning") : btn("查看解析", "", "ghost")))}`)}
+            ${card(`<h3>${isExam ? "题号导航" : "答题进度"}</h3><p>已答 ${isExam ? 24 : isClass ? 8 : 12} 题，未答 ${isExam ? 36 : isClass ? 12 : 33} 题。</p><div class="numbers">${Array.from({ length: 10 }, (_, index) => `<span class="num ${index < (isExam ? 4 : 3) ? "done" : index === (isExam ? 7 : 3) ? "current" : ""}">${index + 1}</span>`).join("")}</div>${meta(btn(isExam ? "交卷" : isClass ? "提交测试" : "提交练习", "", "warning"))}${note(isExam ? "正式考试不保存题目进度，必须在本次考试时间内一次完成；交卷才算参加考试。" : "提交后进入结果页，并沉淀错题。")}`)}
+          </div>
+        `;
+      }
+
+      function renderQA() {
+        return `
+          ${head("班级答疑", "轻量留言形式，不做实时 IM。学生向老师提问，老师在学校端回复。")}
+          <div class="grid grid-2">${card(`<h3>历史答疑</h3><div class="grid">${panel(`<strong>函数图像这道题为什么选 C？</strong><p>关联：数学基础强化 / 课堂练习 1</p>${tag("待回复", "amber")}`)}${panel(`<strong>数据库 E-R 图怎么判断联系类型？</strong><p>老师回复：先看实体之间是一对一、一对多还是多对多。</p>${tag("已回复", "green")}`)}</div>`)}${card(`<h3>发起提问</h3><div class="grid"><label>关联内容<select style="width:100%"><option>数学基础强化 / 函数概念</option><option>数据库基础 / E-R 模型</option></select></label><label>问题内容<textarea style="width:100%" placeholder="请描述你遇到的问题"></textarea></label>${btn("提交问题")}</div>`)}</div>
+        `;
+      }
+
+      function renderWrongBook() {
+        const rows = [
+          ["函数值计算题", "试卷刷题", "函数", "未掌握"],
+          ["E-R 模型判断", "考试", "数据库", "已掌握"],
+        ];
+        return `${head("错题本", "汇总试卷刷题、考试中心考试、班级课堂练习中的错题。", btn("重新练习", "#/paper-answer"))}${table(["错题", "来源", "知识点", "状态", "操作"], rows.map((row) => [escapeHtml(row[0]), escapeHtml(row[1]), escapeHtml(row[2]), tag(row[3], row[3] === "已掌握" ? "green" : "amber"), btn("查看解析", "#/paper-answer", "ghost")]))}`;
+      }
+
+      function renderLearningRecord() {
+        const rows = [
+          ["今天 14:20", "数学基础强化", "完成：函数概念与表示，学习时长 18 分钟。", "已完成"],
+          ["昨天 19:40", "英语阅读提分课", "完成课堂练习 10 题，正确率 80%。", "课堂练习"],
+          ["04-24 20:10", "数据库基础", "学习：E-R 模型与关系判断，课时进度 60%。", "学习中"],
+        ];
+        return `${head("学习记录", "展示学生在哪个课程学了什么、学到哪里、学习时长和完成状态。")}<div class="grid">${rows.map((row) => card(`<div class="grid split"><time class="muted">${escapeHtml(row[0])}</time><div><strong>${escapeHtml(row[1])}</strong><p>${escapeHtml(row[2])}</p>${meta(tag(row[3], statusTone(row[3])) + btn("继续学习", "#/course-study", "ghost"))}</div></div>`)).join("")}</div>`;
+      }
+
+      function renderProfile() {
+        const isStudent = state.role === "student";
+        const isRegistered = state.role === "registered";
+        return `
+          ${head("个人中心", "处理专业选择、入校申请、审核状态、我的班级和开通咨询。", btn("提交入校申请", "#/school-apply"))}
+          ${card(`<div class="grid split"><div>${tag("当前身份：" + currentRole().label, isStudent ? "green" : isRegistered ? "blue" : "amber")}${note(currentRole().summary)}</div><div>${btn(currentRole().cta, currentRole().href)}</div></div>`)}
+          <div class="grid grid-3 section">${card(`<h3>基本信息</h3><p>${state.role === "visitor" ? "游客暂未登录" : "张同学 / 138****0000"}</p>${tag(state.role === "visitor" ? "未登录" : "已登录", state.role === "visitor" ? "amber" : "green")}`)}${card(`<h3>当前专业</h3><p>${state.role === "visitor" ? "未选择" : "电子与信息类"}</p>${tag(state.role === "visitor" ? "未选择" : "已选择", state.role === "visitor" ? "" : "blue")}`)}${card(`<h3>入校申请</h3><p>${isStudent ? "示范中职学校 / 高三计算机冲刺班，已通过审核。" : isRegistered ? "示范中职学校 / 高三计算机冲刺班方向。" : "注册后可提交学校、专业和申请理由。"}</p>${tag(isStudent ? "已通过" : isRegistered ? "审核中" : "未提交", isStudent ? "green" : isRegistered ? "amber" : "")}`)}</div>
+          <div class="grid grid-2 section">${card(`<h3>我的班级</h3><p>${isStudent ? "高三计算机冲刺班、文化课周末提升班" : "暂无班级"}</p>${note(isStudent ? "班级决定课程、考试和试卷大类权限。" : "审核通过或管理员开通后，这里展示学生已加入的班级。")}${meta(btn(isStudent ? "进入学习中心" : "申请加入班级", isStudent ? "#/learning" : "#/school-apply", "ghost"))}`)}${card(`<h3>开通咨询</h3><p>联系管理员</p><div style="width:128px;height:128px;border:10px solid white;border-radius:8px;background:repeating-linear-gradient(90deg,#111 0 9px,transparent 9px 18px),repeating-linear-gradient(0deg,#111 0 9px,transparent 9px 18px);box-shadow:var(--shadow)"></div>`)}</div>
+        `;
+      }
+
+      function renderSchoolApply() {
+        return `
+          ${head("入校申请 / 审核状态", "申请信息并入个人中心，字段保持精简：选择学校、选择专业、填写理由。")}
+          ${card(`${tag("当前身份：" + currentRole().label, state.role === "student" ? "green" : state.role === "registered" ? "blue" : "amber")}${note(currentRole().summary)}`)}
+          <div class="grid grid-2 section">${card(`<h3>提交入校申请</h3><div class="grid"><label>选择学校<select style="width:100%"><option>示范中职学校</option><option>东方职业学校</option></select></label><label>选择专业<select style="width:100%"><option>电子与信息类</option><option>财经商贸类</option><option>旅游类</option></select></label><label>申请理由<textarea style="width:100%" placeholder="请填写申请入校或加入班级的原因"></textarea></label>${btn("提交申请")}</div>`)}${card(`<h3>审核状态</h3><p>当前申请：示范中职学校 / 电子与信息类。</p>${meta(tag("审核中", "amber") + tag("提交于 2026-04-27"))}<div class="surface" style="border-left:4px solid var(--blue);margin-top:18px">审核通过后，学生会加入对应班级，并获得该班级课程、考试和绑定大类试卷权限。</div>`)}</div>
+        `;
+      }
+
+      function renderLogin() {
+        return `<div class="grid grid-2">${card(`<h1>账号登录</h1><p>登录后根据用户状态跳转：无班级进入个人中心，有班级进入学习中心。</p><div class="grid"><input placeholder="手机号 / 账号" /><input type="password" placeholder="密码" />${btn("登录并进入学习中心", "#/learning")}</div>`)}${card(`<h1>注册账号</h1><p>注册后只是普通用户，需要选择专业并通过入校申请或联系管理员开通班级权限。</p><div class="grid"><input placeholder="手机号" /><input placeholder="验证码" />${btn("注册后完善申请", "#/school-apply", "ghost")}</div>`)}</div>`;
+      }
+
+      const routes = {
+        "#/": renderHome,
+        "#/news": renderNews,
+        "#/course-preview": () => courseShell("preview"),
+        "#/papers": renderPapers,
+        "#/paper-answer": () => renderAnswer("paper"),
+        "#/exams": renderExams,
+        "#/exam-detail": renderExamDetail,
+        "#/exam-answer": () => renderAnswer("exam"),
+        "#/learning": renderLearning,
+        "#/class-detail": renderClassDetail,
+        "#/class-exam": renderClassExam,
+        "#/class-exam-answer": () => renderAnswer("class"),
+        "#/course-study": () => courseShell("class"),
+        "#/qa": renderQA,
+        "#/wrong-book": renderWrongBook,
+        "#/learning-record": renderLearningRecord,
+        "#/profile": renderProfile,
+        "#/school-apply": renderSchoolApply,
+        "#/login": renderLogin,
+      };
+
+      function render() {
+        renderChrome();
+        const routeKey = (location.hash || "#/").split("?")[0];
+        $app.innerHTML = (routes[routeKey] || renderHome)();
+        window.scrollTo(0, 0);
+      }
+
+      $role.addEventListener("change", (event) => {
+        state.role = event.target.value;
+        if (state.role === "student" && !categories.some((category) => category.name === state.examCategory && category.unlocked)) {
+          state.examCategory = "电子与信息类";
+        }
+        localStorage.setItem("prototype-role", state.role);
+        render();
+      });
+
+      $note.addEventListener("click", () => {
+        state.notes = !state.notes;
+        localStorage.setItem("prototype-notes", String(state.notes));
+        render();
+      });
+
+      document.addEventListener("click", (event) => {
+        const courseButton = event.target.closest("[data-course-index]");
+        if (courseButton) {
+          state.courseIndex = Number(courseButton.dataset.courseIndex);
+          render();
+        }
+
+        const tabButton = event.target.closest("[data-course-tab]");
+        if (tabButton) {
+          state.courseTab = tabButton.dataset.courseTab;
+          render();
+        }
+
+        const subjectButton = event.target.closest("[data-subject]");
+        if (subjectButton) {
+          state.subject = subjectButton.dataset.subject;
+          render();
+        }
+
+        const examSubjectButton = event.target.closest("[data-exam-subject]");
+        if (examSubjectButton) {
+          state.examSubject = examSubjectButton.dataset.examSubject;
+          if (state.examSubject === "专业课" && !categories.some((category) => category.name === state.examCategory)) {
+            state.examCategory = "电子与信息类";
+          }
+          render();
+        }
+
+        const newsButton = event.target.closest("[data-news]");
+        if (newsButton) {
+          const item = news[Number(newsButton.dataset.news)];
+          document.querySelector("#modalTitle").textContent = item.title;
+          document.querySelector("#modalContent").textContent = item.summary;
+          $modal.classList.add("open");
+        }
+
+        if (event.target.closest("[data-close-modal]") || event.target === $modal) {
+          $modal.classList.remove("open");
+        }
+      });
+
+      document.addEventListener("change", (event) => {
+        const examCategorySelect = event.target.closest("[data-exam-category-select]");
+        if (examCategorySelect) {
+          state.examCategory = examCategorySelect.value;
+          render();
+        }
+      });
+
+      window.addEventListener("hashchange", render);
+      render();
+    </script>
+  </body>
+</html>
