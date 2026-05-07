@@ -123,20 +123,68 @@ const paperQuestionGroups = [
     title: "六、综合题",
     desc: "每道综合题包含多个子题",
     questions: [
-      { key: "case-66-1", label: "66.1", parent: "66", status: "answered", marked: true },
-      { key: "case-66-2", label: "66.2", parent: "66", status: "answered", marked: false },
-      { key: "case-66-3", label: "66.3", parent: "66", status: "unanswered", marked: false },
-      { key: "case-67-1", label: "67.1", parent: "67", status: "answered", marked: false },
-      { key: "case-67-2", label: "67.2", parent: "67", status: "unanswered", marked: true },
-      { key: "case-68-1", label: "68.1", parent: "68", status: "unanswered", marked: false },
-      { key: "case-68-2", label: "68.2", parent: "68", status: "unanswered", marked: false },
-      { key: "case-68-3", label: "68.3", parent: "68", status: "unanswered", marked: false },
+      { key: "case-66-1", label: "66.1", parent: "66", questionType: "单选题", status: "answered", marked: true },
+      { key: "case-66-2", label: "66.2", parent: "66", questionType: "填空题", status: "answered", marked: false },
+      { key: "case-66-3", label: "66.3", parent: "66", questionType: "简答题", status: "unanswered", marked: false },
+      { key: "case-67-1", label: "67.1", parent: "67", questionType: "多选题", status: "answered", marked: false },
+      { key: "case-67-2", label: "67.2", parent: "67", questionType: "判断题", status: "unanswered", marked: true },
+      { key: "case-68-1", label: "68.1", parent: "68", questionType: "单选题", status: "unanswered", marked: false },
+      { key: "case-68-2", label: "68.2", parent: "68", questionType: "填空题", status: "unanswered", marked: false },
+      { key: "case-68-3", label: "68.3", parent: "68", questionType: "简答题", status: "unanswered", marked: false },
     ],
   },
 ];
 
 function getAllPaperQuestions(groups = paperQuestionGroups) {
   return groups.flatMap((group) => group.questions.map((question) => ({ ...question, groupTitle: group.title })));
+}
+
+function getQuestionType(question) {
+  if (question.questionType) return question.questionType;
+  if (question.groupTitle.includes("单选题")) return "单选题";
+  if (question.groupTitle.includes("多选题")) return "多选题";
+  if (question.groupTitle.includes("判断题")) return "判断题";
+  if (question.groupTitle.includes("填空题")) return "填空题";
+  if (question.groupTitle.includes("简答题")) return "简答题";
+  return "单选题";
+}
+
+function AnswerInput({ questionType }) {
+  if (questionType === "多选题") {
+    return (
+      <div className="mt-5 grid gap-3">
+        {["A. 函数图像为直线", "B. 斜率决定倾斜方向", "C. 截距影响与 y 轴交点", "D. 定义域一定为全体实数"].map((item) => (
+          <label key={item} className="flex gap-3 rounded-ui border border-line p-4"><input type="checkbox" />{item}</label>
+        ))}
+      </div>
+    );
+  }
+
+  if (questionType === "判断题") {
+    return (
+      <div className="mt-5 grid gap-3">
+        {["正确", "错误"].map((item) => (
+          <label key={item} className="flex gap-3 rounded-ui border border-line p-4"><input type="radio" name="judge" />{item}</label>
+        ))}
+      </div>
+    );
+  }
+
+  if (questionType === "填空题") {
+    return <input className="mt-5 min-h-12 w-full rounded-ui border border-line px-4" placeholder="请输入答案" />;
+  }
+
+  if (questionType === "简答题") {
+    return <textarea className="mt-5 min-h-[150px] w-full rounded-ui border border-line p-4" placeholder="请输入作答内容" />;
+  }
+
+  return (
+    <div className="mt-5 grid gap-3">
+      {["A. 5", "B. 6", "C. 7", "D. 8"].map((item) => (
+        <label key={item} className="flex gap-3 rounded-ui border border-line p-4"><input type="radio" name="single" />{item}</label>
+      ))}
+    </div>
+  );
 }
 
 function QuestionNumber({ number, status = "unanswered", marked = false, active = false, onClick }) {
@@ -163,18 +211,41 @@ function PaperQuestionNavigator({ groups = paperQuestionGroups, activeKey, onSel
             <strong className="block text-sm">{group.title}</strong>
             <span className="text-xs text-muted">{group.desc}</span>
           </div>
-          <div className="grid grid-cols-5 gap-2">
-            {group.questions.map((question) => (
-              <QuestionNumber
-                active={activeKey === question.key}
-                key={question.key}
-                marked={question.marked}
-                number={question.label}
-                onClick={onSelect ? () => onSelect(question) : undefined}
-                status={question.status}
-              />
-            ))}
-          </div>
+          {group.title.includes("综合题") ? (
+            <div className="grid gap-3">
+              {Object.values(group.questions.reduce((collection, question) => {
+                const key = question.parent || question.label;
+                collection[key] = [...(collection[key] || []), question];
+                return collection;
+              }, {})).map((questions) => (
+                <div className="grid grid-cols-5 gap-2" key={questions[0].parent || questions[0].key}>
+                  {questions.map((question) => (
+                    <QuestionNumber
+                      active={activeKey === question.key}
+                      key={question.key}
+                      marked={question.marked}
+                      number={question.label}
+                      onClick={onSelect ? () => onSelect(question) : undefined}
+                      status={question.status}
+                    />
+                  ))}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-5 gap-2">
+              {group.questions.map((question) => (
+                <QuestionNumber
+                  active={activeKey === question.key}
+                  key={question.key}
+                  marked={question.marked}
+                  number={question.label}
+                  onClick={onSelect ? () => onSelect(question) : undefined}
+                  status={question.status}
+                />
+              ))}
+            </div>
+          )}
         </section>
       ))}
     </div>
@@ -439,7 +510,8 @@ function PaperAction({ status }) {
 
 export function PaperAnswerPage() {
   const [markedQuestions, setMarkedQuestions] = useState(["single-4", "single-7"]);
-  const currentQuestionKey = "single-4";
+  const [activeKey, setActiveKey] = useState("single-4");
+  const currentQuestionKey = activeKey;
   const isCurrentMarked = markedQuestions.includes(currentQuestionKey);
   const answerGroups = paperQuestionGroups.map((group) => ({
     ...group,
@@ -447,19 +519,27 @@ export function PaperAnswerPage() {
       return { ...question, marked: markedQuestions.includes(question.key) || (question.key !== currentQuestionKey && question.marked) };
     }),
   }));
+  const answerQuestions = getAllPaperQuestions(answerGroups);
+  const activeQuestion = answerQuestions.find((question) => question.key === activeKey) || answerQuestions[0];
+  const activeQuestionType = getQuestionType(activeQuestion);
+  const activeIsComposite = activeQuestion.groupTitle.includes("综合题");
 
   return (
     <>
       <PageHeader title="试卷刷题答题页" desc="试卷中心进入，偏练习场景；有权限的班级学生才能进入作答界面，提交后系统判卷客观题并展示解析。" action={<Tag tone="blue">练习模式</Tag>} />
       <div className="grid gap-5 md:grid-cols-[1fr_280px]">
         <Card className="min-h-[420px]">
-          <Meta><Tag>单选题</Tag><Tag>第 1 / 45 题</Tag><Tag tone="cyan">函数</Tag></Meta>
-          <h2 className="mt-6 text-xl">已知函数 f(x)=2x+1，则 f(3) 的值为多少？</h2>
-          <div className="mt-5 grid gap-3">
-            {["A. 5", "B. 6", "C. 7", "D. 8"].map((item) => (
-              <label key={item} className="flex gap-3 rounded-ui border border-line p-4"><input type="radio" name="q1" />{item}</label>
-            ))}
-          </div>
+          <Meta><Tag>{activeQuestion.groupTitle}</Tag><Tag>第 {activeQuestion.label} 题</Tag><Tag tone="cyan">函数</Tag></Meta>
+          {activeIsComposite ? (
+            <section className="mt-5 rounded-ui border border-line bg-slate-50 p-5 leading-8 text-slate-700">
+              <h2 className="m-0 mb-3 text-xl text-ink">综合题材料：函数应用与数据分析</h2>
+              <p className="m-0">某校对学生数学基础模块进行阶段测评，收集了函数、数列和几何三个模块的练习数据。请结合材料完成第 {activeQuestion.label} 小题。</p>
+            </section>
+          ) : null}
+          <h2 className="mt-6 text-xl">
+            {activeIsComposite ? `子题 ${activeQuestion.label}（${activeQuestionType}）：根据材料完成本小题。` : "已知函数 f(x)=2x+1，则 f(3) 的值为多少？"}
+          </h2>
+          <AnswerInput questionType={activeQuestionType} />
           <Meta>
             <Button tone="secondary">上一题</Button>
             <Button>下一题</Button>
@@ -479,7 +559,7 @@ export function PaperAnswerPage() {
           <h3>答题进度</h3>
           <p className="leading-7 text-muted">已答 12 题，未答 33 题，已标记 {markedQuestions.length} 题。</p>
           <PrototypeNote className="mt-3">完成练习后进入试卷解析页，展示答题总结和题目解析；中途离开使用保存退出。</PrototypeNote>
-          <PaperQuestionNavigator groups={answerGroups} activeKey="single-4" />
+          <PaperQuestionNavigator activeKey={activeKey} groups={answerGroups} onSelect={(question) => setActiveKey(question.key)} />
           <QuestionStatusLegend mode="answer" />
           <Meta><Button href="#/papers" tone="secondary">保存退出</Button><Button href="#/paper-analysis" tone="warning">完成练习</Button></Meta>
         </Card>
@@ -539,7 +619,6 @@ export function PaperAnalysisPage() {
         <div className="grid gap-5 md:grid-cols-[1fr_280px]">
           <Card className="min-h-[520px]">
             <Meta>
-              <Tag>{currentQuestion.type}</Tag>
               <Tag>{activeNavQuestion.groupTitle}</Tag>
               <Tag>第 {activeNavQuestion.label} 题</Tag>
               <Tag tone={currentQuestion.tone}>{currentQuestion.result}</Tag>
@@ -547,9 +626,12 @@ export function PaperAnalysisPage() {
             </Meta>
             <h3 className="mb-4 mt-5 text-xl">{isComposite ? "综合题材料：函数应用与数据分析" : currentQuestion.title}</h3>
             {isComposite ? (
-              <div className="mb-4 rounded-ui border border-line bg-slate-50 p-4 leading-8 text-slate-700">
-                某校对学生数学基础模块进行阶段测评，收集了函数、数列和几何三个模块的练习数据。请结合材料完成下列子题。
-              </div>
+              <>
+                <div className="mb-4 rounded-ui border border-line bg-slate-50 p-4 leading-8 text-slate-700">
+                  某校对学生数学基础模块进行阶段测评，收集了函数、数列和几何三个模块的练习数据。请结合材料完成下列子题。
+                </div>
+                <h4 className="mb-4 mt-0 text-base">子题 {activeNavQuestion.label}（{getQuestionType(activeNavQuestion)}）：根据材料完成本小题。</h4>
+              </>
             ) : null}
             <div className="grid gap-3 rounded-ui bg-slate-50 p-4 text-sm leading-7 md:grid-cols-2">
               <div><strong>我的答案：</strong><span className="text-muted">{currentQuestion.myAnswer}</span></div>

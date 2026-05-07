@@ -1,7 +1,7 @@
 import { AppShell } from "./components/ui";
 import { CoursePreviewPage, HomePage, NewsPage } from "./pages/HomePages";
 import { PaperAnalysisPage, PaperAnswerPage, PaperCenterPage } from "./pages/PaperPages";
-import { ExamAnswerPage, ExamCenterPage, ExamDetailPage } from "./pages/ExamPages";
+import { ExamAnalysisPage, ExamAnswerPage, ExamCenterPage, ExamDetailPage, ExamRankPage } from "./pages/ExamPages";
 import {
   ClassDetailPage,
   ClassExamAnswerPage,
@@ -24,6 +24,8 @@ const routes = {
   "#/paper-analysis": PaperAnalysisPage,
   "#/exams": ExamCenterPage,
   "#/exam-detail": ExamDetailPage,
+  "#/exam-rank": ExamRankPage,
+  "#/exam-analysis": ExamAnalysisPage,
   "#/exam-answer": ExamAnswerPage,
   "#/learning": LearningCenterPage,
   "#/class-detail": ClassDetailPage,
