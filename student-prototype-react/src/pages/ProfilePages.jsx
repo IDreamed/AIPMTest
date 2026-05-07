@@ -1,23 +1,153 @@
-import { Button, Card, Meta, PageHeader, PrototypeNote, Tag, usePrototypeRole } from "../components/ui";
+import { useState } from "react";
+import { Button, Card, Meta, Modal, PageHeader, Tag, usePrototypeRole } from "../components/ui";
+
+const schoolApplication = {
+  school: "示范中职学校",
+  identity: "学生身份",
+  target: "高三计算机冲刺班",
+  status: "审核中",
+  tone: "amber",
+  submittedAt: "2026-05-02",
+  result: "学校正在审核证明材料，请等待处理结果。",
+};
 
 export function ProfilePage() {
-  const { roleKey } = usePrototypeRole();
-  const isStudent = roleKey === "student";
-  const isRegistered = roleKey === "registered";
+  const { openSchoolApply, roleKey } = usePrototypeRole();
+  const [reviewOpen, setReviewOpen] = useState(false);
+  const profileName = roleKey === "visitor" ? "" : "刘同学";
+  const schoolReviewState = roleKey === "student" ? "approved" : roleKey === "registered" ? "pending" : "none";
+  const schoolReview = getSchoolReview(schoolReviewState);
 
   return (
     <>
-      <PageHeader title="个人中心" desc="处理专业选择、入校申请、审核状态、我的班级和开通咨询。" action={<Button href="#/school-apply">提交入校申请</Button>} />
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card><h3>基本信息</h3><p className="leading-7 text-muted">{roleKey === "visitor" ? "游客暂未登录" : "张同学 · 138****0000"}</p><Meta><Tag tone={roleKey === "visitor" ? "amber" : "green"}>{roleKey === "visitor" ? "未登录" : "已登录"}</Tag></Meta></Card>
-        <Card><h3>当前专业</h3><p className="leading-7 text-muted">{roleKey === "visitor" ? "未选择" : "电子与信息类"}</p><Meta><Tag tone={roleKey === "visitor" ? "gray" : "blue"}>{roleKey === "visitor" ? "未选择" : "已选择"}</Tag></Meta><PrototypeNote className="mt-3">{roleKey === "visitor" ? "登录后选择专业，再提交入校申请。" : "没有班级前需要先选择专业，再提交入校申请。"}</PrototypeNote></Card>
-        <Card><h3>入校申请</h3><p className="leading-7 text-muted">{isStudent ? "示范中职学校 · 高三计算机冲刺班，已通过审核。" : isRegistered ? "示范中职学校 · 高三计算机冲刺班方向。" : "注册后可提交学校、专业和申请理由。"}</p><Meta><Tag tone={isStudent ? "green" : isRegistered ? "amber" : "gray"}>{isStudent ? "已通过" : isRegistered ? "审核中" : "未提交"}</Tag></Meta></Card>
-      </div>
-      <div className="mt-6 grid gap-4 md:grid-cols-2">
-        <Card><h3>我的班级</h3><p className="leading-7 text-muted">{isStudent ? "高三计算机冲刺班、文化课周末提升班" : "暂无班级"}</p><PrototypeNote className="mt-3">{isStudent ? "班级决定课程、考试和试卷大类权限。" : "审核通过或管理员开通后，这里展示学生已加入的班级。"}</PrototypeNote><Meta><Button href={isStudent ? "#/learning" : "#/school-apply"} tone="ghost">{isStudent ? "进入学习中心" : "申请加入班级"}</Button></Meta></Card>
-        <Card><h3>开通咨询</h3><p className="leading-7 text-muted">联系管理员</p><PrototypeNote className="mt-3">暂无班级或无对应大类权限时，请联系管理员开通或申请入校。</PrototypeNote><div className="mt-4 grid h-32 w-32 place-items-center rounded-ui border-[10px] border-white bg-[repeating-linear-gradient(90deg,#111_0_9px,transparent_9px_18px),repeating-linear-gradient(0deg,#111_0_9px,transparent_9px_18px)] shadow-lift" /></Card>
-      </div>
+      <PageHeader title="个人中心" />
+      <Card className="p-0">
+        <SectionTitle action={<button className="rounded-ui bg-blue-600 px-5 py-2 text-sm text-white hover:bg-blue-700" type="button">保存</button>} title="基本信息" />
+        <div className="grid gap-6 p-5 lg:grid-cols-[120px_1fr]">
+          <div className="flex justify-center lg:justify-start">
+            <div className="grid h-24 w-24 place-items-center overflow-hidden rounded-full bg-gradient-to-br from-blue-100 to-cyan-100 text-3xl font-semibold text-blue-700">
+              刘
+            </div>
+          </div>
+          <div className="grid gap-4">
+            <input className="min-h-10 max-w-md rounded-ui border border-line px-3" defaultValue={profileName} placeholder="请输入姓名" />
+            <input className="min-h-10 max-w-md rounded-ui border border-line px-3 text-muted" defaultValue="这个人很懒，什么都没有留下！" />
+            <div className="grid gap-4 md:grid-cols-[minmax(0,280px)_1fr] md:items-center">
+              <label className="grid gap-2 text-sm">
+                手机号：
+                <input className="min-h-10 rounded-ui border border-line bg-slate-50 px-3" defaultValue={roleKey === "visitor" ? "" : "13353739191"} />
+              </label>
+              <fieldset className="flex flex-wrap items-center gap-4 text-sm">
+                <legend className="mr-1 inline font-normal">性别：</legend>
+                {["男", "女", "保密"].map((item) => (
+                  <label className="flex items-center gap-1" key={item}>
+                    <input defaultChecked={item === "保密"} name="gender" type="radio" />
+                    {item}
+                  </label>
+                ))}
+              </fieldset>
+            </div>
+            <div className="flex flex-wrap items-center gap-4">
+              <label className="grid min-w-[240px] gap-2 text-sm">
+                所属学校：
+                <span className="inline-flex min-h-10 items-center rounded-ui border border-line bg-slate-50 px-3 text-slate-700">
+                  {schoolReview.school}
+                </span>
+              </label>
+              <div className="mt-6 flex flex-wrap items-center gap-3">
+                {schoolReview.tag ? <Tag tone={schoolReview.tagTone}>{schoolReview.tag}</Tag> : null}
+                {schoolReview.canView ? (
+                  <button className="text-sm text-blue-600 hover:text-blue-700" onClick={() => setReviewOpen(true)} type="button">
+                    查看审核
+                  </button>
+                ) : null}
+                {schoolReview.canApply ? (
+                  <button className="text-sm text-blue-600 hover:text-blue-700" onClick={openSchoolApply} type="button">
+                    加入学校
+                  </button>
+                ) : null}
+              </div>
+            </div>
+          </div>
+        </div>
+      </Card>
+
+      <Card className="mt-6 p-0">
+        <SectionTitle title="账户安全" />
+        <div className="grid gap-4 p-5">
+          <SecurityRow action="修改密码" label="账号密码" text="如需更改当前账号密码，请点击【修改密码】哦~" />
+          <SecurityRow action="微信解绑" label="微信绑定" text="已绑定" tone="success" />
+          <SecurityRow action="修改手机号" label="修改手机号" text="如需修改手机号，请点击【修改手机号】哦" />
+        </div>
+      </Card>
+
+      <ReviewDetailModal open={reviewOpen} onClose={() => setReviewOpen(false)} />
     </>
+  );
+}
+
+function getSchoolReview(state) {
+  const reviews = {
+    none: { school: "无", canApply: true },
+    pending: { school: "无", tag: "审核中", tagTone: "amber", canView: true },
+    approved: { school: "示范中职学校", tag: "已认证", tagTone: "green" },
+    rejected: { school: "无", tag: "已驳回", tagTone: "red", canApply: true, canView: true },
+  };
+
+  return reviews[state] || reviews.none;
+}
+
+function ReviewDetailModal({ open, onClose }) {
+  return (
+    <Modal open={open} title="审核信息" onClose={onClose}>
+      <div className="grid gap-4 text-sm">
+        <div className="grid gap-3 rounded-ui border border-line p-4 md:grid-cols-2">
+          <InfoItem label="申请学校" value={schoolApplication.school} />
+          <InfoItem label="申请身份" value={schoolApplication.identity} />
+          <InfoItem label="申请班级" value={schoolApplication.target} />
+          <InfoItem label="提交时间" value={schoolApplication.submittedAt} />
+        </div>
+        <div className="rounded-ui bg-amber-50 px-3 py-2 leading-6 text-amber-800">
+          {schoolApplication.result}
+        </div>
+        <Meta><Tag tone={schoolApplication.tone}>{schoolApplication.status}</Tag></Meta>
+      </div>
+    </Modal>
+  );
+}
+
+function InfoItem({ label, value }) {
+  return (
+    <div>
+      <span className="block text-xs text-muted">{label}</span>
+      <strong className="mt-1 block text-slate-800">{value}</strong>
+    </div>
+  );
+}
+
+function SectionTitle({ title, action }) {
+  return (
+    <div className="grid min-h-14 grid-cols-[1fr_auto_1fr] items-center border-b border-line px-5 py-2">
+      <span />
+      <h2 className="m-0 text-base font-semibold">{title}</h2>
+      <div className="flex justify-end">{action}</div>
+    </div>
+  );
+}
+
+function SecurityRow({ label, text, action, tone = "primary" }) {
+  const buttonClass = tone === "success"
+    ? "border-green-100 bg-green-50 text-green-700 hover:bg-green-100"
+    : "border-blue-600 bg-blue-600 text-white hover:bg-blue-700";
+
+  return (
+    <div className="grid gap-3 rounded-ui border border-line p-3 md:grid-cols-[120px_1fr_120px] md:items-center">
+      <strong className="text-sm">{label}</strong>
+      <span className="text-sm text-muted">{text}</span>
+      <button className={`min-h-10 rounded-ui border px-4 text-sm ${buttonClass}`} type="button">
+        {action}
+      </button>
+    </div>
   );
 }
 

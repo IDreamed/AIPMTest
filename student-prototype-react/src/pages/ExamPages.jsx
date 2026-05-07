@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { categories, cultureSubjects, exams } from "../data/mockData";
-import { Button, Card, DataTable, Meta, Modal, PageHeader, PrototypeNote, Stat, Tag, usePrototypeRole } from "../components/ui";
+import { Button, Card, DataTable, Meta, Modal, PageHeader, Pagination, PrototypeNote, Stat, Tag, usePrototypeRole } from "../components/ui";
 
 const examQuestionGroups = [
   {
@@ -288,6 +288,8 @@ export function ExamCenterPage() {
   const [selectedType, setSelectedType] = useState("全部考试");
   const [selectedStatus, setSelectedStatus] = useState("全部状态");
   const [keyword, setKeyword] = useState("");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
   const isProfessional = selectedSubjectType === "专业课";
   const isStudent = roleKey === "student";
   const availableCategories = isStudent ? categories.filter((category) => category.unlocked) : categories;
@@ -309,6 +311,9 @@ export function ExamCenterPage() {
     const keywordMatched = !keyword.trim() || exam.title.includes(keyword.trim());
     return subjectMatched && scopeMatched && typeMatched && statusMatched && keywordMatched;
   });
+  const totalPages = Math.max(1, Math.ceil(filteredExams.length / pageSize));
+  const currentPage = Math.min(page, totalPages);
+  const paginatedExams = filteredExams.slice((currentPage - 1) * pageSize, currentPage * pageSize);
   const emptyTitle = selectedScope === "我的考试"
     ? roleKey === "visitor"
       ? "登录后查看我的考试"
@@ -327,6 +332,10 @@ export function ExamCenterPage() {
       setSelectedCategory(availableCategories[0].name);
     }
   }, [availableCategories, isProfessional, selectedCategory]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [roleKey, selectedSubjectType, selectedCultureSubject, selectedCategory, selectedScope, selectedType, selectedStatus, keyword, pageSize]);
 
   return (
     <>
@@ -462,24 +471,34 @@ export function ExamCenterPage() {
         </PrototypeNote>
       </div>
       {filteredExams.length ? (
-        <DataTable
-          columns={["考试", "考试类型", "科目/大类", "考试时间", "参加状态", "操作"]}
-          gridTemplateColumns="minmax(260px,2fr) 110px 120px 170px 120px 170px"
-          rows={filteredExams}
-          renderRow={(exam) => (
-            <>
-              <div><strong>{exam.title}</strong><p className="mt-1 text-xs text-muted">{exam.summary}</p></div>
-              <Tag tone={exam.type === "学校联考" ? "blue" : "cyan"}>{exam.type}</Tag>
-              <span>{exam.subject === "专业课" ? exam.category : exam.subject}</span>
-              <span>
-                <strong className="block text-sm">{exam.startAt || exam.time}</strong>
-                <span className="mt-1 block text-xs text-muted">至 {exam.endAt || exam.time}</span>
-              </span>
-              <ExamParticipation exam={exam} roleKey={roleKey} />
-              <ExamAction exam={exam} roleKey={roleKey} />
-            </>
-          )}
-        />
+        <>
+          <DataTable
+            columns={["考试", "考试类型", "科目/大类", "考试时间", "参加状态", "操作"]}
+            gridTemplateColumns="minmax(260px,2fr) 110px 120px 170px 120px 170px"
+            rows={paginatedExams}
+            renderRow={(exam) => (
+              <>
+                <div><strong>{exam.title}</strong><p className="mt-1 text-xs text-muted">{exam.summary}</p></div>
+                <Tag tone={exam.type === "学校联考" ? "blue" : "cyan"}>{exam.type}</Tag>
+                <span>{exam.subject === "专业课" ? exam.category : exam.subject}</span>
+                <span>
+                  <strong className="block text-sm">{exam.startAt || exam.time}</strong>
+                  <span className="mt-1 block text-xs text-muted">至 {exam.endAt || exam.time}</span>
+                </span>
+                <ExamParticipation exam={exam} roleKey={roleKey} />
+                <ExamAction exam={exam} roleKey={roleKey} />
+              </>
+            )}
+          />
+          <Pagination
+            label="考试列表"
+            onPageChange={setPage}
+            onPageSizeChange={setPageSize}
+            page={currentPage}
+            pageSize={pageSize}
+            total={filteredExams.length}
+          />
+        </>
       ) : (
         <Card>
           <h3 className="m-0">{emptyTitle}</h3>

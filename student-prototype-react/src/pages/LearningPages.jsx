@@ -4,8 +4,7 @@ import { Button, Card, DataTable, Meta, PageHeader, PrototypeNote, Stat, Tag, us
 
 export function LearningCenterPage() {
   const { role, roleKey } = usePrototypeRole();
-  const [selectedClassName, setSelectedClassName] = useState(classes[0]?.name || "");
-  const currentIdentity = classes.find((item) => item.name === selectedClassName) || classes[0];
+  const currentIdentity = classes[0];
   const courseTasks = [
     {
       tone: "blue",
@@ -109,7 +108,7 @@ export function LearningCenterPage() {
             </PrototypeNote>
             <Meta>
               <Button href={role.href}>{role.cta}</Button>
-              <Button href={isVisitor ? "#/papers" : "#/school-apply"} tone="secondary">
+              <Button href={isVisitor ? "#/papers" : "#/profile"} tone="secondary">
                 {isVisitor ? "先浏览试卷" : "查看入校申请"}
               </Button>
             </Meta>
@@ -130,30 +129,25 @@ export function LearningCenterPage() {
 
   return (
     <>
-      <PageHeader title="学习中心" desc="学生可加入多个学校，但每个学校下只能有一个班级；下拉选择当前学校班级，用于班级内容和专业课权限上下文。" action={<Button href="#/school-apply" tone="ghost">申请新的学校班级</Button>} />
-      <Card className="mb-4 grid gap-4 md:grid-cols-[1fr_280px] md:items-end">
-        <label className="grid gap-2">
-          <span className="text-sm text-muted">当前学校班级</span>
-          <select
-            className="min-h-11 rounded-ui border border-line bg-white px-3"
-            value={selectedClassName}
-            onChange={(event) => setSelectedClassName(event.target.value)}
-          >
-            {classes.map((item) => (
-              <option key={item.name} value={item.name}>{item.school} / {item.name} / {item.category}</option>
-            ))}
-          </select>
-        </label>
-        <div className="flex flex-wrap gap-2 md:justify-end">
-          <Tag tone="blue">{currentIdentity.category}</Tag>
-          <Tag tone="green">专业课试卷已授权</Tag>
+      <PageHeader title="学习中心" desc="学生只能加入一个学校；在该学校下只能加入一个班级。学习中心直接展示当前学校班级，不再提供多班级切换。" />
+      <Card className="mb-4">
+        <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
+          <div>
+            <span className="text-sm text-muted">当前学校班级</span>
+            <h2 className="mb-2 mt-2 text-xl">{currentIdentity.school}</h2>
+            <p className="m-0 text-muted">{currentIdentity.name} · {currentIdentity.category}</p>
+          </div>
+          <div className="flex flex-wrap gap-2 md:justify-end">
+            <Tag tone="blue">{currentIdentity.category}</Tag>
+            <Tag tone="green">专业课试卷已授权</Tag>
+          </div>
         </div>
       </Card>
       <div className="grid gap-4 md:grid-cols-4">
         <Stat label="待处理事项" value={pendingTaskCount} />
         <Stat label="本周学习" value="4.5h" />
         <Stat label="累计错题" value="38" />
-        <Stat label="学校班级" value={classes.length} />
+        <Stat label="学校班级" value="1" />
       </div>
 
       <section className="mt-8">
@@ -184,7 +178,7 @@ export function LearningCenterPage() {
       </section>
 
       <section className="mt-8">
-        <PageHeader title="当前班级学习" desc="这里展示当前学校班级下的班级课程、班级测试和班级答疑，明确绑定顶部下拉选择的学校班级。" />
+        <PageHeader title="当前班级学习" desc="这里展示当前学校班级下的班级课程、班级测试和班级答疑；学生账号不再存在多个班级上下文。" />
         <div className="grid gap-4 md:grid-cols-3">
           <Card>
             <h3 className="m-0 text-lg">班级课程</h3>
@@ -223,7 +217,7 @@ export function LearningCenterPage() {
       </section>
 
       <section className="mt-8">
-        <PageHeader title="个人学习资产" desc="错题本和学习记录高于班级，默认汇总学生个人全部学习数据，也可以在内部按学校班级筛选。" />
+        <PageHeader title="个人学习资产" desc="错题本和学习记录属于学生个人资产，当前阶段不再提供按多学校、多班级筛选。" />
         <div className="grid gap-4 md:grid-cols-2">
           <Card>
             <div className="flex flex-col justify-between gap-4 md:flex-row md:items-start">
@@ -240,13 +234,13 @@ export function LearningCenterPage() {
               <div>
                 <h3 className="m-0 text-lg">学习记录</h3>
                 <p className="leading-7 text-muted">记录课程学习、刷题、测试和考试完成情况。</p>
-                <Meta><Tag>最近 {learningRecords.length} 条</Tag><Tag tone="blue">支持按学校班级筛选</Tag></Meta>
+                <Meta><Tag>最近 {learningRecords.length} 条</Tag><Tag tone="blue">当前班级记录</Tag></Meta>
               </div>
               <Button href="#/learning-record" tone="ghost">查看记录</Button>
             </div>
           </Card>
         </div>
-        <PrototypeNote className="mt-4">学习中心现在以“当前学校班级下拉 + 学习任务摘要 + 当前班级学习 + 个人学习资产”组织页面。顶部下拉提供班级内容和专业课权限上下文；学习任务摘要按课程、试卷、考试资源来源拆分；错题本、学习记录属于学生个人。</PrototypeNote>
+        <PrototypeNote className="mt-4">学习中心现在以“当前学校班级 + 学习任务摘要 + 当前班级学习 + 个人学习资产”组织页面。学生只能加入一个学校，并在该学校下加入一个班级；专业课权限由当前班级绑定的大类决定。</PrototypeNote>
       </section>
     </>
   );

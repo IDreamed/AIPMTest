@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { categories, cultureSubjects, papers } from "../data/mockData";
-import { Button, Card, DataTable, Meta, PageHeader, PrototypeNote, Stat, Tag, usePrototypeRole } from "../components/ui";
+import { Button, Card, DataTable, Meta, PageHeader, Pagination, PrototypeNote, Stat, Tag, usePrototypeRole } from "../components/ui";
 
 const paperAnalysisQuestions = [
   {
@@ -289,15 +289,19 @@ export function PaperCenterPage() {
   const isStudent = roleKey === "student";
   const defaultCategory = categories.find((category) => category.unlocked)?.name || categories[0].name;
   const subjectTypes = ["文化课", "专业课"];
-  const paperTypes = ["全部分类", "一轮复习", "二轮专题", "三轮冲刺", "模拟测试", "真题汇编"];
+  const paperSources = ["全部", "官方", "本校"];
+  const paperTypes = ["全部", "一轮复习", "二轮专题", "三轮冲刺", "模拟测试", "真题汇编"];
   const paperYears = ["全部年份", "2025", "2024", "2023"];
   const [selectedSubjectType, setSelectedSubjectType] = useState("专业课");
   const [selectedCultureSubject, setSelectedCultureSubject] = useState(cultureSubjects[0].name);
   const [selectedCategory, setSelectedCategory] = useState(defaultCategory);
   const [showAllCategories, setShowAllCategories] = useState(false);
   const [showAllCultureSubjects, setShowAllCultureSubjects] = useState(false);
-  const [selectedType, setSelectedType] = useState("全部分类");
+  const [selectedSource, setSelectedSource] = useState("全部");
+  const [selectedType, setSelectedType] = useState("全部");
   const [selectedYear, setSelectedYear] = useState("全部年份");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
   const isProfessional = selectedSubjectType === "专业课";
   const availableCategories = isStudent ? categories.filter((category) => category.unlocked) : categories;
   const sortedCategories = [...availableCategories].sort((a, b) => b.papers - a.papers);
@@ -308,10 +312,15 @@ export function PaperCenterPage() {
     const subjectMatched = isProfessional
       ? paper.subject === "专业课" && paper.category === selectedCategory
       : paper.subject === selectedCultureSubject;
-    const typeMatched = selectedType === "全部分类" || paper.type === selectedType;
+    const sourceVisible = isStudent || paper.source === "官方";
+    const sourceMatched = selectedSource === "全部" || paper.source === selectedSource;
+    const typeMatched = selectedType === "全部" || paper.type === selectedType;
     const yearMatched = selectedYear === "全部年份" || paper.year === selectedYear;
-    return subjectMatched && typeMatched && yearMatched;
+    return sourceVisible && subjectMatched && sourceMatched && typeMatched && yearMatched;
   });
+  const totalPages = Math.max(1, Math.ceil(filteredPapers.length / pageSize));
+  const currentPage = Math.min(page, totalPages);
+  const paginatedPapers = filteredPapers.slice((currentPage - 1) * pageSize, currentPage * pageSize);
   const pageAction = roleKey === "visitor"
     ? <Button href="#/login" tone="ghost">登录/注册</Button>
     : roleKey === "registered"
@@ -329,6 +338,10 @@ export function PaperCenterPage() {
       setSelectedCategory(availableCategories[0].name);
     }
   }, [availableCategories, isProfessional, selectedCategory]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [roleKey, selectedSubjectType, selectedCultureSubject, selectedCategory, selectedSource, selectedType, selectedYear, pageSize]);
 
   return (
     <>
@@ -436,39 +449,62 @@ export function PaperCenterPage() {
         </Card>
       )}
 
-      <div className="my-5 flex flex-wrap gap-3 rounded-ui border border-line bg-white p-4">
-        <select className="min-h-10 rounded-ui border border-line px-3" value={selectedType} onChange={(event) => setSelectedType(event.target.value)}>
-          {paperTypes.map((item) => <option key={item}>{item}</option>)}
-        </select>
-        <select className="min-h-10 rounded-ui border border-line px-3" value={selectedYear} onChange={(event) => setSelectedYear(event.target.value)}>
-          {paperYears.map((item) => <option key={item}>{item}</option>)}
-        </select>
+      <div className="my-5 grid gap-4 rounded-ui border border-line bg-white p-4">
+        <FilterButtons label="来源" options={paperSources} value={selectedSource} onChange={setSelectedSource} />
+        <FilterButtons label="分类" options={paperTypes} value={selectedType} onChange={setSelectedType} />
+        <label className="flex flex-wrap items-center gap-3 text-sm">
+          <span className="w-12 font-semibold">年份</span>
+          <select className="min-h-10 rounded-ui border border-line px-3" value={selectedYear} onChange={(event) => setSelectedYear(event.target.value)}>
+            {paperYears.map((item) => <option key={item}>{item}</option>)}
+          </select>
+        </label>
       </div>
 
       <PageHeader title={isProfessional ? `${selectedCategory}试卷` : `${selectedCultureSubject}试卷`} />
       {filteredPapers.length ? (
-        <DataTable
-          columns={["试卷", "大类", "题量/时长", "学习状态", "操作"]}
-          rows={filteredPapers}
-          renderRow={(paper) => (
-            <>
-              <div><strong>{paper.title}</strong><p className="mt-1 text-xs text-muted">{paper.type} · {paper.year}</p></div>
-              <span>{paper.category}</span>
-              <span>{paper.meta}</span>
-              <span>
-                {isStudent && paper.unlocked ? (
-                  <>
-                    <Tag tone={statusTone[paper.studyStatus]}>{paper.studyStatus}</Tag>
-                    {paper.lastPractice ? <p className="mt-2 text-xs text-muted">{paper.lastPractice}</p> : null}
-                  </>
-                ) : (
-                  <Tag tone="gray">-</Tag>
-                )}
-              </span>
-              {isStudent && paper.unlocked ? <PaperAction status={paper.studyStatus} /> : <LockedPaperAction roleKey={roleKey} />}
-            </>
-          )}
-        />
+        <>
+          <DataTable
+            columns={["试卷", "分类", "年份", "时长", "总题数", "总分", "已做次数", "状态/结果", "操作"]}
+            gridTemplateColumns="minmax(240px,1.8fr) 100px 80px 90px 90px 80px 100px minmax(160px,1.2fr) 150px"
+            rows={paginatedPapers}
+            renderRow={(paper) => (
+              <>
+                <div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <strong>{paper.title}</strong>
+                    <Tag tone={paper.source === "本校" ? "red" : "blue"}>{paper.source}</Tag>
+                  </div>
+                </div>
+                <span>{paper.type}</span>
+                <span>{paper.year}</span>
+                <span>{paper.duration} 分钟</span>
+                <span>{paper.questionCount} 道</span>
+                <span>{paper.totalScore} 分</span>
+                <span>{paper.doneCount} 次</span>
+                <span>
+                  {isStudent && paper.unlocked ? (
+                    <>
+                      <Tag tone={statusTone[paper.studyStatus]}>{paper.studyStatus}</Tag>
+                      {paper.studyStatus === "已结束" ? <p className="mt-2 text-xs text-muted">得分 {paper.score} 分</p> : null}
+                      {paper.studyStatus === "进行中" && paper.remainingTime ? <p className="mt-2 text-xs text-muted">剩余时间：{paper.remainingTime}</p> : null}
+                    </>
+                  ) : (
+                    <Tag tone="gray">-</Tag>
+                  )}
+                </span>
+                {isStudent && paper.unlocked ? <PaperAction status={paper.studyStatus} /> : <LockedPaperAction roleKey={roleKey} />}
+              </>
+            )}
+          />
+          <Pagination
+            label="试卷列表"
+            onPageChange={setPage}
+            onPageSizeChange={setPageSize}
+            page={currentPage}
+            pageSize={pageSize}
+            total={filteredPapers.length}
+          />
+        </>
       ) : (
         <Card>
           <p className="leading-7 text-muted">暂无试卷</p>
@@ -506,6 +542,26 @@ function PaperAction({ status }) {
   }
 
   return <Button href="#/paper-answer">开始刷题</Button>;
+}
+
+function FilterButtons({ label, options, value, onChange }) {
+  return (
+    <div className="flex flex-wrap items-center gap-3 text-sm">
+      <span className="w-12 font-semibold">{label}</span>
+      <div className="flex flex-wrap gap-2">
+        {options.map((option) => (
+          <button
+            className={`min-h-9 rounded-ui px-4 ${value === option ? "bg-blue-600 text-white" : "text-slate-700 hover:bg-slate-50"}`}
+            key={option}
+            onClick={() => onChange(option)}
+            type="button"
+          >
+            {option}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
 }
 
 export function PaperAnswerPage() {
@@ -596,7 +652,7 @@ export function PaperAnalysisPage() {
       />
 
       <div className="grid gap-4 md:grid-cols-4">
-        <Stat label="本次得分" value="82" />
+        <Stat label="本次得分" value="82 / 100" />
         <Stat label="正确率" value="78%" />
         <Stat label="答题用时" value="42 分钟" />
         <Stat label="完成题量" value="45 / 45" />
@@ -611,6 +667,18 @@ export function PaperAnalysisPage() {
             </p>
           </div>
           <Meta><Tag tone="green">已提交</Tag><Tag tone="blue">练习模式</Tag></Meta>
+        </div>
+      </Card>
+
+      <Card className="mt-4 border-l-4 border-l-blue-600">
+        <div className="flex flex-col justify-between gap-4 md:flex-row md:items-start">
+          <div>
+            <h2 className="m-0 text-xl">评估建议</h2>
+            <p className="mb-0 mt-3 leading-7 text-muted">
+              本次得分 82 分，基础题掌握较稳定；多选题和综合题中的函数图像、数列应用失分偏多。建议先回看对应课程讲解，再针对错题本中同类题型完成 2 轮专项练习。
+            </p>
+          </div>
+          <Meta><Tag tone="blue">建议复习</Tag><Tag tone="amber">函数图像</Tag><Tag tone="amber">数列应用</Tag></Meta>
         </div>
       </Card>
 
