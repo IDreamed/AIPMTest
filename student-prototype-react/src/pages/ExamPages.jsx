@@ -343,108 +343,42 @@ export function ExamCenterPage() {
       <PrototypeNote className="mb-5">
         不做报名流程；有权限且考试进行中即可进入考试。交卷才算参加考试，未交卷不生成成绩、答题记录或排行。
       </PrototypeNote>
-      <div className="mb-5 flex gap-2 overflow-x-auto rounded-ui border border-line bg-white p-2">
-        {subjectTypes.map((subjectType) => (
-          <button
-            className={`min-h-10 rounded-ui px-5 ${selectedSubjectType === subjectType ? "bg-blue-600 text-white" : "text-slate-700 hover:bg-slate-50"}`}
-            key={subjectType}
-            onClick={() => setSelectedSubjectType(subjectType)}
-            type="button"
-          >
-            {subjectType}
-          </button>
-        ))}
-      </div>
-
-      {isProfessional ? (
-        <Card className="mb-5">
-          <div className="grid gap-4">
-            <div>
-              <div>
-                <div className="flex flex-wrap items-center gap-2">
-                  <h2 className="m-0 text-xl font-semibold">专业大类</h2>
-                  <Tag tone="blue">{availableCategories.length} 个大类</Tag>
-                </div>
-                <p className="mb-0 mt-2 text-sm leading-6 text-muted">选择专业大类后查看对应专业课考试，资源概览只展示各大类配置数量。</p>
-              </div>
+      <Card className="mb-5 p-4">
+        <div className="grid gap-4">
+          <ExamFilterButtons label="类型" options={subjectTypes} value={selectedSubjectType} onChange={setSelectedSubjectType} />
+          <div className="flex flex-wrap items-start gap-3 text-sm">
+            <span className="w-12 pt-2 font-semibold">{isProfessional ? "专业" : "科目"}</span>
+            <div className="grid flex-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+              {(isProfessional ? visibleCategories : visibleCultureSubjects).map((item) => (
+                <button
+                  className={`flex min-h-10 items-center justify-between gap-3 rounded-ui border bg-white px-3 text-left transition ${
+                    (isProfessional ? selectedCategory : selectedCultureSubject) === item.name ? "border-blue-600 text-blue-700" : "border-line hover:bg-slate-50"
+                  }`}
+                  key={item.name}
+                  onClick={() => (isProfessional ? setSelectedCategory(item.name) : setSelectedCultureSubject(item.name))}
+                  type="button"
+                >
+                  <span className="truncate">{item.name}</span>
+                  <strong className="shrink-0 text-xs">{isProfessional ? item.papers : item.exams} 项</strong>
+                </button>
+              ))}
             </div>
-
-            <div className="rounded-ui border border-line bg-slate-50 p-4">
-              <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-                <strong>专业大类资源概览</strong>
-                {sortedCategories.length > 6 ? (
-                  <Button tone="secondary" onClick={() => setShowAllCategories((value) => !value)}>
-                    {showAllCategories ? "收起" : "展开全部"}
-                  </Button>
-                ) : null}
-              </div>
-              <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-                {visibleCategories.map((category) => (
-                  <button
-                    className={`flex items-center justify-between gap-3 rounded-ui border bg-white px-3 py-3 text-left transition ${
-                      selectedCategory === category.name ? "border-blue-600 text-blue-700" : "border-line hover:bg-slate-50"
-                    }`}
-                    key={category.name}
-                    onClick={() => setSelectedCategory(category.name)}
-                    type="button"
-                  >
-                    <span className="truncate">{category.name}</span>
-                    <strong className="shrink-0 text-sm">{category.papers} 项</strong>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <PrototypeNote>
-              专业大类为后台动态配置；考试中心与试卷中心保持同一套专业课筛选交互。
-            </PrototypeNote>
+            {isProfessional && sortedCategories.length > 6 ? (
+              <Button tone="secondary" onClick={() => setShowAllCategories((value) => !value)}>
+                {showAllCategories ? "收起" : "展开全部"}
+              </Button>
+            ) : null}
+            {!isProfessional && sortedCultureSubjects.length > 6 ? (
+              <Button tone="secondary" onClick={() => setShowAllCultureSubjects((value) => !value)}>
+                {showAllCultureSubjects ? "收起" : "展开全部"}
+              </Button>
+            ) : null}
           </div>
-        </Card>
-      ) : (
-        <Card className="mb-5">
-          <div className="grid gap-4">
-            <div>
-              <div>
-                <div className="flex flex-wrap items-center gap-2">
-                  <h2 className="m-0 text-xl font-semibold">文化课科目</h2>
-                  <Tag tone="blue">{cultureSubjects.length} 个科目</Tag>
-                </div>
-                <p className="mb-0 mt-2 text-sm leading-6 text-muted">选择文化课科目后查看对应考试，资源概览只展示各科目配置数量。</p>
-              </div>
-            </div>
-
-            <div className="rounded-ui border border-line bg-slate-50 p-4">
-              <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-                <strong>文化课资源概览</strong>
-                {sortedCultureSubjects.length > 6 ? (
-                  <Button tone="secondary" onClick={() => setShowAllCultureSubjects((value) => !value)}>
-                    {showAllCultureSubjects ? "收起" : "展开全部"}
-                  </Button>
-                ) : null}
-              </div>
-              <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-                {visibleCultureSubjects.map((subject) => (
-                  <button
-                    className={`flex items-center justify-between gap-3 rounded-ui border bg-white px-3 py-3 text-left transition ${
-                      selectedCultureSubject === subject.name ? "border-blue-600 text-blue-700" : "border-line hover:bg-slate-50"
-                    }`}
-                    key={subject.name}
-                    onClick={() => setSelectedCultureSubject(subject.name)}
-                    type="button"
-                  >
-                    <span className="truncate">{subject.name}</span>
-                    <strong className="shrink-0 text-sm">{subject.exams} 项</strong>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <PrototypeNote>
-              文化课科目由后台动态配置；考试中心与试卷中心保持同一套二级筛选交互。
-            </PrototypeNote>
-          </div>
-        </Card>
-      )}
+          <PrototypeNote>
+            类型用于切换文化课/专业课；科目或专业筛选保留原有逻辑，资源数量只展示考试配置数量。
+          </PrototypeNote>
+        </div>
+      </Card>
 
       <div className="mb-5 flex flex-wrap gap-3 rounded-ui border border-line bg-white p-4">
         <div className="flex gap-2 rounded-ui bg-slate-50 p-1">
@@ -478,7 +412,7 @@ export function ExamCenterPage() {
             rows={paginatedExams}
             renderRow={(exam) => (
               <>
-                <div><strong>{exam.title}</strong><p className="mt-1 text-xs text-muted">{exam.summary}</p></div>
+                <div><strong>{exam.title}</strong></div>
                 <Tag tone={exam.type === "学校联考" ? "blue" : "cyan"}>{exam.type}</Tag>
                 <span>{exam.subject === "专业课" ? exam.category : exam.subject}</span>
                 <span>
@@ -631,6 +565,26 @@ function ExamAction({ exam, roleKey }) {
   }
 
   return <div className="flex justify-end whitespace-nowrap"><Button href={detailHref} tone="secondary">查看详情</Button></div>;
+}
+
+function ExamFilterButtons({ label, options, value, onChange }) {
+  return (
+    <div className="flex flex-wrap items-center gap-3 text-sm">
+      <span className="w-12 font-semibold">{label}</span>
+      <div className="flex flex-wrap gap-2">
+        {options.map((option) => (
+          <button
+            className={`min-h-9 rounded-ui px-4 ${value === option ? "bg-blue-600 text-white" : "text-slate-700 hover:bg-slate-50"}`}
+            key={option}
+            onClick={() => onChange(option)}
+            type="button"
+          >
+            {option}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
 }
 
 function getExamPermissionCopy(exam, roleKey, permitted) {

@@ -48,32 +48,25 @@ export function HomePage() {
       <section className="mt-9">
         <PageHeader title="推荐课程" desc="首页推荐课程由平台运营配置，当前按视频试看课程处理；可配置试看课时和试看时长，不等同于班级课程。" />
         <div className="grid grid-cols-4 gap-4">
-          {recommendedCourses.slice(0, 8).map((course) => (
+          {recommendedCourses.slice(0, 12).map((course) => (
             <a
               href="#/course-preview"
               key={course.title}
               className="group flex flex-col overflow-hidden rounded-ui border border-line bg-white shadow-panel transition hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-lg"
             >
               <div className="relative aspect-[16/9] overflow-hidden text-white" style={{ background: course.accent }}>
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_78%_28%,rgba(255,255,255,.35),transparent_24%),linear-gradient(135deg,rgba(15,23,42,.28),rgba(15,23,42,.08))]" />
+                <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(15,23,42,.1),rgba(15,23,42,.38))]" />
                 <div className="absolute -right-8 bottom-0 h-24 w-24 rounded-full bg-white/20" />
                 <div className="absolute -right-2 bottom-4 h-24 w-16 rounded-t-full bg-white/30" />
-                <div className="relative flex h-full flex-col justify-between p-4">
-                  <div className="flex flex-wrap gap-2">
-                    <Tag tone="gray">{course.subject}</Tag>
-                    <Tag tone="amber">视频试看</Tag>
-                  </div>
-                  <div>
-                    <strong className="block max-w-[78%] text-xl leading-7">{course.highlight}</strong>
-                    <span className="mt-2 inline-flex rounded-full bg-white px-3 py-1 text-xs font-semibold text-slate-800">{course.lessons}</span>
-                  </div>
+                <div className="relative grid h-full place-items-center p-4 text-center">
+                  <strong className="text-xl leading-7">{course.title}</strong>
                 </div>
               </div>
-              <div className="flex flex-1 flex-col p-4">
-                <h3 className="m-0 text-base font-medium leading-7 text-slate-900">{course.title}</h3>
-                <div className="mt-8 grid gap-2 text-sm leading-6 text-muted">
-                  <span>时间：2026-05-07 20:00:00　|　1 课时</span>
-                  <span>导师：平台推荐课程讲师</span>
+              <div className="grid flex-1 gap-3 p-4">
+                <h3 className="m-0 text-base font-semibold leading-6 text-slate-900">{course.title}</h3>
+                <div className="grid gap-2 text-sm leading-6 text-muted">
+                  <span>{course.subject} · {course.lessonCount} 课时</span>
+                  <span>创建人：{course.creator}</span>
                 </div>
               </div>
             </a>

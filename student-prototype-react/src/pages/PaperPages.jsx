@@ -346,108 +346,42 @@ export function PaperCenterPage() {
   return (
     <>
       <PageHeader title="试卷中心" action={pageAction} />
-      <div className="mb-5 flex gap-2 overflow-x-auto rounded-ui border border-line bg-white p-2">
-        {subjectTypes.map((subjectType) => (
-          <button
-            className={`min-h-10 rounded-ui px-5 ${selectedSubjectType === subjectType ? "bg-blue-600 text-white" : "text-slate-700 hover:bg-slate-50"}`}
-            key={subjectType}
-            onClick={() => setSelectedSubjectType(subjectType)}
-            type="button"
-          >
-            {subjectType}
-          </button>
-        ))}
-      </div>
-
-      {isProfessional ? (
-        <Card className="mb-5">
-          <div className="grid gap-4">
-            <div>
-              <div>
-                <div className="flex flex-wrap items-center gap-2">
-                  <h2 className="m-0 text-xl font-semibold">专业大类</h2>
-                  <Tag tone="blue">{availableCategories.length} 个大类</Tag>
-                </div>
-                <p className="mb-0 mt-2 text-sm leading-6 text-muted">选择专业大类后查看对应专业课试卷，资源概览只展示各大类总试卷数。</p>
-              </div>
+      <Card className="mb-5 p-4">
+        <div className="grid gap-4">
+          <FilterButtons label="类型" options={subjectTypes} value={selectedSubjectType} onChange={setSelectedSubjectType} />
+          <div className="flex flex-wrap items-start gap-3 text-sm">
+            <span className="w-12 pt-2 font-semibold">{isProfessional ? "专业" : "科目"}</span>
+            <div className="grid flex-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+              {(isProfessional ? visibleCategories : visibleCultureSubjects).map((item) => (
+                <button
+                  className={`flex min-h-10 items-center justify-between gap-3 rounded-ui border bg-white px-3 text-left transition ${
+                    (isProfessional ? selectedCategory : selectedCultureSubject) === item.name ? "border-blue-600 text-blue-700" : "border-line hover:bg-slate-50"
+                  }`}
+                  key={item.name}
+                  onClick={() => (isProfessional ? setSelectedCategory(item.name) : setSelectedCultureSubject(item.name))}
+                  type="button"
+                >
+                  <span className="truncate">{item.name}</span>
+                  <strong className="shrink-0 text-xs">{item.papers} 套</strong>
+                </button>
+              ))}
             </div>
-
-            <div className="rounded-ui border border-line bg-slate-50 p-4">
-              <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-                <strong>专业大类资源概览</strong>
-                {sortedCategories.length > 6 ? (
-                  <Button tone="secondary" onClick={() => setShowAllCategories((value) => !value)}>
-                    {showAllCategories ? "收起" : "展开全部"}
-                  </Button>
-                ) : null}
-              </div>
-              <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-                {visibleCategories.map((category) => (
-                  <button
-                    className={`flex items-center justify-between gap-3 rounded-ui border bg-white px-3 py-3 text-left transition ${
-                      selectedCategory === category.name ? "border-blue-600 text-blue-700" : "border-line hover:bg-slate-50"
-                    }`}
-                    key={category.name}
-                    onClick={() => setSelectedCategory(category.name)}
-                    type="button"
-                  >
-                    <span className="truncate">{category.name}</span>
-                    <strong className="shrink-0 text-sm">{category.papers} 套</strong>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <PrototypeNote>
-              专业大类区域用于展示专业课资源覆盖，不展示已展示、可刷题、权限状态等学习信息；权限与作答状态只在具体试卷列表中体现。
-            </PrototypeNote>
+            {isProfessional && sortedCategories.length > 6 ? (
+              <Button tone="secondary" onClick={() => setShowAllCategories((value) => !value)}>
+                {showAllCategories ? "收起" : "展开全部"}
+              </Button>
+            ) : null}
+            {!isProfessional && sortedCultureSubjects.length > 6 ? (
+              <Button tone="secondary" onClick={() => setShowAllCultureSubjects((value) => !value)}>
+                {showAllCultureSubjects ? "收起" : "展开全部"}
+              </Button>
+            ) : null}
           </div>
-        </Card>
-      ) : (
-        <Card className="mb-5">
-          <div className="grid gap-4">
-            <div>
-              <div>
-                <div className="flex flex-wrap items-center gap-2">
-                  <h2 className="m-0 text-xl font-semibold">文化课科目</h2>
-                  <Tag tone="blue">{cultureSubjects.length} 个科目</Tag>
-                </div>
-                <p className="mb-0 mt-2 text-sm leading-6 text-muted">选择文化课科目后查看对应试卷，资源概览只展示各科目总试卷数。</p>
-              </div>
-            </div>
-
-            <div className="rounded-ui border border-line bg-slate-50 p-4">
-              <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-                <strong>文化课资源概览</strong>
-                {sortedCultureSubjects.length > 6 ? (
-                  <Button tone="secondary" onClick={() => setShowAllCultureSubjects((value) => !value)}>
-                    {showAllCultureSubjects ? "收起" : "展开全部"}
-                  </Button>
-                ) : null}
-              </div>
-              <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-                {visibleCultureSubjects.map((subject) => (
-                  <button
-                    className={`flex items-center justify-between gap-3 rounded-ui border bg-white px-3 py-3 text-left transition ${
-                      selectedCultureSubject === subject.name ? "border-blue-600 text-blue-700" : "border-line hover:bg-slate-50"
-                    }`}
-                    key={subject.name}
-                    onClick={() => setSelectedCultureSubject(subject.name)}
-                    type="button"
-                  >
-                    <span className="truncate">{subject.name}</span>
-                    <strong className="shrink-0 text-sm">{subject.papers} 套</strong>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <PrototypeNote>
-              文化课科目由后台动态配置；筛选交互与专业课大类保持一致，便于后续抽成通用筛选组件。
-            </PrototypeNote>
-          </div>
-        </Card>
-      )}
+          <PrototypeNote>
+            类型用于切换文化课/专业课；科目或专业筛选保留原有逻辑，资源数量只展示总试卷数，权限与作答状态只在具体试卷列表中体现。
+          </PrototypeNote>
+        </div>
+      </Card>
 
       <div className="my-5 grid gap-4 rounded-ui border border-line bg-white p-4">
         <FilterButtons label="来源" options={paperSources} value={selectedSource} onChange={setSelectedSource} />
@@ -465,7 +399,7 @@ export function PaperCenterPage() {
         <>
           <DataTable
             columns={["试卷", "分类", "年份", "时长", "总题数", "总分", "已做次数", "状态/结果", "操作"]}
-            gridTemplateColumns="minmax(240px,1.8fr) 100px 80px 90px 90px 80px 100px minmax(160px,1.2fr) 150px"
+            gridTemplateColumns="minmax(220px,1.8fr) 92px 72px 82px 82px 72px 86px minmax(140px,1.1fr) 120px"
             rows={paginatedPapers}
             renderRow={(paper) => (
               <>
@@ -517,31 +451,45 @@ export function PaperCenterPage() {
 
 function LockedPaperAction({ roleKey }) {
   if (roleKey === "visitor") {
-    return <Button href="#/login" tone="secondary">登录后刷题</Button>;
+    return <PaperListButton href="#/login" tone="secondary">登录后刷题</PaperListButton>;
   }
 
   if (roleKey === "registered") {
-    return <Button href="#/school-apply" tone="secondary">申请入校</Button>;
+    return <PaperListButton href="#/school-apply" tone="secondary">申请入校</PaperListButton>;
   }
 
-  return <Button href="#/profile" tone="secondary">暂无权限</Button>;
+  return <PaperListButton href="#/profile" tone="secondary">暂无权限</PaperListButton>;
 }
 
 function PaperAction({ status }) {
   if (status === "进行中") {
-    return <Button href="#/paper-answer">继续刷题</Button>;
+    return <PaperListButton href="#/paper-answer">继续刷题</PaperListButton>;
   }
 
   if (status === "已结束") {
     return (
-      <div className="flex flex-wrap gap-2">
-        <Button href="#/paper-analysis" tone="ghost">查看解析</Button>
-        <Button href="#/paper-answer" tone="secondary">重新开始</Button>
+      <div className="grid w-full gap-2">
+        <PaperListButton href="#/paper-analysis" tone="ghost">查看解析</PaperListButton>
+        <PaperListButton href="#/paper-answer" tone="secondary">重新开始</PaperListButton>
       </div>
     );
   }
 
-  return <Button href="#/paper-answer">开始刷题</Button>;
+  return <PaperListButton href="#/paper-answer">开始刷题</PaperListButton>;
+}
+
+function PaperListButton({ children, href, tone = "primary" }) {
+  const cls = {
+    primary: "border-blue-600 bg-blue-600 text-white hover:bg-blue-700",
+    secondary: "border-line bg-white text-ink hover:bg-slate-50",
+    ghost: "border-transparent bg-blue-50 text-blue-600 hover:bg-blue-100",
+  }[tone];
+
+  return (
+    <a className={`inline-flex min-h-9 w-full items-center justify-center rounded-ui border px-2 text-center text-xs ${cls}`} href={href}>
+      {children}
+    </a>
+  );
 }
 
 function FilterButtons({ label, options, value, onChange }) {
