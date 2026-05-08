@@ -1,81 +1,7 @@
 import { useEffect, useState } from "react";
 import { categories, cultureSubjects, exams } from "../data/mockData";
+import { examAnalysisQuestions, examQuestionGroups, ExamAnswerInput, ExamQuestionNavigator, ExamQuestionStatusLegend, getAllExamQuestions, getExamQuestionType } from "../components/examWorkflows";
 import { Button, Card, DataTable, Meta, Modal, PageHeader, Pagination, PrototypeNote, Stat, Tag, usePrototypeRole } from "../components/ui";
-
-const examQuestionGroups = [
-  {
-    title: "一、单选题",
-    desc: "每题只有一个正确答案",
-    questions: Array.from({ length: 20 }, (_, index) => ({
-      key: `exam-single-${index + 1}`,
-      label: String(index + 1),
-      status: index < 14 ? "answered" : "unanswered",
-      marked: index === 7,
-    })),
-  },
-  {
-    title: "二、多选题",
-    desc: "少选、多选均不得分",
-    questions: Array.from({ length: 15 }, (_, index) => ({
-      key: `exam-multi-${index + 21}`,
-      label: String(index + 21),
-      status: index < 9 ? "answered" : "unanswered",
-      marked: index === 4,
-    })),
-  },
-  {
-    title: "三、判断题",
-    desc: "判断正误",
-    questions: Array.from({ length: 15 }, (_, index) => ({
-      key: `exam-judge-${index + 36}`,
-      label: String(index + 36),
-      status: index < 11 ? "answered" : "unanswered",
-      marked: false,
-    })),
-  },
-  {
-    title: "四、填空题",
-    desc: "按空作答",
-    questions: Array.from({ length: 10 }, (_, index) => ({
-      key: `exam-blank-${index + 51}`,
-      label: String(index + 51),
-      status: index < 5 ? "answered" : "unanswered",
-      marked: index === 2,
-    })),
-  },
-  {
-    title: "五、简答题",
-    desc: "简答题提交后进入评分流程",
-    questions: Array.from({ length: 5 }, (_, index) => ({
-      key: `exam-short-${index + 61}`,
-      label: String(index + 61),
-      status: index < 2 ? "answered" : "unanswered",
-      marked: false,
-    })),
-  },
-  {
-    title: "六、综合题",
-    desc: "每道综合题包含多个常规题型子题",
-    questions: [
-      { key: "exam-case-66-1", label: "66.1", parent: "66", questionType: "单选题", status: "answered", marked: true },
-      { key: "exam-case-66-2", label: "66.2", parent: "66", questionType: "填空题", status: "answered", marked: false },
-      { key: "exam-case-66-3", label: "66.3", parent: "66", questionType: "简答题", status: "unanswered", marked: false },
-      { key: "exam-case-67-1", label: "67.1", parent: "67", questionType: "多选题", status: "answered", marked: false },
-      { key: "exam-case-67-2", label: "67.2", parent: "67", questionType: "判断题", status: "unanswered", marked: true },
-      { key: "exam-case-68-1", label: "68.1", parent: "68", questionType: "单选题", status: "unanswered", marked: false },
-      { key: "exam-case-68-2", label: "68.2", parent: "68", questionType: "填空题", status: "unanswered", marked: false },
-      { key: "exam-case-68-3", label: "68.3", parent: "68", questionType: "简答题", status: "unanswered", marked: false },
-    ],
-  },
-];
-
-const examQuestionStatusStyles = {
-  unanswered: "border-line bg-white text-slate-700",
-  answered: "border-blue-600 bg-blue-600 text-white",
-  correct: "border-green-600 bg-green-600 text-white",
-  wrong: "border-red-600 bg-red-600 text-white",
-  scored: "border-violet-600 bg-violet-600 text-white",
-};
 
 const examRankRows = [
   { rank: 1, name: "李同学", school: "示范中职学校", score: 296, objective: 176, subjective: 120, status: "已出分" },
@@ -92,190 +18,9 @@ const schoolRankRows = [
   { rank: 3, school: "南湖中职学校", students: 84, average: 236, topScore: 289, status: "已统计" },
 ];
 
-const examAnalysisQuestions = [
-  {
-    title: "在数据库设计中，用于描述实体之间关系的模型通常称为？",
-    myAnswer: "A. E-R 模型",
-    correctAnswer: "A. E-R 模型",
-    result: "正确",
-    tone: "green",
-    score: "4 / 4",
-    analysis: "E-R 模型用于描述实体、属性以及实体之间的联系，是数据库概念结构设计中的常用模型。",
-  },
-  {
-    title: "下列哪些属于数据库设计中的核心对象？",
-    myAnswer: "A、B",
-    correctAnswer: "A、B、C",
-    result: "错误",
-    tone: "red",
-    score: "0 / 6",
-    marked: true,
-    analysis: "数据库设计需要同时关注实体、属性和联系，选项 C 也属于核心对象。",
-  },
-  {
-    title: "说明关系模型中主键的作用。",
-    myAnswer: "主键用于唯一标识一条记录。",
-    correctAnswer: "主键用于唯一标识关系表中的一条记录，并可用于建立表之间的关联。",
-    result: "已评分",
-    tone: "blue",
-    score: "8 / 10",
-    analysis: "答案说明了唯一标识作用，但还可以补充主键在表间关联和约束完整性中的作用。",
-  },
-];
-
-function getAllExamQuestions(groups = examQuestionGroups) {
-  return groups.flatMap((group) => group.questions.map((question) => ({ ...question, groupTitle: group.title })));
-}
-
-function getExamQuestionType(question) {
-  if (question.questionType) return question.questionType;
-  if (question.groupTitle.includes("单选题")) return "单选题";
-  if (question.groupTitle.includes("多选题")) return "多选题";
-  if (question.groupTitle.includes("判断题")) return "判断题";
-  if (question.groupTitle.includes("填空题")) return "填空题";
-  if (question.groupTitle.includes("简答题")) return "简答题";
-  return "单选题";
-}
-
-function ExamQuestionNumber({ number, status = "unanswered", marked = false, active = false, onClick }) {
-  const Component = onClick ? "button" : "span";
-
-  return (
-    <Component
-      className={`relative grid min-h-9 place-items-center rounded-ui border px-1 text-xs ${examQuestionStatusStyles[status]} ${marked ? "ring-2 ring-amber-300" : ""} ${active ? "outline outline-2 outline-offset-2 outline-slate-900" : ""}`}
-      onClick={onClick}
-      type={onClick ? "button" : undefined}
-    >
-      {number}
-      {marked ? <i className="absolute -right-1 -top-1 h-3 w-3 rounded-full bg-amber-500" /> : null}
-    </Component>
-  );
-}
-
-function ExamQuestionNavigator({ groups = examQuestionGroups, activeKey, onSelect }) {
-  return (
-    <div className="mt-4 grid max-h-[460px] gap-4 overflow-y-auto pr-1">
-      {groups.map((group) => (
-        <section key={group.title}>
-          <div className="mb-2">
-            <strong className="block text-sm">{group.title}</strong>
-            <span className="text-xs text-muted">{group.desc}</span>
-          </div>
-          {group.title.includes("综合题") ? (
-            <div className="grid gap-3">
-              {Object.values(group.questions.reduce((collection, question) => {
-                const key = question.parent || question.label;
-                collection[key] = [...(collection[key] || []), question];
-                return collection;
-              }, {})).map((questions) => (
-                <div className="grid grid-cols-5 gap-2" key={questions[0].parent || questions[0].key}>
-                  {questions.map((question) => (
-                    <ExamQuestionNumber
-                      active={activeKey === question.key}
-                      key={question.key}
-                      marked={question.marked}
-                      number={question.label}
-                      onClick={onSelect ? () => onSelect(question) : undefined}
-                      status={question.status}
-                    />
-                  ))}
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="grid grid-cols-5 gap-2">
-              {group.questions.map((question) => (
-                <ExamQuestionNumber
-                  active={activeKey === question.key}
-                  key={question.key}
-                  marked={question.marked}
-                  number={question.label}
-                  onClick={onSelect ? () => onSelect(question) : undefined}
-                  status={question.status}
-                />
-              ))}
-            </div>
-          )}
-        </section>
-      ))}
-    </div>
-  );
-}
-
-function ExamQuestionStatusLegend({ mode = "analysis" }) {
-  const items = mode === "answer"
-    ? [
-      ["unanswered", "未答题"],
-      ["answered", "已答题"],
-    ]
-    : [
-      ["unanswered", "未答题"],
-      ["answered", "已答题"],
-      ["correct", "题目正确"],
-      ["wrong", "题目错误"],
-      ["scored", "已评分"],
-    ];
-
-  return (
-    <div className="mt-4 grid grid-cols-2 gap-2 text-xs text-muted">
-      {items.map(([status, label]) => (
-        <span className="flex items-center gap-2" key={status}>
-          <i className={`h-4 w-4 rounded border ${examQuestionStatusStyles[status]}`} />
-          {label}
-        </span>
-      ))}
-      <span className="flex items-center gap-2">
-        <i className="relative h-4 w-4 rounded border border-line bg-white ring-2 ring-amber-300">
-          <i className="absolute -right-1 -top-1 h-2 w-2 rounded-full bg-amber-500" />
-        </i>
-        已标记
-      </span>
-    </div>
-  );
-}
-
-function ExamAnswerInput({ questionType }) {
-  if (questionType === "多选题") {
-    return (
-      <div className="mt-5 grid gap-3">
-        {["A. 实体", "B. 属性", "C. 联系", "D. 编译"].map((item) => (
-          <label key={item} className="flex gap-3 rounded-ui border border-line p-4"><input type="checkbox" />{item}</label>
-        ))}
-      </div>
-    );
-  }
-
-  if (questionType === "判断题") {
-    return (
-      <div className="mt-5 grid gap-3">
-        {["正确", "错误"].map((item) => (
-          <label key={item} className="flex gap-3 rounded-ui border border-line p-4"><input type="radio" name="exam-judge" />{item}</label>
-        ))}
-      </div>
-    );
-  }
-
-  if (questionType === "填空题") {
-    return <input className="mt-5 min-h-12 w-full rounded-ui border border-line px-4" placeholder="请输入答案" />;
-  }
-
-  if (questionType === "简答题") {
-    return <textarea className="mt-5 min-h-[150px] w-full rounded-ui border border-line p-4" placeholder="请输入作答内容" />;
-  }
-
-  return (
-    <div className="mt-5 grid gap-3">
-      {["A. E-R 模型", "B. 线性模型", "C. 物理模型", "D. 编译模型"].map((item) => (
-        <label key={item} className="flex gap-3 rounded-ui border border-line p-4"><input type="radio" name="exam-single" />{item}</label>
-      ))}
-    </div>
-  );
-}
-
 export function ExamCenterPage() {
   const { roleKey } = usePrototypeRole();
   const subjectTypes = ["文化课", "专业课"];
-  const examScopes = ["全部考试", "我的考试"];
   const examTypes = ["全部考试", "公开考试", "学校联考"];
   const examStatuses = ["全部状态", "未开始", "进行中", "评审中", "已公示"];
   const defaultCategory = categories.find((category) => category.unlocked)?.name || categories[0].name;
@@ -284,7 +29,6 @@ export function ExamCenterPage() {
   const [selectedCategory, setSelectedCategory] = useState(defaultCategory);
   const [showAllCategories, setShowAllCategories] = useState(false);
   const [showAllCultureSubjects, setShowAllCultureSubjects] = useState(false);
-  const [selectedScope, setSelectedScope] = useState("全部考试");
   const [selectedType, setSelectedType] = useState("全部考试");
   const [selectedStatus, setSelectedStatus] = useState("全部状态");
   const [keyword, setKeyword] = useState("");
@@ -301,31 +45,16 @@ export function ExamCenterPage() {
     const subjectMatched = isProfessional
       ? exam.subject === "专业课" && exam.category === selectedCategory
       : exam.subject === selectedCultureSubject;
-    const scopeMatched = selectedScope === "全部考试" || (
-      roleKey !== "visitor" &&
-      hasExamPermission(exam, roleKey) &&
-      (roleKey === "student" || exam.type === "公开考试")
-    );
     const typeMatched = selectedType === "全部考试" || exam.type === selectedType;
     const statusMatched = selectedStatus === "全部状态" || exam.status === selectedStatus;
     const keywordMatched = !keyword.trim() || exam.title.includes(keyword.trim());
-    return subjectMatched && scopeMatched && typeMatched && statusMatched && keywordMatched;
+    return subjectMatched && typeMatched && statusMatched && keywordMatched;
   });
   const totalPages = Math.max(1, Math.ceil(filteredExams.length / pageSize));
   const currentPage = Math.min(page, totalPages);
   const paginatedExams = filteredExams.slice((currentPage - 1) * pageSize, currentPage * pageSize);
-  const emptyTitle = selectedScope === "我的考试"
-    ? roleKey === "visitor"
-      ? "登录后查看我的考试"
-      : "暂无我的考试"
-    : "暂无符合条件的考试";
-  const emptyDesc = selectedScope === "我的考试"
-    ? roleKey === "visitor"
-      ? "游客可以浏览考试活动，但需要登录或注册后查看自己的公开考试和考试记录。"
-      : isStudent
-        ? "当前筛选条件下暂无公开考试或当前班级授权的学校联考。"
-        : "当前筛选条件下暂无与你相关的公开考试记录。"
-    : "请调整考试类型、状态、科目或关键词后再查看。";
+  const emptyTitle = "暂无符合条件的考试";
+  const emptyDesc = "请调整考试类型、状态、科目或关键词后再查看；个人相关考试请进入学习中心的“我的考试”。";
 
   useEffect(() => {
     if (isProfessional && !availableCategories.some((category) => category.name === selectedCategory) && availableCategories[0]) {
@@ -335,11 +64,15 @@ export function ExamCenterPage() {
 
   useEffect(() => {
     setPage(1);
-  }, [roleKey, selectedSubjectType, selectedCultureSubject, selectedCategory, selectedScope, selectedType, selectedStatus, keyword, pageSize]);
+  }, [roleKey, selectedSubjectType, selectedCultureSubject, selectedCategory, selectedType, selectedStatus, keyword, pageSize]);
 
   return (
     <>
-      <PageHeader title="考试中心" desc="公开考试与学校联考统一展示，包含未开始、进行中、评审中和已公示考试；排行和成绩归属于具体考试。" />
+      <PageHeader
+        title="考试中心"
+        desc="公开考试与学校联考统一展示，包含未开始、进行中、评审中和已公示考试；排行和成绩归属于具体考试。"
+        action={<Button href="#/my-exams" tone="secondary">我的考试</Button>}
+      />
       <PrototypeNote className="mb-5">
         不做报名流程；有权限且考试进行中即可进入考试。交卷才算参加考试，未交卷不生成成绩、答题记录或排行。
       </PrototypeNote>
@@ -381,18 +114,6 @@ export function ExamCenterPage() {
       </Card>
 
       <div className="mb-5 flex flex-wrap gap-3 rounded-ui border border-line bg-white p-4">
-        <div className="flex gap-2 rounded-ui bg-slate-50 p-1">
-          {examScopes.map((scope) => (
-            <button
-              className={`min-h-10 rounded-ui px-4 ${selectedScope === scope ? "bg-blue-600 text-white" : "text-slate-700 hover:bg-white"}`}
-              key={scope}
-              onClick={() => setSelectedScope(scope)}
-              type="button"
-            >
-              {scope}
-            </button>
-          ))}
-        </div>
         <select className="min-h-10 rounded-ui border border-line px-3" value={selectedType} onChange={(event) => setSelectedType(event.target.value)}>
           {examTypes.map((item) => <option key={item}>{item}</option>)}
         </select>
@@ -401,7 +122,7 @@ export function ExamCenterPage() {
         </select>
         <input className="min-h-10 rounded-ui border border-line px-3" placeholder="搜索考试名称" value={keyword} onChange={(event) => setKeyword(event.target.value)} />
         <PrototypeNote>
-          “我的考试”只展示当前身份相关的考试；注册用户可查看自己的公开考试，班级学生可查看公开考试和当前班级授权的学校联考。
+          考试中心用于浏览公开考试和学校联考；当前账号相关的可参加、已交卷、已出分考试进入学习中心的“我的考试”查看。
         </PrototypeNote>
       </div>
       {filteredExams.length ? (
@@ -437,7 +158,7 @@ export function ExamCenterPage() {
         <Card>
           <h3 className="m-0">{emptyTitle}</h3>
           <p className="mb-0 mt-3 leading-7 text-muted">{emptyDesc}</p>
-          {selectedScope === "我的考试" && roleKey === "visitor" ? <Meta><Button href="#/login">登录/注册</Button></Meta> : null}
+          <Meta><Button href="#/my-exams" tone="secondary">查看我的考试</Button></Meta>
         </Card>
       )}
     </>

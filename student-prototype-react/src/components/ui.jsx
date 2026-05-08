@@ -179,7 +179,7 @@ function activeNav(hash, path) {
   if (path === "#/") return hash === "#/" || hash.startsWith("#/news") || hash.startsWith("#/course-preview");
   if (path === "#/papers") return hash.startsWith("#/papers") || hash.startsWith("#/paper-answer");
   if (path === "#/exams") return hash.startsWith("#/exams") || hash.startsWith("#/exam-");
-  if (path === "#/learning") return hash.startsWith("#/learning") || hash.startsWith("#/class") || hash.startsWith("#/course-study") || hash.startsWith("#/qa") || hash.startsWith("#/wrong-book");
+  if (path === "#/learning") return hash.startsWith("#/learning") || hash.startsWith("#/class") || hash.startsWith("#/course-study") || hash.startsWith("#/course-lesson") || hash.startsWith("#/course-material") || hash.startsWith("#/paper-practice") || hash.startsWith("#/my-exams") || hash.startsWith("#/qa") || hash.startsWith("#/learning-record") || hash.startsWith("#/wrong");
   if (path === "#/profile") return hash.startsWith("#/profile") || hash.startsWith("#/school-apply");
   return hash.startsWith(path);
 }

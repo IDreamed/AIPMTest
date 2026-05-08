@@ -1,6 +1,7 @@
 node_modules/
 .npm-cache/
 dist/
+student-prototype-react_bak/
 
 .env
 .env.*
