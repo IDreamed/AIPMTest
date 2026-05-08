@@ -1,60 +1,39 @@
 import { useState } from "react";
-import { classCourse, classCourses, classExams, classes, courseCatalog, courseMaterials, coursePapers, exams, learningRecords, paperPracticeRecords, wrongQuestions } from "../data/mockData";
+import { categories, classCourse, classCourses, classExams, classes, courseCatalog, courseMaterials, cultureSubjects, exams, learningRecords, paperPracticeRecords, qaRecords, wrongQuestions } from "../data/mockData";
 import { ExamAnswerInput, ExamQuestionNavigator, ExamQuestionStatusLegend, getAllExamQuestions, getExamQuestionType, normalizeQuestionGroups } from "../components/examWorkflows";
 import { Button, Card, DataTable, Meta, Modal, PageHeader, Pagination, PrototypeNote, Stat, Tag, usePrototypeRole } from "../components/ui";
 
 export function LearningCenterPage() {
   const { role, roleKey } = usePrototypeRole();
   const currentIdentity = classes[0];
-  const courseTasks = [
-    {
-      tone: "blue",
-      title: "数学基础强化",
-      detail: "继续课时：函数概念与表示，课程进度 62%",
-      meta: "班级课程 · 最近学习",
-      action: "继续学习",
+  const courseTasks = classCourses.slice(0, 2).map((course) => {
+    const status = normalizeLearningStatus(course.status);
+    return {
+      tone: getLearningStatusTone(status),
+      title: course.title,
+      detail: status === "未开始" ? "" : `课程进度 ${course.progress} · ${course.learnedCount}/${course.lessonCount} 课时`,
+      meta: status,
+      action: status === "已完成" ? "复习课程" : status === "进行中" ? "继续学习" : "开始学习",
       href: "#/course-lesson",
-    },
-    {
-      tone: "amber",
-      title: "函数基础课堂练习",
-      detail: "课程内练习，10 题 / 15 分钟，尚未完成",
-      meta: "课程内试卷 · 待完成",
-      action: "去练习",
-      href: "#/class-exam-answer",
-    },
-    {
-      tone: "blue",
-      title: "数据库基础",
-      detail: "老师新分配，尚未开始学习",
-      meta: "班级课程 · 未开始",
-      action: "开始学习",
-      href: "#/course-lesson",
-    },
-  ];
-  const paperPracticeTasks = [
-    {
-      tone: "cyan",
-      title: "电子与信息类专业综合卷（一）",
-      detail: "上次做到 22/50，继续完成本套练习",
-      meta: "试卷中心 · 进行中",
-      action: "继续刷题",
-      href: "#/paper-answer",
-    },
-    {
-      tone: "cyan",
-      title: "数学基础模拟卷（一）",
-      detail: "上次做到 18/45，继续完成本套练习",
-      meta: "试卷中心 · 进行中",
-      action: "继续刷题",
-      href: "#/paper-answer",
-    },
-  ];
+    };
+  });
+  const paperPracticeTasks = paperPracticeRecords
+    .filter((paper) => paper.source === "试卷中心")
+    .slice(0, 4)
+    .map((paper) => ({
+      tone: getLearningStatusTone(paper.status),
+      title: paper.title,
+      detail: `题目数量：${paper.questionCount} 题 · 用时：${paper.duration}`,
+      meta: paper.status,
+      tags: [paper.category],
+      action: paper.status === "已完成" ? "查看解析" : paper.status === "进行中" ? "继续刷题" : "开始练习",
+      href: paper.status === "已完成" ? "#/paper-analysis" : "#/paper-answer",
+    }));
   const classTestTasks = classExams.slice(0, 3).map((exam) => ({
     tone: exam.statusTone,
     title: exam.title,
     detail: `时长 ${exam.duration} · 总题数 ${exam.questionCount} 道 · 试卷总分 ${exam.totalScore} 分`,
-    meta: `班级测试 · ${exam.status}${exam.studentStatus !== "未开始" ? ` · ${exam.studentStatus}` : ""}`,
+    meta: exam.studentStatus !== "未开始" ? exam.studentStatus : exam.status,
     action: getClassExamActionConfig(exam).label,
     href: getClassExamActionConfig(exam).href,
   }));
@@ -66,7 +45,8 @@ export function LearningCenterPage() {
       tone: exam.statusTone === "gray" ? "blue" : exam.statusTone,
       title: exam.title,
       detail: `${exam.startAt || exam.time} 至 ${exam.endAt || exam.time}`,
-      meta: `${exam.type} · ${exam.subject === "专业课" ? exam.category : exam.subject} · ${exam.status}`,
+      meta: exam.status,
+      tags: [exam.type],
       action: exam.status === "进行中" && !exam.submitted ? "进入考试" : "查看详情",
       href: exam.status === "进行中" && !exam.submitted ? "#/exam-answer" : `#/exam-detail?id=${exam.id}`,
     }));
@@ -74,32 +54,23 @@ export function LearningCenterPage() {
     .filter((paper) => paper.source === "试卷中心" && !paper.relation.includes("电子与信息类"))
     .slice(0, 3)
     .map((paper) => ({
-      tone: paper.statusTone,
+      tone: getLearningStatusTone(paper.status),
       title: paper.title,
-      detail: `${paper.relation} · ${paper.questionCount} 题`,
-      meta: `${paper.source} · ${paper.status}`,
+      detail: `题目数量：${paper.questionCount} 题 · 用时：${paper.duration}`,
+      meta: paper.status,
+      tags: [paper.category],
       action: paper.status === "已完成" ? "查看解析" : paper.status === "进行中" ? "继续刷题" : "开始练习",
       href: paper.status === "已完成" ? "#/paper-analysis" : "#/paper-answer",
     }));
   const registeredPendingCount = registeredPaperPracticeTasks.length + examScheduleTasks.length + 2;
-  const qaTasks = [
-    {
-      tone: "gray",
-      title: "老师已回复 E-R 模型判断问题",
-      detail: "查看回复并决定是否继续追问",
-      meta: "班级答疑 · 已回复未查看",
-      action: "查看答疑",
-      href: "#/qa-detail",
-    },
-    {
-      tone: "gray",
-      title: "函数图像题需要补充截图",
-      detail: "老师要求补充题目截图后继续解答",
-      meta: "班级答疑 · 待补充",
-      action: "补充问题",
-      href: "#/qa-detail",
-    },
-  ];
+  const qaTasks = qaRecords.slice(0, 2).map((item) => ({
+    tone: hasQaReply(item) ? "green" : "gray",
+    title: getQaRelation(item),
+    detail: `发起时间：${item.createdAt} · 更新时间：${item.updatedAt}`,
+    meta: hasQaReply(item) ? "已回复" : "未回复",
+    action: "查看记录",
+    href: `#/qa-detail?id=${item.id}`,
+  }));
   const pendingTaskCount = courseTasks.length + paperPracticeTasks.length + classTestTasks.length + examScheduleTasks.length + qaTasks.length + 2;
 
   if (roleKey === "visitor") {
@@ -176,35 +147,11 @@ export function LearningCenterPage() {
             />
           </div>
           <PrototypeNote className="mt-4">
-            注册用户可以参加公开考试，因此学习中心保留个人考试、试卷练习和错题巩固；班级课程、班级测试、班级答疑需要加入学校班级后才展示。
+            注册用户可以参加公开考试，因此学习中心保留个人考试、试卷练习和学习记录；班级课程、班级测试、班级答疑需要加入学校班级后才展示。
           </PrototypeNote>
         </section>
 
-        <section className="mt-8">
-          <PageHeader title="个人学习资产" desc="注册用户也可以沉淀公开考试、试卷练习产生的个人学习资产。" />
-          <div className="grid gap-4 md:grid-cols-2">
-            <Card>
-              <div className="flex flex-col justify-between gap-4 md:flex-row md:items-start">
-                <div>
-                  <h3 className="m-0 text-lg">错题巩固</h3>
-                  <p className="leading-7 text-muted">汇总公开考试和试卷练习中的错题。</p>
-                  <Meta><Tag tone="amber">待掌握 24</Tag><Tag tone="green">已掌握 14</Tag></Meta>
-                </div>
-                <Button href="#/wrong-book" tone="ghost">去巩固</Button>
-              </div>
-            </Card>
-            <Card>
-              <div className="flex flex-col justify-between gap-4 md:flex-row md:items-start">
-                <div>
-                  <h3 className="m-0 text-lg">学习记录</h3>
-                  <p className="leading-7 text-muted">当前阶段只记录视频和音频课时学习。</p>
-                  <Meta><Tag>最近 {learningRecords.length} 条</Tag><Tag tone="blue">视频/音频</Tag></Meta>
-                </div>
-                <Button href="#/learning-record" tone="ghost">查看记录</Button>
-              </div>
-            </Card>
-          </div>
-        </section>
+        <LearningRecordSummary />
       </>
     );
   }
@@ -213,94 +160,130 @@ export function LearningCenterPage() {
     <>
       <PageHeader title="学习中心" desc="学生只能加入一个学校；在该学校下只能加入一个班级。学习中心直接展示当前学校班级，不再提供多班级切换。" />
       <Card className="mb-4">
-        <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
+        <div className="grid gap-5 md:grid-cols-[1.5fr_1fr_1fr] md:items-center">
           <div>
-            <span className="text-sm text-muted">当前学校班级</span>
-            <h2 className="mb-2 mt-2 text-xl">{currentIdentity.school}</h2>
-            <p className="m-0 text-muted">{currentIdentity.name} · {currentIdentity.category}</p>
+            <span className="text-sm text-muted">当前班级</span>
+            <div className="mb-2 mt-2 flex flex-wrap items-center gap-2">
+              <h2 className="m-0 text-xl">{currentIdentity.name}</h2>
+              <Tag tone="blue">{currentIdentity.category}</Tag>
+            </div>
+            <p className="m-0 text-muted">{currentIdentity.school}</p>
           </div>
-          <div className="flex flex-wrap gap-2 md:justify-end">
-            <Button href="#/class-courses" tone="secondary">班级课程</Button>
-            <Button href="#/class-exam" tone="secondary">班级测试</Button>
-            <Button href="#/qa" tone="secondary">班级答疑</Button>
-            <Tag tone="blue">{currentIdentity.category}</Tag>
-            <Tag tone="green">专业课试卷已授权</Tag>
+          <div className="rounded-ui bg-slate-50 p-4">
+            <span className="text-sm text-muted">待处理事项</span>
+            <b className="mt-2 block text-2xl">{pendingTaskCount}</b>
+          </div>
+          <div className="rounded-ui bg-slate-50 p-4">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <span className="text-sm text-muted">累计错题</span>
+                <b className="mt-2 block text-2xl">38</b>
+              </div>
+              <Button href="#/wrong-book" tone="ghost">进入错题本</Button>
+            </div>
           </div>
         </div>
       </Card>
-      <div className="grid gap-4 md:grid-cols-4">
-        <Stat label="待处理事项" value={pendingTaskCount} />
-        <Stat label="本周学习" value="4.5h" />
-        <Stat label="累计错题" value="38" />
-        <Stat label="学校班级" value="1" />
-      </div>
 
       <section className="mt-8">
-        <PageHeader title="学习任务摘要" desc="首页只展示各类学习资源的摘要，不承接完整列表。课程学习来自班级课程，试卷练习来自课程练习和试卷中心，班级测试来自当前班级布置，考试安排只做正式考试提醒。" />
-        <div className="grid gap-4">
-          <TaskGroup
+        <PageHeader title="学习任务摘要" desc="首页只展示各类学习资源的摘要，不承接完整列表。课程学习来自班级课程，试卷练习来自试卷中心，班级测试来自当前班级布置，考试安排只做正式考试提醒。" />
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <TaskSummaryCard
             title="课程学习"
-            desc="展示最近学习中的课时、课程内练习和新分配课程。"
+            desc="只展示最近学习或新分配的班级课程，不混入课堂练习。"
             tasks={courseTasks}
-            footer={<Button href="#/class-courses" tone="secondary">查看班级课程</Button>}
+            href="#/class-courses"
+            listAction="进入课程"
           />
-          <TaskGroup
+          <TaskSummaryCard
             title="试卷练习"
-            desc="展示课程练习和试卷中心里已经开始但尚未完成的试卷。"
+            desc="展示试卷中心里已经开始或已经完成的试卷。"
             tasks={paperPracticeTasks}
-            footer={<Button href="#/paper-practice" tone="secondary">查看试卷练习</Button>}
+            href="#/paper-practice"
+            listAction="进入练习"
           />
-          <TaskGroup
+          <TaskSummaryCard
             title="班级测试"
             desc="展示当前班级布置的随堂测试、阶段测试和结业测试。"
             tasks={classTestTasks}
-            footer={<Button href="#/class-exam" tone="secondary">查看班级测试</Button>}
+            href="#/class-exam"
+            listAction="进入测试"
           />
-          <TaskGroup
+          <TaskSummaryCard
             title="考试安排"
             desc="只提醒当前学生近期需要关注的正式考试，完整筛选和历史记录仍进入考试中心。"
             tasks={examScheduleTasks}
-            footer={<Button href="#/my-exams" tone="secondary">查看我的考试</Button>}
+            href="#/my-exams"
+            listAction="进入考试"
           />
-          <TaskGroup
+          <TaskSummaryCard
             title="班级答疑"
             desc="展示老师已回复、要求补充或需要学生继续处理的问题。"
             tasks={qaTasks}
-            footer={<Button href="#/qa" tone="secondary">查看全部答疑</Button>}
+            href="#/qa"
+            listAction="进入答疑"
           />
         </div>
         <PrototypeNote className="mt-4">
-          学习任务摘要按资源来源拆分：课程学习包含课程课时和课程内试卷/练习，首页最多展示 3 条；试卷练习展示课程练习和试卷中心里已开始未完成的试卷；班级测试只展示当前班级布置的测试；考试安排只做正式考试提醒，完整管理仍在考试中心；班级答疑只提醒需要学生动作的问题。
+          学习任务摘要按资源来源拆分，但首页只展示摘要卡片和最近一条，完整列表进入对应二级页面。
         </PrototypeNote>
       </section>
 
-      <section className="mt-8">
-        <PageHeader title="个人学习资产" desc="错题本和学习记录属于学生个人资产，当前阶段不再提供按多学校、多班级筛选。" />
-        <div className="grid gap-4 md:grid-cols-2">
-          <Card>
-            <div className="flex flex-col justify-between gap-4 md:flex-row md:items-start">
-              <div>
-                <h3 className="m-0 text-lg">错题巩固</h3>
-                <p className="leading-7 text-muted">汇总试卷刷题、考试、班级测试和课堂练习中的错题。</p>
-                <Meta><Tag tone="amber">待掌握 24</Tag><Tag tone="green">已掌握 14</Tag></Meta>
-              </div>
-              <Button href="#/wrong-book" tone="ghost">去巩固</Button>
-            </div>
-          </Card>
-          <Card>
-            <div className="flex flex-col justify-between gap-4 md:flex-row md:items-start">
-              <div>
-                <h3 className="m-0 text-lg">学习记录</h3>
-                <p className="leading-7 text-muted">当前阶段只记录视频和音频课时学习。</p>
-                <Meta><Tag>最近 {learningRecords.length} 条</Tag><Tag tone="blue">当前班级记录</Tag></Meta>
-              </div>
-              <Button href="#/learning-record" tone="ghost">查看记录</Button>
-            </div>
-          </Card>
-        </div>
-        <PrototypeNote className="mt-4">学习中心现在以“当前学校班级 + 学习任务摘要 + 个人学习资产”组织页面。学生只能加入一个学校，并在该学校下加入一个班级；班级课程、班级测试和班级答疑入口合并到当前学校班级与学习任务摘要中。</PrototypeNote>
-      </section>
+      <LearningRecordSummary note="学习中心现在以“当前学校班级 + 学习任务摘要 + 学习记录”组织页面。学生只能加入一个学校，并在该学校下加入一个班级；班级课程、班级测试和班级答疑入口合并到当前学校班级与学习任务摘要中。" />
     </>
+  );
+}
+
+function LearningRecordSummary({ note }) {
+  return (
+    <section className="mt-8">
+      <PageHeader title="学习记录" desc="当前阶段只记录视频和音频课时学习。" action={<Button href="#/learning-record" tone="secondary">查看全部记录</Button>} />
+      <div className="grid gap-3">
+        {learningRecords.slice(0, 2).map((item) => (
+          <Card key={`${item.title}-${item.time}`} className="grid gap-4 md:grid-cols-[120px_1fr] md:items-center">
+            <time className="text-sm text-muted">{item.time}</time>
+            <div>
+              <strong>{item.title}</strong>
+              <p className="mb-0 mt-2 leading-7 text-muted">{item.detail}</p>
+              <Meta><Tag tone={item.status === "已完成" ? "green" : "cyan"}>{normalizeLearningStatus(item.status)}</Tag></Meta>
+            </div>
+          </Card>
+        ))}
+      </div>
+      {note ? <PrototypeNote className="mt-4">{note}</PrototypeNote> : null}
+    </section>
+  );
+}
+
+function TaskSummaryCard({ title, desc, tasks, href, listAction }) {
+  const latestTask = tasks[0];
+
+  return (
+    <Card className="flex h-full flex-col justify-between gap-4">
+      <div>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h3 className="m-0 text-lg">{title}</h3>
+          <Tag tone="blue">{tasks.length} 项</Tag>
+        </div>
+        <PrototypeNote className="mt-2">{desc}</PrototypeNote>
+        {latestTask ? (
+          <div className="mt-4 rounded-ui border border-line bg-slate-50 p-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <Tag tone={latestTask.tone}>{latestTask.meta}</Tag>
+              {latestTask.tags?.map((tag) => <Tag key={tag}>{tag}</Tag>)}
+            </div>
+            <strong className="mt-3 block">{latestTask.title}</strong>
+            {latestTask.detail ? <p className="mb-0 mt-1 text-sm leading-6 text-muted">{latestTask.detail}</p> : null}
+          </div>
+        ) : (
+          <p className="mb-0 mt-4 text-sm text-muted">暂无待处理内容</p>
+        )}
+      </div>
+      <div className="flex flex-wrap gap-2">
+        {latestTask ? <Button href={latestTask.href}>{latestTask.action}</Button> : null}
+        <Button href={href} tone="secondary">{listAction}</Button>
+      </div>
+    </Card>
   );
 }
 
@@ -310,7 +293,7 @@ function TaskGroup({ title, desc, tasks, footer }) {
       <div className="mb-4 flex flex-col justify-between gap-3 md:flex-row md:items-start">
         <div>
           <h3 className="m-0 text-lg">{title}</h3>
-          <p className="mb-0 mt-2 text-sm leading-6 text-muted">{desc}</p>
+          <PrototypeNote className="mt-2">{desc}</PrototypeNote>
         </div>
         <div className="flex flex-wrap gap-2 md:justify-end">
           {footer}
@@ -333,12 +316,66 @@ function TaskRow({ task }) {
         <div className="flex flex-wrap items-center gap-2">
           <strong>{task.title}</strong>
           <Tag tone={task.tone}>{task.meta}</Tag>
+          {task.tags?.map((tag) => <Tag key={tag}>{tag}</Tag>)}
         </div>
-        <p className="mb-0 mt-1 leading-6 text-muted">{task.detail}</p>
+        {task.detail ? <p className="mb-0 mt-1 leading-6 text-muted">{task.detail}</p> : null}
       </div>
       <Button href={task.href} tone={task.tone === "gray" ? "secondary" : "primary"}>{task.action}</Button>
     </div>
   );
+}
+
+function normalizeLearningStatus(status) {
+  if (status === "学习中") return "进行中";
+  if (status === "待完成") return "未开始";
+  if (status === "已学完" || status === "已结束") return "已完成";
+  return status;
+}
+
+function getLearningStatusTone(status) {
+  const normalizedStatus = normalizeLearningStatus(status);
+  if (normalizedStatus === "已完成") return "green";
+  if (normalizedStatus === "进行中") return "cyan";
+  return "gray";
+}
+
+function getQaRelation(item) {
+  return item.lesson ? `${item.course} / ${item.lesson}` : item.course;
+}
+
+function hasQaReply(item) {
+  return Boolean(item.reply || item.followUp);
+}
+
+function getQaMessages(item) {
+  const messages = [
+    {
+      time: item.createdAt,
+      sender: "我",
+      info: item.question,
+      tone: "gray",
+    },
+  ];
+
+  if (item.reply) {
+    messages.push({
+      time: item.updatedAt,
+      sender: item.teacher,
+      info: item.reply,
+      tone: "blue",
+    });
+  }
+
+  if (item.followUp) {
+    messages.push({
+      time: item.updatedAt,
+      sender: item.teacher,
+      info: item.followUp,
+      tone: "amber",
+    });
+  }
+
+  return messages;
 }
 
 export function MyExamsPage() {
@@ -489,9 +526,12 @@ export function ClassDetailPage() {
 }
 
 export function ClassCoursesPage() {
-  const inProgressCount = classCourses.filter((course) => course.status === "学习中").length;
-  const finishedCount = classCourses.filter((course) => course.status === "已学完").length;
+  const inProgressCount = classCourses.filter((course) => normalizeLearningStatus(course.status) === "进行中").length;
+  const finishedCount = classCourses.filter((course) => normalizeLearningStatus(course.status) === "已完成").length;
   const waitingCount = classCourses.filter((course) => course.status === "未开始").length;
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(4);
+  const currentCourses = paginateRows(classCourses, page, pageSize);
 
   return (
     <>
@@ -501,13 +541,14 @@ export function ClassCoursesPage() {
         action={<Button href="#/learning" tone="secondary">返回学习中心</Button>}
       />
       <div className="grid gap-4 md:grid-cols-3">
-        <Stat label="学习中" value={inProgressCount} />
+        <Stat label="进行中" value={inProgressCount} />
         <Stat label="未开始" value={waitingCount} />
-        <Stat label="已学完" value={finishedCount} />
+        <Stat label="已完成" value={finishedCount} />
       </div>
       <div className="mt-6 grid gap-4 md:grid-cols-2">
-        {classCourses.map((course) => {
+        {currentCourses.map((course) => {
           const actionText = course.progress === "0%" ? "开始学习" : course.progress === "100%" ? "复习课程" : "继续学习";
+          const courseStatus = normalizeLearningStatus(course.status);
 
           return (
             <Card key={course.title}>
@@ -520,7 +561,7 @@ export function ClassCoursesPage() {
                 </div>
                 <div>
                   <div className="flex flex-wrap items-center gap-2">
-                    <Tag tone={course.statusTone}>{course.status}</Tag>
+                    <Tag tone={getLearningStatusTone(courseStatus)}>{courseStatus}</Tag>
                     <Tag>{course.category}</Tag>
                   </div>
                   <h3 className="mb-2 mt-4 text-lg">{course.currentLesson}</h3>
@@ -540,6 +581,18 @@ export function ClassCoursesPage() {
           );
         })}
       </div>
+      <Pagination
+        label="班级课程"
+        onPageChange={setPage}
+        onPageSizeChange={(size) => {
+          setPageSize(size);
+          setPage(1);
+        }}
+        page={page}
+        pageSize={pageSize}
+        pageSizeOptions={[4, 8, 12]}
+        total={classCourses.length}
+      />
       <PrototypeNote className="mt-5">
         班级课程只展示当前学校班级分配的课程，不展示学生在公开入口单独试看或购买的课程；课程详情仍复用当前的课程学习详情页。
       </PrototypeNote>
@@ -551,6 +604,9 @@ export function ClassExamPage() {
   const activeCount = classExams.filter((exam) => exam.status === "进行中").length;
   const waitingCount = classExams.filter((exam) => exam.status === "未开始").length;
   const endedCount = classExams.filter((exam) => exam.status === "已结束").length;
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(4);
+  const currentExams = paginateRows(classExams, page, pageSize);
 
   return (
     <>
@@ -565,7 +621,7 @@ export function ClassExamPage() {
         <Stat label="已结束" value={endedCount} />
       </div>
       <div className="mt-6 grid gap-4">
-        {classExams.map((exam) => (
+        {currentExams.map((exam) => (
           <Card key={exam.title} className="grid gap-5 md:grid-cols-[1fr_260px] md:items-center">
             <div>
               <h2 className="m-0 text-xl">{exam.title}</h2>
@@ -589,6 +645,18 @@ export function ClassExamPage() {
           </Card>
         ))}
       </div>
+      <Pagination
+        label="班级测试"
+        onPageChange={setPage}
+        onPageSizeChange={(size) => {
+          setPageSize(size);
+          setPage(1);
+        }}
+        page={page}
+        pageSize={pageSize}
+        pageSizeOptions={[4, 8, 12]}
+        total={classExams.length}
+      />
       <PrototypeNote className="mt-5">
         班级测试采用考试型答题和解析界面，但列表不再按题型、课程或专业分类展示；它只呈现测试本身的关键字段。
       </PrototypeNote>
@@ -679,51 +747,131 @@ const classExamQuestionGroups = normalizeQuestionGroups([
 ], { prefix: "class-exam", answerCount: 8, markedIndexes: [11] });
 
 const classExamQuestions = getAllExamQuestions(classExamQuestionGroups);
+const paperPracticeColumns = ["试卷名称", "所属专业", "题目数量", "客观题数量", "客观题正确率", "用时", "状态", "操作"];
+const paperPracticeGridTemplate = "minmax(220px,1.6fr) minmax(120px,0.9fr) 90px 100px 120px 100px 90px 120px";
+
+function PaperPracticeRow({ paper }) {
+  const status = normalizePaperPracticeStatus(paper.status);
+  const actionText = status === "已完成" ? "查看解析" : status === "进行中" ? "继续刷题" : "开始练习";
+  const actionHref = status === "已完成" ? "#/paper-analysis" : "#/paper-answer";
+
+  return (
+    <>
+      <div>
+        <a className="font-semibold text-ink hover:text-blue-600" href={actionHref}>{paper.title}</a>
+      </div>
+      <span>{paper.category}</span>
+      <span>{paper.questionCount}</span>
+      <span>{paper.objectiveCount}</span>
+      <span>{paper.objectiveAccuracy}</span>
+      <span>{paper.duration}</span>
+      <Tag tone={getLearningStatusTone(status)}>{status}</Tag>
+      <Button href={actionHref} tone={status === "已完成" ? "ghost" : "secondary"}>{actionText}</Button>
+    </>
+  );
+}
+
+function normalizePaperPracticeStatus(status) {
+  if (status === "待完成") return "未开始";
+  return normalizeLearningStatus(status);
+}
 
 export function PaperPracticePage() {
-  const unfinishedCount = paperPracticeRecords.filter((paper) => paper.status === "进行中" || paper.status === "待完成").length;
-  const finishedCount = paperPracticeRecords.filter((paper) => paper.status === "已完成").length;
+  const subjectTypes = ["文化课", "专业课"];
+  const paperSources = ["全部", "官方", "本校"];
+  const paperTypes = ["全部", "一轮复习", "二轮专题", "三轮冲刺", "模拟测试", "真题汇编"];
+  const paperYears = ["全部年份", "2025", "2024", "2023"];
+  const defaultCategory = categories.find((category) => category.unlocked)?.name || categories[0].name;
+  const [selectedSubjectType, setSelectedSubjectType] = useState("专业课");
+  const [selectedCultureSubject, setSelectedCultureSubject] = useState(cultureSubjects[0].name);
+  const [selectedCategory, setSelectedCategory] = useState(defaultCategory);
+  const [selectedSource, setSelectedSource] = useState("全部");
+  const [selectedType, setSelectedType] = useState("全部");
+  const [selectedYear, setSelectedYear] = useState("全部年份");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(5);
+  const visiblePaperPracticeRecords = paperPracticeRecords.filter((paper) => paper.source === "试卷中心" && (paper.status === "进行中" || paper.status === "已完成"));
+  const filteredPapers = visiblePaperPracticeRecords.filter((paper) => {
+    const subjectMatched = selectedSubjectType === "专业课"
+      ? paper.subject === "专业课" && paper.category === selectedCategory
+      : paper.subject === selectedCultureSubject;
+    const sourceMatched = selectedSource === "全部" || paper.paperSource === selectedSource;
+    const typeMatched = selectedType === "全部" || paper.type === selectedType;
+    const yearMatched = selectedYear === "全部年份" || paper.year === selectedYear;
+    return subjectMatched && sourceMatched && typeMatched && yearMatched;
+  });
+  const unfinishedCount = filteredPapers.filter((paper) => paper.status === "进行中").length;
+  const finishedCount = filteredPapers.filter((paper) => paper.status === "已完成").length;
+  const currentPapers = paginateRows(filteredPapers, page, pageSize);
+  const isProfessional = selectedSubjectType === "专业课";
+  const unlockedCategories = categories.filter((category) => category.unlocked);
+  const categoryOptions = (unlockedCategories.length ? unlockedCategories : categories).map((item) => item.name);
+  const cultureSubjectOptions = cultureSubjects.map((item) => item.name);
+
+  function resetPracticeFilters(next) {
+    setPage(1);
+    next();
+  }
 
   return (
     <>
       <PageHeader
         title="试卷练习"
-        desc="汇总课程内练习和学生在试卷中心开始过的试卷，方便学生继续测试、查看解析或进入错题练习。"
+        desc="只展示学生在试卷中心开始过或已经完成的试卷；筛选维度与试卷中心保持一致。"
         action={<Button href="#/learning" tone="secondary">返回学习中心</Button>}
       />
+      <Card className="mb-5 p-4">
+        <div className="grid gap-4">
+          <LearningFilterButtons label="类型" options={subjectTypes} value={selectedSubjectType} onChange={(value) => resetPracticeFilters(() => setSelectedSubjectType(value))} />
+          <label className="flex flex-wrap items-center gap-3 text-sm">
+            <span className="w-12 font-semibold">{isProfessional ? "专业" : "科目"}</span>
+            <select
+              className="min-h-10 rounded-ui border border-line px-3"
+              onChange={(event) => resetPracticeFilters(() => (isProfessional ? setSelectedCategory(event.target.value) : setSelectedCultureSubject(event.target.value)))}
+              value={isProfessional ? selectedCategory : selectedCultureSubject}
+            >
+              {(isProfessional ? categoryOptions : cultureSubjectOptions).map((item) => <option key={item}>{item}</option>)}
+            </select>
+          </label>
+        </div>
+      </Card>
+      <div className="mb-5 grid gap-4 rounded-ui border border-line bg-white p-4">
+        <LearningFilterButtons label="来源" options={paperSources} value={selectedSource} onChange={(value) => resetPracticeFilters(() => setSelectedSource(value))} />
+        <LearningFilterButtons label="分类" options={paperTypes} value={selectedType} onChange={(value) => resetPracticeFilters(() => setSelectedType(value))} />
+        <label className="flex flex-wrap items-center gap-3 text-sm">
+          <span className="w-12 font-semibold">年份</span>
+          <select className="min-h-10 rounded-ui border border-line px-3" value={selectedYear} onChange={(event) => resetPracticeFilters(() => setSelectedYear(event.target.value))}>
+            {paperYears.map((item) => <option key={item}>{item}</option>)}
+          </select>
+        </label>
+      </div>
       <div className="grid gap-4 md:grid-cols-3">
-        <Stat label="待完成" value={unfinishedCount} />
+        <Stat label="进行中" value={unfinishedCount} />
         <Stat label="已完成" value={finishedCount} />
-        <Stat label="总记录" value={paperPracticeRecords.length} />
+        <Stat label="筛选结果" value={filteredPapers.length} />
       </div>
       <div className="mt-6">
         <DataTable
-          columns={["试卷名称", "来源", "题目数", "客观题正确率", "用时", "状态", "操作"]}
-          gridTemplateColumns="minmax(220px,1.7fr) minmax(120px,1fr) 90px 120px 100px 100px minmax(140px,1fr)"
-          rows={paperPracticeRecords}
-          renderRow={(paper) => (
-            <>
-              <div>
-                <strong>{paper.title}</strong>
-                <p className="mb-0 mt-1 text-xs leading-5 text-muted">{paper.relation}</p>
-              </div>
-              <span>{paper.source}</span>
-              <span>{paper.questionCount} 题</span>
-              <span>{paper.objectiveAccuracy}</span>
-              <span>{paper.duration}</span>
-              <Tag tone={paper.statusTone}>{paper.status}</Tag>
-              <div className="flex flex-wrap gap-2">
-                <Button href={paper.status === "已完成" ? "#/paper-analysis" : "#/paper-answer"} tone={paper.status === "已完成" ? "secondary" : "primary"}>
-                  {paper.action}
-                </Button>
-                {paper.status === "已完成" ? <Button href="#/wrong-book" tone="ghost">错题练习</Button> : null}
-              </div>
-            </>
-          )}
+          columns={paperPracticeColumns}
+          gridTemplateColumns={paperPracticeGridTemplate}
+          rows={currentPapers}
+          renderRow={(paper) => <PaperPracticeRow paper={paper} />}
+        />
+        <Pagination
+          label="试卷练习"
+          onPageChange={setPage}
+          onPageSizeChange={(size) => {
+            setPageSize(size);
+            setPage(1);
+          }}
+          page={page}
+          pageSize={pageSize}
+          pageSizeOptions={[5, 10, 20]}
+          total={filteredPapers.length}
         />
       </div>
       <PrototypeNote className="mt-5">
-        试卷练习合并两类来源：课程内绑定的练习/测试，以及学生从试卷中心开始过或完成过的试卷；正式考试仍保留在考试中心或班级测试中。
+        试卷练习列表只保留试卷中心中的个人练习记录；课程内练习不混入该列表。点击试卷名称进入继续练习或解析。
       </PrototypeNote>
     </>
   );
@@ -872,11 +1020,12 @@ export function CourseStudyPage() {
     { key: "catalog", label: "目录" },
     { key: "papers", label: "试卷" },
     { key: "materials", label: "课件" },
+    { key: "qa", label: "答疑" },
   ];
 
   return (
     <>
-      <PageHeader title={classCourse.title} action={<Button href="#/qa" tone="ghost">向老师提问</Button>} />
+      <PageHeader title={classCourse.title} action={<Button href="#/qa" tone="ghost">查看答疑记录</Button>} />
       <Card className="mb-5">
         <div className="grid gap-5 md:grid-cols-[260px_1fr_160px] md:items-center">
           <div className="grid min-h-[150px] place-items-center rounded-ui bg-[linear-gradient(135deg,#1d4ed8,#0f766e)] p-5 text-center text-white">
@@ -913,6 +1062,7 @@ export function CourseStudyPage() {
       {activeTab === "catalog" ? <CourseCatalog /> : null}
       {activeTab === "papers" ? <CoursePapers /> : null}
       {activeTab === "materials" ? <CourseMaterials /> : null}
+      {activeTab === "qa" ? <CourseQAPanel /> : null}
     </>
   );
 }
@@ -940,7 +1090,7 @@ function CourseCatalog() {
                 <div><strong>{lesson.title}</strong><p className="mt-1 text-sm text-muted">{lesson.duration}</p></div>
                 <Tag>{lesson.type}</Tag>
                 <Tag tone={lesson.statusTone}>{lesson.status}</Tag>
-                <Button href={lesson.type === "课件" ? "#/course-material" : "#/course-lesson"} tone={lesson.status === "学习中" ? "primary" : "secondary"}>
+                <Button href="#/course-lesson" tone={lesson.status === "学习中" ? "primary" : "secondary"}>
                   {lesson.status === "已学完" ? "复习" : "学习"}
                 </Button>
               </div>
@@ -953,23 +1103,17 @@ function CourseCatalog() {
 }
 
 function CoursePapers() {
+  const coursePaperRows = paperPracticeRecords.filter((paper) => paper.source === "课程练习");
+
   return (
-    <div className="grid gap-4">
-      {coursePapers.map((paper) => (
-        <Card key={paper.title}>
-          <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
-            <div>
-              <h3 className="m-0 text-lg">{paper.title}</h3>
-              <p className="mt-2 leading-7 text-muted">{paper.scope}</p>
-              <Meta><Tag>{paper.meta}</Tag><Tag tone={paper.statusTone}>{paper.status}</Tag></Meta>
-            </div>
-            <Button href="#/class-exam-answer" tone={paper.status === "待完成" ? "primary" : "secondary"}>
-              {paper.status === "待完成" ? "开始测试" : "查看"}
-            </Button>
-          </div>
-        </Card>
-      ))}
-      <PrototypeNote>这里的“试卷”是课程绑定的测试题库或练习，不是考试中心的正式考试活动。</PrototypeNote>
+    <div>
+      <DataTable
+        columns={paperPracticeColumns}
+        gridTemplateColumns={paperPracticeGridTemplate}
+        rows={coursePaperRows}
+        renderRow={(paper) => <PaperPracticeRow paper={paper} />}
+      />
+      <PrototypeNote className="mt-5">课程试卷与学习中心试卷练习使用同一套字段、状态和操作；这里只展示当前课程关联的练习记录。</PrototypeNote>
     </div>
   );
 }
@@ -990,10 +1134,88 @@ function CourseMaterials() {
   );
 }
 
+function CourseQAPanel() {
+  return (
+    <div className="grid gap-5 md:grid-cols-[1fr_320px]">
+      <Card>
+        <h3 className="m-0 text-lg">课程答疑记录</h3>
+        <p className="mb-0 mt-2 text-sm leading-6 text-muted">展示当前课程下已经提交的问题、老师回复和继续追问记录。</p>
+        <div className="mt-4 grid gap-3">
+          {qaRecords.filter((item) => item.course === classCourse.title).slice(0, 3).map((item) => (
+            <div className="grid gap-3 rounded-ui border border-line p-4 md:grid-cols-[1fr_90px_110px] md:items-center" key={item.id}>
+              <div>
+                <strong>{item.lesson || item.course}</strong>
+                <p className="mb-0 mt-1 text-xs text-muted">更新：{item.updatedAt}</p>
+              </div>
+              <Tag tone={hasQaReply(item) ? "green" : "gray"}>{hasQaReply(item) ? "已回复" : "未回复"}</Tag>
+              <Button href={`#/qa-detail?id=${item.id}`} tone="ghost">查看记录</Button>
+            </div>
+          ))}
+        </div>
+        <Meta><Button href="#/qa" tone="secondary">进入答疑</Button></Meta>
+      </Card>
+      <div className="self-start">
+        <AskTeacherCard course={classCourse.title} lesson="可选择具体课时" compact />
+      </div>
+    </div>
+  );
+}
+
 const lessonFormats = [
-  { key: "video", label: "视频", title: "函数概念与表示", duration: "18 分钟" },
-  { key: "audio", label: "音频", title: "函数概念速听", duration: "12 分钟" },
-  { key: "pdf", label: "PDF", title: "函数基础讲义", duration: "8 页" },
+  {
+    key: "micro",
+    label: "微课",
+    title: "函数概念与表示",
+    duration: "12 分钟",
+    progress: "62%",
+    summary: "通过短视频理解函数定义、定义域和值域，适合碎片时间快速复习。",
+    hasPractice: true,
+  },
+  {
+    key: "mooc",
+    label: "慕课",
+    title: "函数图像与性质精讲",
+    duration: "48 分钟",
+    progress: "35%",
+    summary: "通过长视频系统讲解函数图像、单调性和常见题型，学习动作与微课一致。",
+    hasPractice: true,
+  },
+  {
+    key: "audio",
+    label: "音频",
+    title: "函数概念速听",
+    duration: "12 分钟",
+    progress: "48%",
+    summary: "用于通勤或课后复听，重点回顾函数概念、表示方法和易错点。",
+    hasPractice: true,
+  },
+  {
+    key: "pdf",
+    label: "PDF",
+    title: "函数基础讲义",
+    duration: "8 页",
+    progress: "第 5 / 8 页",
+    summary: "阅读函数基础讲义，掌握定义域、值域、函数表示法和典型例题。",
+    hasPractice: false,
+  },
+  {
+    key: "ppt",
+    label: "PPT",
+    title: "函数图像课件",
+    duration: "18 页",
+    progress: "第 7 / 18 页",
+    summary: "按页查看课堂课件，重点理解一次函数和二次函数图像特征。",
+    hasPractice: false,
+  },
+  {
+    key: "richtext",
+    label: "富文本",
+    title: "函数知识点图文讲解",
+    duration: "图文阅读",
+    progress: "已读 60%",
+    summary: "以图文方式梳理函数知识点、例题步骤和常见误区。",
+    hasPractice: false,
+  },
 ];
 
 const lessonPracticeQuestions = [
@@ -1018,14 +1240,13 @@ const lessonPracticeQuestions = [
 ];
 
 export function CourseLessonPage() {
-  const [activeFormat, setActiveFormat] = useState("video");
+  const [activeLessonKey, setActiveLessonKey] = useState("micro");
   const [practiceOpen, setPracticeOpen] = useState(false);
   const [practiceIndex, setPracticeIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState("");
-  const currentLesson = lessonFormats.find((item) => item.key === activeFormat) || lessonFormats[0];
-  const nextLessons = courseCatalog.flatMap((chapter) => chapter.lessons).filter((lesson) => lesson.type !== "练习").slice(1, 5);
+  const currentLesson = lessonFormats.find((item) => item.key === activeLessonKey) || lessonFormats[0];
   const practiceQuestion = lessonPracticeQuestions[practiceIndex];
-  const canPractice = activeFormat === "video" || activeFormat === "audio";
+  const canPractice = currentLesson.hasPractice;
 
   function openPractice() {
     setPracticeIndex(0);
@@ -1046,80 +1267,50 @@ export function CourseLessonPage() {
     <>
       <PageHeader
         title={currentLesson.title}
-        desc="课程课时播放页承接班级课程、学习记录和继续学习入口；当前阶段重点覆盖视频和音频学习记录。"
+        desc="课时学习页承接班级课程、学习记录、课时练习和课程答疑；不同课时类型展示不同学习内容。"
         action={<Button href="#/course-study" tone="secondary">返回课程详情</Button>}
       />
       <div className="grid gap-5 md:grid-cols-[1fr_300px]">
         <Card className="p-0">
-          <div className="border-b border-line p-3">
-            <div className="flex gap-2 overflow-x-auto">
-              {lessonFormats.map((format) => (
-                <button
-                  className={`min-h-10 rounded-ui px-4 ${activeFormat === format.key ? "bg-blue-600 text-white" : "bg-slate-50 text-slate-700 hover:bg-blue-50"}`}
-                  key={format.key}
-                  onClick={() => setActiveFormat(format.key)}
-                  type="button"
-                >
-                  {format.label}
-                </button>
-              ))}
-            </div>
-          </div>
-          {activeFormat === "pdf" ? (
-            <div className="grid min-h-[360px] place-items-center bg-slate-50 text-center text-muted">
-              <div>
-                <strong className="block text-xl text-slate-700">{currentLesson.title}</strong>
-                <span className="mt-2 block">{classCourse.title} · {currentLesson.duration}</span>
-                <div className="mt-6 min-h-[180px] w-[min(420px,70vw)] rounded-ui border border-dashed border-line bg-white p-6 text-left leading-7">
-                  <strong className="text-slate-700">PDF 预览</strong>
-                  <p className="mb-0 mt-3">函数的概念、定义域、值域和常见表示方法。</p>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className={`${activeFormat === "audio" ? "bg-[linear-gradient(135deg,#0f766e,#1d4ed8)]" : "bg-slate-950"} grid min-h-[360px] place-items-center text-white`}>
-              <div className="grid justify-items-center gap-4 text-center">
-                <span className="grid h-16 w-16 place-items-center rounded-full bg-white/15 text-2xl">{activeFormat === "audio" ? "♪" : "▶"}</span>
-                <div>
-                  <strong className="block text-xl">{currentLesson.title}</strong>
-                  <span className="mt-2 block text-sm text-white/70">{classCourse.title} · {currentLesson.duration}</span>
-                </div>
-                <div className="h-2 w-[min(460px,70vw)] overflow-hidden rounded-full bg-white/15">
-                  <span className="block h-full rounded-full bg-white" style={{ width: activeFormat === "audio" ? "48%" : "62%" }} />
-                </div>
-              </div>
-            </div>
-          )}
+          <LessonContent lesson={currentLesson} />
           <div className="p-5">
             <div className="flex flex-wrap items-center gap-2">
               <Tag tone="amber">学习中</Tag>
-              <Tag>{currentLesson.label}课时</Tag>
-              <Tag tone="blue">已学 62%</Tag>
+              <Tag>{currentLesson.label}</Tag>
+              <Tag tone="blue">{currentLesson.progress}</Tag>
             </div>
             <h2 className="mb-2 mt-5 text-xl">本课要点</h2>
-            <p className="leading-8 text-muted">理解函数的定义、表示方式和常见应用场景，完成后会写入学习记录，并同步更新课程进度。</p>
+            <p className="leading-8 text-muted">{currentLesson.summary}</p>
             <div className="mt-5 h-2 overflow-hidden rounded-full bg-slate-100">
-              <span className="block h-full rounded-full bg-blue-600" style={{ width: "62%" }} />
+              <span className="block h-full rounded-full bg-blue-600" style={{ width: getLessonProgressWidth(currentLesson) }} />
             </div>
             <Meta>
               <Button tone="secondary">上一课时</Button>
               {canPractice ? <Button onClick={openPractice}>课时练习</Button> : null}
-              {canPractice ? <Button tone="secondary" onClick={openPractice}>模拟播放完成</Button> : null}
-              <Button href="#/qa-detail" tone="ghost">针对本课提问</Button>
+              <Button>下一课时</Button>
             </Meta>
           </div>
         </Card>
-        <Card>
-          <h3 className="m-0 text-lg">课时目录</h3>
-          <div className="mt-4 grid gap-3">
-            {nextLessons.map((lesson) => (
-              <a className="rounded-ui border border-line p-3 text-slate-700 hover:border-blue-200 hover:bg-blue-50" href={lesson.type === "课件" ? "#/course-material" : "#/course-lesson"} key={lesson.title}>
-                <strong className="block">{lesson.title}</strong>
-                <span className="mt-1 block text-xs text-muted">{lesson.type} · {lesson.duration}</span>
-              </a>
-            ))}
-          </div>
-        </Card>
+        <div className="grid gap-5">
+          <Card>
+            <h3 className="m-0 text-lg">课时目录</h3>
+            <div className="mt-4 grid gap-3">
+              {lessonFormats.map((lesson) => (
+                <button
+                  className={`rounded-ui border p-3 text-left transition ${activeLessonKey === lesson.key ? "border-blue-300 bg-blue-50 text-blue-700" : "border-line text-slate-700 hover:border-blue-200 hover:bg-blue-50"}`}
+                  key={lesson.key}
+                  onClick={() => setActiveLessonKey(lesson.key)}
+                  type="button"
+                >
+                  <strong className="block">{lesson.title}</strong>
+                  <span className="mt-1 block text-xs text-muted">{lesson.label} · {lesson.duration}</span>
+                </button>
+              ))}
+            </div>
+            <PrototypeNote className="mt-4">当前目录用 6 条课时模拟真实课程内容，分别覆盖微课、慕课、音频、PDF、PPT 和富文本。</PrototypeNote>
+          </Card>
+          <AskTeacherCard course={classCourse.title} lesson={currentLesson.title} compact />
+        </div>
       </div>
       <Modal open={practiceOpen} title="课时练习" onClose={() => setPracticeOpen(false)}>
         <div className="grid gap-4">
@@ -1147,6 +1338,114 @@ export function CourseLessonPage() {
       </Modal>
     </>
   );
+}
+
+function LessonContent({ lesson }) {
+  if (lesson.key === "micro" || lesson.key === "mooc") {
+    return (
+      <div className="grid aspect-video min-h-[360px] place-items-center bg-slate-950 p-6 text-white">
+        <div className="grid max-w-xl justify-items-center gap-4 text-center">
+          <span className="grid h-16 w-16 place-items-center rounded-full bg-white/15 text-2xl">▶</span>
+          <div>
+            <Tag tone="blue">{lesson.label}</Tag>
+            <strong className="mt-4 block text-xl">{lesson.title}</strong>
+            <span className="mt-2 block text-sm text-white/70">{classCourse.title} · {lesson.duration}</span>
+          </div>
+          <div className="h-2 w-[min(460px,70vw)] overflow-hidden rounded-full bg-white/15">
+            <span className="block h-full rounded-full bg-white" style={{ width: getLessonProgressWidth(lesson) }} />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (lesson.key === "audio") {
+    return (
+      <div className="bg-[linear-gradient(135deg,#0f766e,#1d4ed8)] p-5 text-white">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center">
+          <span className="grid h-14 w-14 shrink-0 place-items-center rounded-full bg-white/15 text-2xl">♪</span>
+          <div className="min-w-0 flex-1">
+            <Tag tone="cyan">{lesson.label}</Tag>
+            <strong className="mt-3 block truncate text-xl">{lesson.title}</strong>
+            <span className="mt-1 block text-sm text-white/70">{classCourse.title} · {lesson.duration}</span>
+            <div className="mt-4 h-2 overflow-hidden rounded-full bg-white/15">
+              <span className="block h-full rounded-full bg-white" style={{ width: getLessonProgressWidth(lesson) }} />
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <Button tone="secondary">播放</Button>
+            <Button tone="secondary">倍速</Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (lesson.key === "pdf") {
+    return (
+      <div className="bg-slate-100 p-6">
+        <article className="mx-auto min-h-[640px] w-full max-w-3xl rounded-ui border border-line bg-white p-8 leading-8 shadow-sm">
+          <Meta><Tag>{lesson.label}</Tag><Tag>{lesson.progress}</Tag></Meta>
+          <h2 className="mb-4 mt-5 text-xl">函数基础讲义</h2>
+          <p>一、函数是描述两个变量之间对应关系的重要工具。每一个自变量取值，都对应唯一的函数值。</p>
+          <p>二、复习时重点关注定义域、值域、解析式、图像表示和实际应用题中的变量关系。</p>
+          <p>三、常见题型包括求函数值、判断函数关系、识别图像变化趋势和结合实际情境建立函数模型。</p>
+          <p>四、阅读讲义后，建议回到课时练习或试卷练习中完成同类型题目巩固。</p>
+        </article>
+      </div>
+    );
+  }
+
+  if (lesson.key === "ppt") {
+    return (
+      <div className="grid min-h-[460px] place-items-center bg-slate-900 p-6 text-white">
+        <section className="aspect-video w-full max-w-3xl rounded-ui bg-white p-8 text-slate-900">
+          <Meta><Tag>{lesson.label}</Tag><Tag>{lesson.progress}</Tag></Meta>
+          <h2 className="mt-5 text-2xl">函数图像与性质</h2>
+          <ul className="mt-6 grid gap-3 leading-7">
+            <li>观察图像与坐标轴的交点。</li>
+            <li>结合斜率判断函数增减性。</li>
+            <li>用关键点快速排除错误选项。</li>
+          </ul>
+        </section>
+      </div>
+    );
+  }
+
+  return (
+    <article className="min-h-[620px] bg-white p-8 leading-8 text-slate-700">
+      <Meta><Tag>{lesson.label}</Tag><Tag>{lesson.progress}</Tag></Meta>
+      <h2 className="mb-4 mt-5 text-2xl text-ink">函数知识点图文讲解</h2>
+      <p>函数的核心是“对应关系”。判断一个关系是不是函数，先看每一个输入值是否只能得到一个输出值。</p>
+      <p>常见表示方法包括解析式、表格和图像。考试中通常会把这三种表示互相转换，要求学生识别变量关系。</p>
+      <section className="mt-5 grid gap-4 md:grid-cols-2">
+        <div className="rounded-ui border border-line bg-slate-50 p-4">
+          <strong>定义域</strong>
+          <p className="mb-0 mt-2">使函数表达式有意义的所有自变量取值组成定义域。</p>
+        </div>
+        <div className="rounded-ui border border-line bg-slate-50 p-4">
+          <strong>值域</strong>
+          <p className="mb-0 mt-2">函数所有可能输出值组成值域，常结合图像或解析式判断。</p>
+        </div>
+      </section>
+      <div className="mt-5 rounded-ui border border-line bg-slate-50 p-4">
+        <strong>例题提示：</strong>
+        <p className="mb-0 mt-2">若 f(x)=2x+1，求 f(3)，只需要把 x=3 代入解析式即可。</p>
+      </div>
+    </article>
+  );
+}
+
+function getLessonProgressWidth(lesson) {
+  const progressMap = {
+    micro: "62%",
+    mooc: "35%",
+    audio: "48%",
+    pdf: "62%",
+    ppt: "39%",
+    richtext: "60%",
+  };
+  return progressMap[lesson.key] || "0%";
 }
 
 export function CourseMaterialPage() {
@@ -1187,47 +1486,102 @@ export function CourseMaterialPage() {
   );
 }
 
+function AskTeacherCard({ course, lesson, compact = false, className = "" }) {
+  return (
+    <Card className={className}>
+      <h3 className="m-0 text-lg">发起提问</h3>
+      <p className="mb-0 mt-2 text-sm leading-6 text-muted">
+        {compact ? "当前问题会关联到正在学习的课时，老师回复后进入班级答疑列表。" : "从课程上下文发起提问，提交后可在班级答疑列表查看处理进度。"}
+      </p>
+      <div className="mt-4 grid gap-4">
+        <label className="grid gap-2 text-sm">
+          关联课程
+          <input className="min-h-10 rounded-ui border border-line bg-slate-50 px-3 text-slate-700" readOnly value={course} />
+        </label>
+        <label className="grid gap-2 text-sm">
+          关联课时
+          {lesson === "可选择具体课时" ? (
+            <select className="min-h-10 rounded-ui border border-line px-3">
+              {courseCatalog.flatMap((chapter) => chapter.lessons).filter((item) => item.type !== "练习").map((item) => (
+                <option key={item.title}>{item.title}</option>
+              ))}
+            </select>
+          ) : (
+            <input className="min-h-10 rounded-ui border border-line bg-slate-50 px-3 text-slate-700" readOnly value={lesson} />
+          )}
+        </label>
+        <label className="grid gap-2 text-sm">
+          问题内容
+          <textarea className={`${compact ? "min-h-24" : "min-h-28"} rounded-ui border border-line p-3`} placeholder="请描述你遇到的问题" />
+        </label>
+        <div className="flex flex-wrap gap-2">
+          <Button>提交问题</Button>
+          <Button href="#/qa" tone="ghost">查看答疑记录</Button>
+        </div>
+      </div>
+    </Card>
+  );
+}
+
 export function QAPage() {
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(5);
+  const currentRecords = paginateRows(qaRecords, page, pageSize);
+  const waitingCount = qaRecords.filter((item) => item.status === "待回复" || item.status === "待补充").length;
+  const repliedCount = qaRecords.filter((item) => item.status === "已回复").length;
+
   return (
     <>
-      <PageHeader title="班级答疑" desc="轻量留言形式，不做实时 IM。学生向老师提问，老师在学校端回复。" />
-      <div className="grid gap-5 md:grid-cols-2">
-        <Card>
-          <h3>历史答疑</h3>
-          <div className="mt-4 grid gap-3">
-            <div className="rounded-ui border border-line p-4"><strong>函数图像这道题为什么选 C？</strong><p className="mt-2 text-muted">关联：数学基础强化 / 课堂练习 1</p><Meta><Tag tone="amber">待回复</Tag><Button href="#/qa-detail" tone="ghost">查看记录</Button></Meta></div>
-            <div className="rounded-ui border border-line p-4"><strong>数据库 E-R 图怎么判断联系类型？</strong><p className="mt-2 text-muted">老师回复：先看实体之间是一对一、一对多还是多对多。</p><Meta><Tag tone="green">已回复</Tag><Button href="#/qa-detail" tone="ghost">查看记录</Button></Meta></div>
-          </div>
-        </Card>
-        <Card>
-          <h3>发起提问</h3>
-          <div className="mt-4 grid gap-4">
-            <label className="grid gap-2">
-              关联课程
-              <select className="min-h-10 rounded-ui border border-line px-3">
-                {classCourses.map((course) => <option key={course.title}>{course.title}</option>)}
-              </select>
-            </label>
-            <label className="grid gap-2">
-              关联课时（非必选）
-              <select className="min-h-10 rounded-ui border border-line px-3">
-                <option>函数概念与表示</option>
-                <option>函数图像与性质</option>
-                <option>E-R 模型入门</option>
-                <option>阅读定位综合训练</option>
-              </select>
-            </label>
-            <label className="grid gap-2">问题内容<textarea className="min-h-28 rounded-ui border border-line p-3" placeholder="请描述你遇到的问题" /></label>
-            <Button>提交问题</Button>
-          </div>
-          <PrototypeNote className="mt-4">提问面向当前班级老师，先选择班级课程，再按需要关联具体课时或题目。</PrototypeNote>
-        </Card>
+      <PageHeader
+        title="班级答疑"
+        desc="答疑页只作为历史答疑列表和记录入口；发起提问放在课程详情和课时学习上下文里。"
+        action={<Button href="#/learning" tone="secondary">返回学习中心</Button>}
+      />
+      <div className="grid gap-4 md:grid-cols-3">
+        <Stat label="全部答疑" value={qaRecords.length} />
+        <Stat label="待处理" value={waitingCount} />
+        <Stat label="已回复" value={repliedCount} />
+      </div>
+      <div className="mt-6">
+        <DataTable
+          columns={["关联课程", "发起时间", "更新时间", "是否回复", "操作"]}
+          gridTemplateColumns="minmax(220px,1.5fr) 170px 170px 90px 110px"
+          rows={currentRecords}
+          renderRow={(item) => (
+            <>
+              <div>
+                <strong>{item.course}</strong>
+                {item.lesson ? <p className="mb-0 mt-1 text-xs text-muted">{item.lesson}</p> : null}
+              </div>
+              <span>{item.createdAt}</span>
+              <span>{item.updatedAt}</span>
+              <Tag tone={hasQaReply(item) ? "green" : "gray"}>{hasQaReply(item) ? "是" : "否"}</Tag>
+              <Button href={`#/qa-detail?id=${item.id}`} tone="ghost">查看记录</Button>
+            </>
+          )}
+        />
+        <Pagination
+          label="答疑"
+          onPageChange={setPage}
+          onPageSizeChange={(size) => {
+            setPageSize(size);
+            setPage(1);
+          }}
+          page={page}
+          pageSize={pageSize}
+          pageSizeOptions={[5, 10, 20]}
+          total={qaRecords.length}
+        />
       </div>
     </>
   );
 }
 
 export function QADetailPage() {
+  const params = new URLSearchParams((window.location.hash.split("?")[1] || ""));
+  const item = qaRecords.find((record) => record.id === params.get("id")) || qaRecords[0];
+  const messages = getQaMessages(item);
+
   return (
     <>
       <PageHeader
@@ -1237,32 +1591,33 @@ export function QADetailPage() {
       />
       <div className="grid gap-5 md:grid-cols-[1fr_280px]">
         <Card>
-          <Tag tone="green">已回复</Tag>
-          <h2 className="mb-2 mt-4 text-xl">数据库 E-R 图怎么判断联系类型？</h2>
-          <p className="leading-7 text-muted">关联课程：数据库基础 · 关联课时：E-R 模型入门</p>
+          <Tag tone={item.statusTone}>{item.status}</Tag>
+          <h2 className="mb-2 mt-4 text-xl">{getQaRelation(item)}</h2>
+          <p className="leading-7 text-muted">本记录按时间、发送人和答疑信息展示，不单独设置提问标题。</p>
           <div className="mt-6 grid gap-4">
-            <div className="rounded-ui bg-slate-50 p-4">
-              <strong>我：</strong>
-              <p className="mb-0 mt-2 leading-7 text-slate-700">题目里给了学生和课程两个实体，我不确定应该判断为一对多还是多对多。</p>
-            </div>
-            <div className="rounded-ui border border-blue-100 bg-blue-50 p-4">
-              <strong>王老师：</strong>
-              <p className="mb-0 mt-2 leading-7 text-slate-700">先看一个学生能否选择多门课程，再看一门课程能否被多个学生选择。如果两边都成立，就是多对多联系。</p>
-            </div>
+            {messages.map((message) => (
+              <div className={`rounded-ui border p-4 ${message.tone === "blue" ? "border-blue-100 bg-blue-50" : message.tone === "amber" ? "border-amber-100 bg-amber-50" : "border-line bg-slate-50"}`} key={`${message.time}-${message.sender}`}>
+                <Meta>
+                  <Tag tone={message.tone}>{message.sender}</Tag>
+                  <span className="text-sm text-muted">{message.time}</span>
+                </Meta>
+                <p className="mb-0 mt-3 leading-7 text-slate-700">{message.info}</p>
+              </div>
+            ))}
           </div>
           <label className="mt-6 grid gap-2">
-            继续追问
-            <textarea className="min-h-28 rounded-ui border border-line p-3" placeholder="补充你的问题或截图说明" />
+            回复 / 追问
+            <textarea className="min-h-28 rounded-ui border border-line p-3" placeholder="继续补充答疑信息" />
           </label>
-          <Meta><Button>提交追问</Button><Button href="#/course-lesson" tone="ghost">回到课时</Button></Meta>
+          <Meta><Button>提交回复/追问</Button></Meta>
         </Card>
         <Card>
           <h3 className="m-0 text-lg">关联信息</h3>
           <div className="mt-4 grid gap-3 text-sm leading-7 text-slate-700">
-            <span>课程：数据库基础</span>
-            <span>课时：E-R 模型入门</span>
-            <span>首次提问：2026-02-13 12:00:00</span>
-            <span>更新时间：2026-02-13 16:20:00</span>
+            <span>课程：{item.course}</span>
+            <span>课时：{item.lesson}</span>
+            <span>首次提问：{item.createdAt}</span>
+            <span>更新时间：{item.updatedAt}</span>
           </div>
         </Card>
       </div>
@@ -1272,9 +1627,9 @@ export function QADetailPage() {
 
 export function WrongBookPage() {
   const subjectOptions = ["全部", "语文", "数学", "英语", classes[0].category];
-  const sourceOptions = ["全部", "课程", "试卷", "考试"];
+  const typeOptions = ["全部", ...Array.from(new Set(wrongQuestions.map((item) => item.questionType)))];
   const [subject, setSubject] = useState("全部");
-  const [source, setSource] = useState("全部");
+  const [questionType, setQuestionType] = useState("全部");
   const [keyword, setKeyword] = useState("");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
@@ -1287,8 +1642,8 @@ export function WrongBookPage() {
   const filteredRows = wrongRows
     .filter((item) => !removedIds.includes(item.id))
     .filter((item) => subject === "全部" || item.subject === subject)
-    .filter((item) => source === "全部" || item.source === source)
-    .filter((item) => !keyword || item.point.includes(keyword) || item.title.includes(keyword));
+    .filter((item) => questionType === "全部" || item.questionType === questionType)
+    .filter((item) => !keyword || item.point.includes(keyword) || item.title.includes(keyword) || item.course.includes(keyword) || item.questionStem.includes(keyword));
   const currentRows = filteredRows.slice((page - 1) * pageSize, page * pageSize);
 
   function toggleSelected(id) {
@@ -1319,7 +1674,7 @@ export function WrongBookPage() {
     <>
       <PageHeader title="错题巩固" desc="汇总课程、试卷和考试中的错题，支持筛选、分页、单题解析、单题练习和手动移除。" />
       <Card className="mb-5">
-        <div className="grid gap-4 md:grid-cols-[160px_160px_1fr_auto] md:items-end">
+        <div className="grid gap-4 md:grid-cols-[140px_140px_1fr_auto] md:items-end">
           <label className="grid gap-2 text-sm">
             科目
             <select className="min-h-10 rounded-ui border border-line px-3" value={subject} onChange={(event) => resetFilters(() => setSubject(event.target.value))}>
@@ -1327,14 +1682,14 @@ export function WrongBookPage() {
             </select>
           </label>
           <label className="grid gap-2 text-sm">
-            错题来源
-            <select className="min-h-10 rounded-ui border border-line px-3" value={source} onChange={(event) => resetFilters(() => setSource(event.target.value))}>
-              {sourceOptions.map((item) => <option key={item}>{item}</option>)}
+            题型
+            <select className="min-h-10 rounded-ui border border-line px-3" value={questionType} onChange={(event) => resetFilters(() => setQuestionType(event.target.value))}>
+              {typeOptions.map((item) => <option key={item}>{item}</option>)}
             </select>
           </label>
           <label className="grid gap-2 text-sm">
-            知识点
-            <input className="min-h-10 rounded-ui border border-line px-3" placeholder="输入知识点或题目关键词" value={keyword} onChange={(event) => resetFilters(() => setKeyword(event.target.value))} />
+            题干 / 课程 / 知识点
+            <input className="min-h-10 rounded-ui border border-line px-3" placeholder="输入题干、课程或知识点关键词" value={keyword} onChange={(event) => resetFilters(() => setKeyword(event.target.value))} />
           </label>
           <Button tone="secondary" onClick={removeSelected}>批量移除</Button>
         </div>
@@ -1342,17 +1697,19 @@ export function WrongBookPage() {
       {currentRows.length ? (
         <>
           <DataTable
-            columns={["", "错题", "科目", "来源", "知识点", "状态", "操作"]}
-            gridTemplateColumns="40px minmax(220px,1.5fr) 110px 90px 120px 100px minmax(220px,1fr)"
+            columns={["", "题目预览", "题目类型", "课程 / 知识点", "错题次数", "上次练习", "操作"]}
+            gridTemplateColumns="40px minmax(260px,1.7fr) 100px minmax(160px,1fr) 90px 120px minmax(220px,1fr)"
             rows={currentRows}
             renderRow={(item) => (
               <>
                 <input checked={selectedIds.includes(item.id)} onChange={() => toggleSelected(item.id)} type="checkbox" />
-                <div><strong>{item.title}</strong><p className="mt-1 text-xs text-muted">{item.detail}</p></div>
-                <span>{item.subject}</span>
-                <span>{item.source}</span>
-                <span>{item.point}</span>
-                <Tag tone={item.status === "已掌握" ? "green" : "amber"}>{item.status}</Tag>
+                <div>
+                  <strong>{getQuestionPreview(item.questionStem)}</strong>
+                </div>
+                <Tag tone="blue">{item.questionType}</Tag>
+                <span>{item.course} / {item.point}</span>
+                <span>{item.wrongCount} 次</span>
+                <span>{item.lastPractice}</span>
                 <div className="flex flex-wrap gap-2">
                   <Button tone="ghost" onClick={() => setAnalysisItem(item)}>解析</Button>
                   <Button tone="secondary" onClick={() => openPractice(item)}>练习</Button>
@@ -1383,9 +1740,10 @@ export function WrongBookPage() {
       <Modal open={Boolean(analysisItem)} title="错题解析" onClose={() => setAnalysisItem(null)}>
         {analysisItem ? (
           <div className="grid gap-4">
-            <Meta><Tag>{analysisItem.subject}</Tag><Tag>{analysisItem.source}</Tag><Tag tone="amber">{analysisItem.point}</Tag></Meta>
+            <Meta><Tag>{analysisItem.questionType}</Tag><Tag>{analysisItem.source}</Tag><Tag tone="amber">{analysisItem.course} / {analysisItem.point}</Tag></Meta>
             <h3 className="m-0 text-lg">{analysisItem.title}</h3>
-            <p className="m-0 leading-7 text-muted">{analysisItem.detail}</p>
+            <p className="m-0 leading-7 text-slate-700">{analysisItem.questionStem}</p>
+            <p className="m-0 text-sm text-muted">{analysisItem.detail}</p>
             <section className="rounded-ui border border-line bg-slate-50 p-4 leading-7">
               <div><strong>参考答案：</strong>{analysisItem.answer}</div>
               <div className="mt-2"><strong>题目解析：</strong>{analysisItem.analysis}</div>
@@ -1397,9 +1755,9 @@ export function WrongBookPage() {
       <Modal open={Boolean(practiceItem)} title="错题练习" onClose={() => setPracticeItem(null)}>
         {practiceItem ? (
           <div className="grid gap-4">
-            <Meta><Tag>{practiceItem.subject}</Tag><Tag>{practiceItem.point}</Tag></Meta>
+            <Meta><Tag>{practiceItem.questionType}</Tag><Tag>{practiceItem.course}</Tag><Tag>{practiceItem.point}</Tag></Meta>
             <h3 className="m-0 text-lg">{practiceItem.title}</h3>
-            <p className="m-0 leading-7 text-slate-700">若 f(x)=2x+1，则 f(3)=？</p>
+            <p className="m-0 leading-7 text-slate-700">{practiceItem.questionStem}</p>
             <div className="grid gap-3">
               {["A. 5", "B. 6", practiceItem.answer, "D. 8"].map((option) => (
                 <label className={`flex gap-3 rounded-ui border p-4 ${practiceAnswer === option ? "border-blue-300 bg-blue-50" : "border-line"}`} key={option}>
@@ -1486,7 +1844,13 @@ export function LearningRecordPage() {
       <PageHeader title="学习记录" desc="当前阶段只记录视频和音频课时的学习记录，不记录普通图文、试卷和考试流水。" />
       <div className="grid gap-3">
         {learningRecords.map((item) => (
-          <Card key={item.title} className="grid gap-4 md:grid-cols-[120px_1fr]">
+          <Card key={`${item.title}-${item.time}`} className="grid gap-4 md:grid-cols-[150px_120px_1fr] md:items-center">
+            <div
+              className="grid min-h-[84px] place-items-center rounded-ui p-3 text-center text-sm font-semibold text-white"
+              style={{ background: item.coverTone }}
+            >
+              <span>图片占位</span>
+            </div>
             <time className="text-sm text-muted">{item.time}</time>
             <div><strong>{item.title}</strong><p className="mt-2 leading-7 text-muted">{item.detail}</p><Meta><Tag tone={item.status === "已完成" ? "green" : "amber"}>{item.status}</Tag><Button href="#/course-lesson" tone="ghost">继续学习</Button></Meta></div>
           </Card>
@@ -1494,4 +1858,33 @@ export function LearningRecordPage() {
       </div>
     </>
   );
+}
+
+function paginateRows(rows, page, pageSize) {
+  return rows.slice((page - 1) * pageSize, page * pageSize);
+}
+
+function LearningFilterButtons({ label, options, value, onChange }) {
+  return (
+    <div className="flex flex-wrap items-center gap-3 text-sm">
+      <span className="w-12 font-semibold">{label}</span>
+      <div className="flex flex-wrap gap-2">
+        {options.map((option) => (
+          <button
+            className={`min-h-9 rounded-ui border px-3 ${value === option ? "border-blue-600 bg-blue-50 text-blue-700" : "border-line bg-white text-slate-700 hover:bg-slate-50"}`}
+            key={option}
+            onClick={() => onChange(option)}
+            type="button"
+          >
+            {option}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function getQuestionPreview(stem) {
+  if (!stem) return "";
+  return stem.length > 34 ? `${stem.slice(0, 34)}...` : stem;
 }

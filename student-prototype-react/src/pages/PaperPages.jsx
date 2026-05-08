@@ -329,7 +329,7 @@ export function PaperCenterPage() {
   const statusTone = {
     未开始: "gray",
     进行中: "amber",
-    已结束: "green",
+    已完成: "green",
   };
 
   useEffect(() => {
@@ -401,34 +401,37 @@ export function PaperCenterPage() {
             columns={["试卷", "分类", "年份", "时长", "总题数", "总分", "已做次数", "状态/结果", "操作"]}
             gridTemplateColumns="minmax(220px,1.8fr) 92px 72px 82px 82px 72px 86px minmax(140px,1.1fr) 120px"
             rows={paginatedPapers}
-            renderRow={(paper) => (
-              <>
-                <div>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <strong>{paper.title}</strong>
-                    <Tag tone={paper.source === "本校" ? "red" : "blue"}>{paper.source}</Tag>
+            renderRow={(paper) => {
+              const displayStatus = normalizePaperStatus(paper.studyStatus);
+              return (
+                <>
+                  <div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <strong>{paper.title}</strong>
+                      <Tag tone={paper.source === "本校" ? "red" : "blue"}>{paper.source}</Tag>
+                    </div>
                   </div>
-                </div>
-                <span>{paper.type}</span>
-                <span>{paper.year}</span>
-                <span>{paper.duration} 分钟</span>
-                <span>{paper.questionCount} 道</span>
-                <span>{paper.totalScore} 分</span>
-                <span>{paper.doneCount} 次</span>
-                <span>
-                  {isStudent && paper.unlocked ? (
-                    <>
-                      <Tag tone={statusTone[paper.studyStatus]}>{paper.studyStatus}</Tag>
-                      {paper.studyStatus === "已结束" ? <p className="mt-2 text-xs text-muted">得分 {paper.score} 分</p> : null}
-                      {paper.studyStatus === "进行中" && paper.remainingTime ? <p className="mt-2 text-xs text-muted">剩余时间：{paper.remainingTime}</p> : null}
-                    </>
-                  ) : (
-                    <Tag tone="gray">-</Tag>
-                  )}
-                </span>
-                {isStudent && paper.unlocked ? <PaperAction status={paper.studyStatus} /> : <LockedPaperAction roleKey={roleKey} />}
-              </>
-            )}
+                  <span>{paper.type}</span>
+                  <span>{paper.year}</span>
+                  <span>{paper.duration} 分钟</span>
+                  <span>{paper.questionCount} 道</span>
+                  <span>{paper.totalScore} 分</span>
+                  <span>{paper.doneCount} 次</span>
+                  <span>
+                    {isStudent && paper.unlocked ? (
+                      <>
+                        <Tag tone={statusTone[displayStatus]}>{displayStatus}</Tag>
+                        {displayStatus === "已完成" ? <p className="mt-2 text-xs text-muted">得分 {paper.score} 分</p> : null}
+                        {displayStatus === "进行中" && paper.remainingTime ? <p className="mt-2 text-xs text-muted">剩余时间：{paper.remainingTime}</p> : null}
+                      </>
+                    ) : (
+                      <Tag tone="gray">-</Tag>
+                    )}
+                  </span>
+                  {isStudent && paper.unlocked ? <PaperAction status={displayStatus} /> : <LockedPaperAction roleKey={roleKey} />}
+                </>
+              );
+            }}
           />
           <Pagination
             label="试卷列表"
@@ -466,7 +469,7 @@ function PaperAction({ status }) {
     return <PaperListButton href="#/paper-answer">继续刷题</PaperListButton>;
   }
 
-  if (status === "已结束") {
+  if (status === "已完成") {
     return (
       <div className="grid w-full gap-2">
         <PaperListButton href="#/paper-analysis" tone="ghost">查看解析</PaperListButton>
@@ -476,6 +479,11 @@ function PaperAction({ status }) {
   }
 
   return <PaperListButton href="#/paper-answer">开始刷题</PaperListButton>;
+}
+
+function normalizePaperStatus(status) {
+  if (status === "已结束") return "已完成";
+  return status;
 }
 
 function PaperListButton({ children, href, tone = "primary" }) {
