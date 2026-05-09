@@ -461,7 +461,7 @@ function LockedPaperAction({ roleKey }) {
     return <PaperListButton href="#/school-apply" tone="secondary">申请入校</PaperListButton>;
   }
 
-  return <PaperListButton href="#/profile" tone="secondary">暂无权限</PaperListButton>;
+  return <Tag tone="gray">暂无权限</Tag>;
 }
 
 function PaperAction({ status }) {
@@ -570,7 +570,7 @@ export function PaperAnswerPage() {
         <Card>
           <h3>答题进度</h3>
           <p className="leading-7 text-muted">已答 12 题，未答 33 题，已标记 {markedQuestions.length} 题。</p>
-          <PrototypeNote className="mt-3">完成练习后进入试卷解析页，展示答题总结和题目解析；中途离开使用保存退出。</PrototypeNote>
+          <PrototypeNote className="mt-3">完成练习后进入试卷解析页，按题目逐条查看答案和解析；中途离开使用保存退出。</PrototypeNote>
           <PaperQuestionNavigator activeKey={activeKey} groups={answerGroups} onSelect={(question) => setActiveKey(question.key)} />
           <QuestionStatusLegend mode="answer" />
           <Meta><Button href="#/papers" tone="secondary">保存退出</Button><Button href="#/paper-analysis" tone="warning">完成练习</Button></Meta>
@@ -603,7 +603,7 @@ export function PaperAnalysisPage() {
     <>
       <PageHeader
         title="试卷解析"
-        desc="练习提交后展示答题总结和题目解析；解析页只承接本次试卷练习结果，不处理学习中心中的个人资产。"
+        desc="练习提交后按题目逐条展示答案和解析；解析页只承接本次试卷练习结果，不处理学习中心中的个人资产。"
         action={<Button href="#/papers" tone="ghost">返回试卷中心</Button>}
       />
 
@@ -613,30 +613,6 @@ export function PaperAnalysisPage() {
         <Stat label="答题用时" value="42 分钟" />
         <Stat label="完成题量" value="45 / 45" />
       </div>
-
-      <Card className="mt-6">
-        <div className="flex flex-col justify-between gap-4 md:flex-row md:items-start">
-          <div>
-            <h2 className="m-0 text-xl">答题总结</h2>
-            <p className="mb-0 mt-3 leading-7 text-muted">
-              客观题已完成系统判卷，主观题在原型中展示参考答案和解析说明。学生可在本页逐题查看作答情况，并选择重新练习。
-            </p>
-          </div>
-          <Meta><Tag tone="green">已提交</Tag><Tag tone="blue">练习模式</Tag></Meta>
-        </div>
-      </Card>
-
-      <Card className="mt-4 border-l-4 border-l-blue-600">
-        <div className="flex flex-col justify-between gap-4 md:flex-row md:items-start">
-          <div>
-            <h2 className="m-0 text-xl">评估建议</h2>
-            <p className="mb-0 mt-3 leading-7 text-muted">
-              本次得分 82 分，基础题掌握较稳定；多选题和综合题中的函数图像、数列应用失分偏多。建议先回看对应课程讲解，再针对错题本中同类题型完成 2 轮专项练习。
-            </p>
-          </div>
-          <Meta><Tag tone="blue">建议复习</Tag><Tag tone="amber">函数图像</Tag><Tag tone="amber">数列应用</Tag></Meta>
-        </div>
-      </Card>
 
       <section className="mt-8">
         <PageHeader title="题目解析" />

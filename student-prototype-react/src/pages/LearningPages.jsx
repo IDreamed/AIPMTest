@@ -507,19 +507,12 @@ export function ClassDetailPage() {
             <Tag tone="green">当前学校班级</Tag>
             <h2 className="mb-2 mt-4 text-xl">{classes[0].school}</h2>
             <p className="leading-7 text-muted">{classes[0].name} · {classes[0].category}</p>
-            <Meta><Tag>专业课试卷权限已开通</Tag><Tag>学习进度 {classes[0].progress}</Tag></Meta>
+            <Meta><Tag>班级学生</Tag><Tag>学习进度 {classes[0].progress}</Tag></Meta>
           </div>
-          <Button href="#/course-lesson">继续学习</Button>
         </div>
       </Card>
       <div className="grid gap-4 md:grid-cols-4">
         <Stat label="班级课程" value="4" /><Stat label="班级测试" value="3" /><Stat label="答疑待回复" value="1" /><Stat label="学习进度" value="62%" />
-      </div>
-      <div className="mt-6 grid gap-4 md:grid-cols-2">
-        <Card><h3>班级课程</h3><p className="leading-7 text-muted">4 门课程 · 2 门待学</p><PrototypeNote className="mt-3">课程由老师从资源库成品课程、知识点切片和课堂练习中重排后分配。</PrototypeNote><Meta><Button href="#/course-study">学习数学基础强化</Button><Button href="#/course-study" tone="secondary">学习数据库基础</Button></Meta></Card>
-        <Card><h3>班级测试</h3><p className="leading-7 text-muted">5 场测试 · 1 场进行中 · 1 场待开始</p><PrototypeNote className="mt-3">班级测试是老师在班级内布置的小测、阶段测或结业测，不进入公开考试/联考详情页。</PrototypeNote><Meta><Button href="#/class-exam" tone="ghost">查看班级测试</Button></Meta></Card>
-        <Card><h3>班级答疑</h3><p className="leading-7 text-muted">1 条待回复</p><PrototypeNote className="mt-3">向老师一对一留言，可关联课程、课时或题目。</PrototypeNote><Meta><Button href="#/qa" tone="ghost">进入答疑</Button></Meta></Card>
-        <Card><h3>班级通知/资料</h3><p className="leading-7 text-muted">本周任务已发布</p><PrototypeNote className="mt-3">展示老师发布的学习通知、资料说明和近期任务。</PrototypeNote><Meta><Tag tone="amber">本周完成函数练习</Tag></Meta></Card>
       </div>
     </>
   );
@@ -804,9 +797,8 @@ export function PaperPracticePage() {
   const finishedCount = filteredPapers.filter((paper) => paper.status === "已完成").length;
   const currentPapers = paginateRows(filteredPapers, page, pageSize);
   const isProfessional = selectedSubjectType === "专业课";
-  const unlockedCategories = categories.filter((category) => category.unlocked);
-  const categoryOptions = (unlockedCategories.length ? unlockedCategories : categories).map((item) => item.name);
-  const cultureSubjectOptions = cultureSubjects.map((item) => item.name);
+  const categoryOptions = Array.from(new Set(visiblePaperPracticeRecords.filter((paper) => paper.subject === "专业课").map((paper) => paper.category)));
+  const cultureSubjectOptions = Array.from(new Set(visiblePaperPracticeRecords.filter((paper) => paper.subject !== "专业课").map((paper) => paper.subject)));
 
   function resetPracticeFilters(next) {
     setPage(1);
@@ -823,16 +815,12 @@ export function PaperPracticePage() {
       <Card className="mb-5 p-4">
         <div className="grid gap-4">
           <LearningFilterButtons label="类型" options={subjectTypes} value={selectedSubjectType} onChange={(value) => resetPracticeFilters(() => setSelectedSubjectType(value))} />
-          <label className="flex flex-wrap items-center gap-3 text-sm">
-            <span className="w-12 font-semibold">{isProfessional ? "专业" : "科目"}</span>
-            <select
-              className="min-h-10 rounded-ui border border-line px-3"
-              onChange={(event) => resetPracticeFilters(() => (isProfessional ? setSelectedCategory(event.target.value) : setSelectedCultureSubject(event.target.value)))}
-              value={isProfessional ? selectedCategory : selectedCultureSubject}
-            >
-              {(isProfessional ? categoryOptions : cultureSubjectOptions).map((item) => <option key={item}>{item}</option>)}
-            </select>
-          </label>
+          <LearningFilterButtons
+            label={isProfessional ? "专业" : "科目"}
+            options={isProfessional ? categoryOptions : cultureSubjectOptions}
+            value={isProfessional ? selectedCategory : selectedCultureSubject}
+            onChange={(value) => resetPracticeFilters(() => (isProfessional ? setSelectedCategory(value) : setSelectedCultureSubject(value)))}
+          />
         </div>
       </Card>
       <div className="mb-5 grid gap-4 rounded-ui border border-line bg-white p-4">
@@ -1025,7 +1013,7 @@ export function CourseStudyPage() {
 
   return (
     <>
-      <PageHeader title={classCourse.title} action={<Button href="#/qa" tone="ghost">查看答疑记录</Button>} />
+      <PageHeader title={classCourse.title} />
       <Card className="mb-5">
         <div className="grid gap-5 md:grid-cols-[260px_1fr_160px] md:items-center">
           <div className="grid min-h-[150px] place-items-center rounded-ui bg-[linear-gradient(135deg,#1d4ed8,#0f766e)] p-5 text-center text-white">
@@ -1139,7 +1127,7 @@ function CourseQAPanel() {
     <div className="grid gap-5 md:grid-cols-[1fr_320px]">
       <Card>
         <h3 className="m-0 text-lg">课程答疑记录</h3>
-        <p className="mb-0 mt-2 text-sm leading-6 text-muted">展示当前课程下已经提交的问题、老师回复和继续追问记录。</p>
+        <p className="mb-0 mt-2 text-sm leading-6 text-muted">当前课程相关问题与老师回复。</p>
         <div className="mt-4 grid gap-3">
           {qaRecords.filter((item) => item.course === classCourse.title).slice(0, 3).map((item) => (
             <div className="grid gap-3 rounded-ui border border-line p-4 md:grid-cols-[1fr_90px_110px] md:items-center" key={item.id}>
@@ -1218,6 +1206,15 @@ const lessonFormats = [
   },
 ];
 
+const lessonTypeMap = {
+  微课: "micro",
+  慕课: "mooc",
+  音频: "audio",
+  PDF: "pdf",
+  PPT: "ppt",
+  富文本: "richtext",
+};
+
 const lessonPracticeQuestions = [
   {
     title: "函数 f(x)=2x+1，则 f(3)=？",
@@ -1294,20 +1291,37 @@ export function CourseLessonPage() {
         <div className="grid gap-5">
           <Card>
             <h3 className="m-0 text-lg">课时目录</h3>
-            <div className="mt-4 grid gap-3">
-              {lessonFormats.map((lesson) => (
-                <button
-                  className={`rounded-ui border p-3 text-left transition ${activeLessonKey === lesson.key ? "border-blue-300 bg-blue-50 text-blue-700" : "border-line text-slate-700 hover:border-blue-200 hover:bg-blue-50"}`}
-                  key={lesson.key}
-                  onClick={() => setActiveLessonKey(lesson.key)}
-                  type="button"
-                >
-                  <strong className="block">{lesson.title}</strong>
-                  <span className="mt-1 block text-xs text-muted">{lesson.label} · {lesson.duration}</span>
-                </button>
-              ))}
+            <div className="mt-4 max-h-[640px] overflow-y-auto pr-1">
+              <div className="grid gap-4">
+                {courseCatalog.map((chapter) => (
+                  <section key={chapter.title}>
+                    <h4 className="mb-2 mt-0 text-sm text-muted">{chapter.title}</h4>
+                    <div className="grid gap-2">
+                      {chapter.lessons.filter((lesson) => lesson.type !== "练习").map((lesson) => {
+                        const lessonKey = lessonTypeMap[lesson.type];
+                        const isActive = lessonKey && activeLessonKey === lessonKey;
+                        return (
+                          <button
+                            className={`rounded-ui border p-3 text-left transition ${
+                              isActive
+                                ? "border-blue-300 bg-blue-50 text-blue-700"
+                                : "border-line text-slate-700 hover:border-blue-200 hover:bg-blue-50"
+                            }`}
+                            key={lesson.title}
+                            onClick={() => lessonKey && setActiveLessonKey(lessonKey)}
+                            type="button"
+                          >
+                            <strong className="block">{lesson.title}</strong>
+                            <span className="mt-1 block text-xs text-muted">{lesson.type} · {lesson.duration}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </section>
+                ))}
+              </div>
             </div>
-            <PrototypeNote className="mt-4">当前目录用 6 条课时模拟真实课程内容，分别覆盖微课、慕课、音频、PDF、PPT 和富文本。</PrototypeNote>
+            <PrototypeNote className="mt-4">目录按章节分组并支持内部滚动；课堂练习不直接进入目录，归属于具体课时，通过“课时练习”触发。</PrototypeNote>
           </Card>
           <AskTeacherCard course={classCourse.title} lesson={currentLesson.title} compact />
         </div>
@@ -1479,7 +1493,6 @@ export function CourseMaterialPage() {
               </a>
             ))}
           </div>
-          <Meta><Button href="#/qa-detail" tone="ghost">对资料提问</Button></Meta>
         </Card>
       </div>
     </>
@@ -1491,7 +1504,7 @@ function AskTeacherCard({ course, lesson, compact = false, className = "" }) {
     <Card className={className}>
       <h3 className="m-0 text-lg">发起提问</h3>
       <p className="mb-0 mt-2 text-sm leading-6 text-muted">
-        {compact ? "当前问题会关联到正在学习的课时，老师回复后进入班级答疑列表。" : "从课程上下文发起提问，提交后可在班级答疑列表查看处理进度。"}
+        {compact ? "当前问题会关联到正在学习的课时。" : "从课程上下文发起提问。"}
       </p>
       <div className="mt-4 grid gap-4">
         <label className="grid gap-2 text-sm">
@@ -1516,7 +1529,6 @@ function AskTeacherCard({ course, lesson, compact = false, className = "" }) {
         </label>
         <div className="flex flex-wrap gap-2">
           <Button>提交问题</Button>
-          <Button href="#/qa" tone="ghost">查看答疑记录</Button>
         </div>
       </div>
     </Card>

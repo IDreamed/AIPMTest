@@ -18,7 +18,7 @@ export function HomePage() {
     <>
       <section className="grid min-h-[500px] gap-8 overflow-hidden rounded-ui bg-[linear-gradient(120deg,rgba(15,23,42,.96),rgba(30,64,175,.78))] p-8 text-white md:grid-cols-[1.05fr_.95fr] md:p-11">
         <div className="self-center">
-          <Tag tone="cyan">职教高考学生端原型</Tag>
+          <Tag tone="cyan">职教高考备考平台</Tag>
           <h1 className="m-0 mt-5 max-w-3xl text-4xl font-semibold leading-tight tracking-normal">职教高考轻量化教考平台</h1>
           <p className="mt-5 max-w-2xl text-base leading-8 text-white/80">
             连接课程学习、试卷练习、在线考试与成长记录，让学生在清晰的备考路径中持续积累、及时测评、稳步提升。
@@ -172,11 +172,8 @@ function NewsRichText({ item }) {
         </ul>
       </section>
       <div className="rounded-ui border border-dashed border-line bg-slate-50 p-5 text-center text-sm text-muted">
-        富文本占位符：这里可展示公告附件、重点说明块、表格或外部资料链接。
+        相关资料、公告附件和重点说明将在此展示
       </div>
-      <blockquote className="m-0 rounded-ui border-l-4 border-blue-600 bg-blue-50 px-4 py-3 text-sm leading-7 text-blue-900">
-        原型中使用占位符模拟富文本内容，不放真实图片；后续可根据后台富文本字段渲染实际内容。
-      </blockquote>
     </article>
   );
 }

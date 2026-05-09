@@ -31,7 +31,7 @@ export function ProfilePage() {
           </div>
           <div className="grid gap-4">
             <input className="min-h-10 max-w-md rounded-ui border border-line px-3" defaultValue={profileName} placeholder="请输入姓名" />
-            <input className="min-h-10 max-w-md rounded-ui border border-line px-3 text-muted" defaultValue="这个人很懒，什么都没有留下！" />
+            <input className="min-h-10 max-w-md rounded-ui border border-line px-3 text-muted" defaultValue="暂无个人简介" />
             <div className="grid gap-4 md:grid-cols-[minmax(0,280px)_1fr] md:items-center">
               <label className="grid gap-2 text-sm">
                 手机号：
@@ -75,9 +75,9 @@ export function ProfilePage() {
       <Card className="mt-6 p-0">
         <SectionTitle title="账户安全" />
         <div className="grid gap-4 p-5">
-          <SecurityRow action="修改密码" label="账号密码" text="如需更改当前账号密码，请点击【修改密码】哦~" />
+          <SecurityRow action="修改密码" label="账号密码" text="可修改当前账号密码" />
           <SecurityRow action="微信解绑" label="微信绑定" text="已绑定" tone="success" />
-          <SecurityRow action="修改手机号" label="修改手机号" text="如需修改手机号，请点击【修改手机号】哦" />
+          <SecurityRow action="修改手机号" label="修改手机号" text="可更新当前绑定手机号" />
         </div>
       </Card>
 
@@ -183,7 +183,7 @@ export function LoginPage() {
     <div className="grid gap-5 md:grid-cols-2">
       <Card>
         <h1 className="text-2xl">账号登录</h1>
-        <p className="leading-7 text-muted">登录后根据用户状态跳转：无班级进入个人中心，有班级进入学习中心，从试卷或考试进入则返回原页面继续判断权限。</p>
+        <p className="leading-7 text-muted">登录后可查看学习进度、考试安排、试卷练习和答疑记录。</p>
         <div className="mt-5 grid gap-4">
           <input className="min-h-10 rounded-ui border border-line px-3" placeholder="手机号/账号" />
           <input className="min-h-10 rounded-ui border border-line px-3" type="password" placeholder="密码" />
@@ -192,7 +192,7 @@ export function LoginPage() {
       </Card>
       <Card>
         <h1 className="text-2xl">注册账号</h1>
-        <p className="leading-7 text-muted">注册后只是普通用户。需要选择专业，并通过入校申请或联系管理员开通班级权限后，才能学习班级课程和刷对应大类试卷。</p>
+        <p className="leading-7 text-muted">注册后可提交入校申请，审核通过后进入班级学习。</p>
         <div className="mt-5 grid gap-4">
           <input className="min-h-10 rounded-ui border border-line px-3" placeholder="手机号" />
           <input className="min-h-10 rounded-ui border border-line px-3" placeholder="验证码" />

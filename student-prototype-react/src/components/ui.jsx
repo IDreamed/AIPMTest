@@ -54,7 +54,7 @@ export function AppShell({ children }) {
               <span className="grid h-9 w-9 place-items-center rounded-ui bg-gradient-to-br from-blue-600 to-teal-700 font-bold text-white">职</span>
               <span>
                 <strong className="block text-base">职教高考学习平台</strong>
-                <span className="text-xs text-muted">学生端组件化原型</span>
+                <span className="text-xs text-muted">学生端学习平台</span>
               </span>
             </a>
             <nav className={`${open ? "flex" : "hidden"} order-3 w-full gap-1 overflow-x-auto md:order-none md:flex md:w-auto`}>
@@ -117,7 +117,7 @@ export function AppShell({ children }) {
           {prototypeControlsOpen ? (
             <div className="w-[min(280px,calc(100vw_-_32px))] rounded-ui border border-line bg-white p-3 shadow-lift">
               <div className="mb-3 flex items-center justify-between gap-3">
-                <strong className="text-sm">原型控制</strong>
+                <strong className="text-sm">演示控制</strong>
                 <button
                   className="rounded-ui border border-line bg-white px-2 py-1 text-xs text-slate-700 hover:bg-slate-50"
                   onClick={() => setPrototypeControlsOpen(false)}
@@ -155,7 +155,7 @@ export function AppShell({ children }) {
               onClick={() => setPrototypeControlsOpen(true)}
               type="button"
             >
-              原型控制
+              演示控制
             </button>
           )}
         </div>
