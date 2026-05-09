@@ -628,9 +628,9 @@ export const courseCatalog = [
 ];
 
 export const coursePapers = [
-  { title: "函数基础随堂练习", scope: "函数概念、函数值、图像判断", meta: "10 题 / 15 分钟", status: "待完成", statusTone: "amber" },
-  { title: "数列基础阶段测试", scope: "等差数列、等比数列", meta: "20 题 / 30 分钟", status: "未开始", statusTone: "gray" },
-  { title: "数学基础结业测试", scope: "函数、数列、立体几何", meta: "35 题 / 50 分钟", status: "未开始", statusTone: "gray" },
+  { title: "函数基础随堂练习", meta: "10 题 / 15 分钟", status: "待完成", statusTone: "amber" },
+  { title: "数列基础阶段测试", meta: "20 题 / 30 分钟", status: "未开始", statusTone: "gray" },
+  { title: "数学基础结业测试", meta: "35 题 / 50 分钟", status: "未开始", statusTone: "gray" },
 ];
 
 export const paperPracticeRecords = [

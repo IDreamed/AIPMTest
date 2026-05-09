@@ -47,7 +47,7 @@ export function LearningCenterPage() {
       detail: `${exam.startAt || exam.time} 至 ${exam.endAt || exam.time}`,
       meta: exam.status,
       tags: [exam.type],
-      action: exam.status === "进行中" && !exam.submitted ? "进入考试" : "查看详情",
+      action: exam.status === "进行中" && !exam.submitted ? "开始考试" : "查看详情",
       href: exam.status === "进行中" && !exam.submitted ? "#/exam-answer" : `#/exam-detail?id=${exam.id}`,
     }));
   const registeredPaperPracticeTasks = paperPracticeRecords
@@ -214,7 +214,7 @@ export function LearningCenterPage() {
             desc="只提醒当前学生近期需要关注的正式考试，完整筛选和历史记录仍进入考试中心。"
             tasks={examScheduleTasks}
             href="#/my-exams"
-            listAction="进入考试"
+            listAction="查看安排"
           />
           <TaskSummaryCard
             title="班级答疑"
@@ -480,7 +480,7 @@ function MyExamAction({ exam }) {
     return (
       <div className={actionClassName}>
         <Button href={detailHref} tone="secondary">查看详情</Button>
-        <Button href="#/exam-answer">进入考试</Button>
+        <Button href="#/exam-answer">开始考试</Button>
       </div>
     );
   }
@@ -868,10 +868,20 @@ export function PaperPracticePage() {
 export function ClassExamAnswerPage() {
   const [confirmSubmit, setConfirmSubmit] = useState(false);
   const [activeKey, setActiveKey] = useState(classExamQuestions[0].key);
-  const activeIndex = Math.max(0, classExamQuestions.findIndex((question) => question.key === activeKey));
-  const activeQuestion = classExamQuestions[activeIndex] || classExamQuestions[0];
+  const [markedQuestions, setMarkedQuestions] = useState(() => [classExamQuestions[11]?.key].filter(Boolean));
+  const answerGroups = classExamQuestionGroups.map((group) => ({
+    ...group,
+    questions: group.questions.map((question) => ({
+      ...question,
+      marked: markedQuestions.includes(question.key) || (question.key !== activeKey && question.marked),
+    })),
+  }));
+  const answerQuestions = getAllExamQuestions(answerGroups);
+  const activeIndex = Math.max(0, answerQuestions.findIndex((question) => question.key === activeKey));
+  const activeQuestion = answerQuestions[activeIndex] || answerQuestions[0];
   const activeQuestionType = getExamQuestionType(activeQuestion);
   const activeIsComposite = activeQuestion.groupTitle.includes("综合题");
+  const isCurrentMarked = markedQuestions.includes(activeKey);
 
   return (
     <>
@@ -900,16 +910,23 @@ export function ClassExamAnswerPage() {
           </h2>
           <ExamAnswerInput questionType={activeQuestionType} />
           <Meta>
-            <Button tone="secondary" onClick={() => setActiveKey(classExamQuestions[Math.max(0, activeIndex - 1)].key)}>上一题</Button>
-            <Button onClick={() => setActiveKey(classExamQuestions[Math.min(classExamQuestions.length - 1, activeIndex + 1)].key)}>保存并下一题</Button>
-            <Button tone="ghost">标记本题</Button>
+            <Button tone="secondary" onClick={() => setActiveKey(answerQuestions[Math.max(0, activeIndex - 1)].key)}>上一题</Button>
+            <Button onClick={() => setActiveKey(answerQuestions[Math.min(answerQuestions.length - 1, activeIndex + 1)].key)}>保存并下一题</Button>
+            <Button
+              tone={isCurrentMarked ? "secondary" : "warning"}
+              onClick={() => setMarkedQuestions((items) => (
+                items.includes(activeKey) ? items.filter((item) => item !== activeKey) : [...items, activeKey]
+              ))}
+            >
+              {isCurrentMarked ? "取消标记" : "标记本题"}
+            </Button>
             <Button tone="warning" onClick={() => setConfirmSubmit(true)}>提交测试</Button>
           </Meta>
         </Card>
         <Card>
           <h3>题号导航</h3>
           <p className="leading-7 text-muted">按大题分组展示题号，覆盖单选、多选、判断、填空、简答和综合题。</p>
-          <ExamQuestionNavigator activeKey={activeKey} groups={classExamQuestionGroups} onSelect={(question) => setActiveKey(question.key)} />
+          <ExamQuestionNavigator activeKey={activeKey} groups={answerGroups} onSelect={(question) => setActiveKey(question.key)} />
           <ExamQuestionStatusLegend mode="answer" />
           <PrototypeNote className="mt-4">班级测试答题页不强调正式考试氛围，不展示赛事型考试介绍、联考排行或跨校信息。</PrototypeNote>
         </Card>

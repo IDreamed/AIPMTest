@@ -521,7 +521,7 @@ function FilterButtons({ label, options, value, onChange }) {
 }
 
 export function PaperAnswerPage() {
-  const [markedQuestions, setMarkedQuestions] = useState(["single-4", "single-7"]);
+  const [markedQuestions, setMarkedQuestions] = useState(["single-7"]);
   const [activeKey, setActiveKey] = useState("single-4");
   const currentQuestionKey = activeKey;
   const isCurrentMarked = markedQuestions.includes(currentQuestionKey);
@@ -556,7 +556,7 @@ export function PaperAnswerPage() {
             <Button tone="secondary">上一题</Button>
             <Button>下一题</Button>
             <Button
-              tone={isCurrentMarked ? "warning" : "ghost"}
+              tone={isCurrentMarked ? "secondary" : "warning"}
               onClick={() => setMarkedQuestions((items) => (
                 items.includes(currentQuestionKey)
                   ? items.filter((item) => item !== currentQuestionKey)

@@ -5,10 +5,10 @@ import { Button, Card, Meta, Modal, PageHeader, PrototypeNote, Tag } from "../co
 const newsCategories = ["全部", "政策解读", "考试通知", "平台公告", "备考指南"];
 
 const previewLessons = [
-  { title: "函数概念与表示", duration: "试看 10 分钟", status: "试看中" },
-  { title: "函数图像与性质", duration: "试看 10 分钟", status: "可试看" },
-  { title: "数列基础入门", duration: "试看 8 分钟", status: "可试看" },
-  { title: "立体几何高频题型", duration: "未开放试看", status: "需开通" },
+  { title: "函数概念与表示", duration: "试看 10 分钟" },
+  { title: "函数图像与性质", duration: "试看 10 分钟" },
+  { title: "数列基础入门", duration: "试看 8 分钟" },
+  { title: "立体几何高频题型", duration: "未开放试看" },
 ];
 
 export function HomePage() {
@@ -214,10 +214,8 @@ export function CoursePreviewPage() {
       <div className="mb-5 grid gap-5 md:grid-cols-[1fr_320px]">
         <Card className="grid min-h-[340px] place-items-center bg-slate-900 p-8 text-center text-white">
           <div>
-            <Tag tone="amber">{lesson.status}</Tag>
-            <h2 className="mb-3 mt-5 text-2xl">{lesson.title}</h2>
+            <h2 className="mb-3 mt-0 text-2xl">{lesson.title}</h2>
             <p className="text-white/70">{lesson.duration}</p>
-            {activeLesson < 3 ? <Meta><Tag tone="amber">剩余试看 08:42</Tag></Meta> : <Meta><Tag tone="gray">该课时未开放试看</Tag></Meta>}
           </div>
         </Card>
         <Card>
@@ -268,7 +266,6 @@ export function CoursePreviewPage() {
           {coursePapers.map((paper) => (
             <Card key={paper.title}>
               <h3 className="m-0 text-lg">{paper.title}</h3>
-              <p className="mt-2 leading-7 text-muted">{paper.scope}</p>
               <Meta><Tag>{paper.meta}</Tag><Tag tone="gray">需开通</Tag></Meta>
             </Card>
           ))}

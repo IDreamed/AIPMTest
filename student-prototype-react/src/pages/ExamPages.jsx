@@ -271,7 +271,7 @@ function ExamAction({ exam, roleKey }) {
     return (
       <div className="flex justify-end gap-2 whitespace-nowrap">
         <Button href={detailHref} tone="secondary">查看详情</Button>
-        <Button href="#/exam-answer">进入考试</Button>
+        <Button href="#/exam-answer">开始考试</Button>
       </div>
     );
   }
@@ -374,7 +374,7 @@ export function ExamDetailPage() {
       <PageHeader
         title={exam.title}
         desc="展示考试基础信息、权限状态、成绩摘要、排行入口和考试规则。"
-        action={canEnter ? <Button href="#/exam-answer">进入考试</Button> : null}
+        action={canEnter ? <Button href="#/exam-answer">开始考试</Button> : null}
       />
       <div className="grid gap-4 md:grid-cols-4">
         <Stat label="考试类型" value={exam.type === "学校联考" ? "联考" : "公开"} />
@@ -640,7 +640,7 @@ export function ExamAnalysisPage() {
 }
 
 export function ExamAnswerPage() {
-  const [markedQuestions, setMarkedQuestions] = useState(["exam-single-8", "exam-multi-25"]);
+  const [markedQuestions, setMarkedQuestions] = useState(["exam-multi-25"]);
   const [activeKey, setActiveKey] = useState("exam-single-8");
   const [confirmSubmit, setConfirmSubmit] = useState(false);
   const isCurrentMarked = markedQuestions.includes(activeKey);
@@ -677,7 +677,7 @@ export function ExamAnswerPage() {
             <Button tone="secondary" onClick={() => setActiveKey(answerQuestions[Math.max(0, activeIndex - 1)].key)}>上一题</Button>
             <Button onClick={() => setActiveKey(answerQuestions[Math.min(answerQuestions.length - 1, activeIndex + 1)].key)}>下一题</Button>
             <Button
-              tone={isCurrentMarked ? "warning" : "ghost"}
+              tone={isCurrentMarked ? "secondary" : "warning"}
               onClick={() => setMarkedQuestions((items) => (
                 items.includes(activeKey) ? items.filter((item) => item !== activeKey) : [...items, activeKey]
               ))}
