@@ -147,6 +147,13 @@ export function AppShell({ children }) {
                 >
                   {showNotes ? "隐藏标注" : "显示标注"}
                 </button>
+                <a
+                  className="inline-flex min-h-10 items-center justify-center rounded-ui border border-line bg-white px-3 py-2 text-sm text-slate-700 hover:bg-slate-50"
+                  href="#/admin"
+                  onClick={() => setPrototypeControlsOpen(false)}
+                >
+                  进入运营后台
+                </a>
               </div>
             </div>
           ) : (
@@ -309,11 +316,11 @@ export function Pagination({ total, page, pageSize, onPageChange, onPageSizeChan
   );
 }
 
-export function Modal({ open, title, children, onClose }) {
+export function Modal({ open, title, children, onClose, className = "w-[min(620px,100%)]" }) {
   if (!open) return null;
   return (
     <div className="fixed inset-0 z-50 grid place-items-center bg-slate-900/50 p-6" onClick={onClose}>
-      <div className="max-h-[calc(100vh_-_48px)] w-[min(620px,100%)] overflow-auto rounded-ui bg-white p-6 shadow-lift" onClick={(event) => event.stopPropagation()}>
+      <div className={`max-h-[calc(100vh_-_48px)] overflow-auto rounded-ui bg-white p-6 shadow-lift ${className}`} onClick={(event) => event.stopPropagation()}>
         <div className="mb-4 flex items-start justify-between gap-4">
           <h3 className="m-0 text-xl font-semibold">{title}</h3>
           <Button tone="secondary" onClick={onClose}>关闭</Button>
