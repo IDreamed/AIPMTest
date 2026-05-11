@@ -21,8 +21,8 @@ const courseLibrary = recommendedCourses.map((course, index) => ({
   order: 999 - index,
   status: index < 4 ? "推荐中" : "未推荐",
   shelfStatus: index < 10 ? "上架" : "下架",
+  trialLessonCount: Math.min(5, Number(course.lessons?.match(/\d+/)?.[0] || 3)),
   updatedAt: `2025-12-${String(28 - (index % 6)).padStart(2, "0")} 11:47:34`,
-  updatedBy: course.creator,
 }));
 
 export function AdminDashboardPage() {
@@ -208,7 +208,7 @@ export function AdminRecommendCoursesPage() {
         <div className="flex items-center justify-between gap-4">
           <div>
             <h2 className="m-0 text-lg">推荐位容量</h2>
-            <p className="mb-0 mt-2 text-sm text-muted">首页推荐课程最多展示 {recommendedCourseLimit} 个，按排序值从大到小平铺展示。</p>
+            <p className="mb-0 mt-2 text-sm text-muted">首页推荐课程最多展示 {recommendedCourseLimit} 个，按排序值从大到小平铺展示；试看时长统一为每课时 5 分钟。</p>
           </div>
           <Tag tone={recommendedCount >= recommendedCourseLimit ? "amber" : "blue"}>{recommendedCount} / {recommendedCourseLimit}</Tag>
         </div>
@@ -224,8 +224,8 @@ export function AdminRecommendCoursesPage() {
         </div>
       </Card>
       <DataTable
-        columns={["课程ID", "课程信息", "所属分类/科目", "排序", "推荐状态", "创建人", "更新时间", "更新人", "操作"]}
-        gridTemplateColumns="92px minmax(230px,1.5fr) 130px 70px 90px 100px 150px 100px 190px"
+        columns={["课程ID", "课程信息", "所属分类/科目", "排序", "推荐状态", "试看设置", "创建人", "更新时间", "操作"]}
+        gridTemplateColumns="92px minmax(180px,1fr) 116px 64px 84px 106px 80px 128px 160px"
         rows={rows}
         renderRow={(course) => (
           <>
@@ -234,9 +234,12 @@ export function AdminRecommendCoursesPage() {
             <Tag tone={course.category === "文化课" ? "cyan" : "blue"}>{getCourseSubjectLabel(course)}</Tag>
             <strong>{course.order}</strong>
             <Tag tone={course.status === "推荐中" ? "green" : "gray"}>{course.status}</Tag>
+            <div>
+              <span>{course.trialLessonCount} 课时</span>
+              <p className="mb-0 mt-1 text-xs text-muted">5 分钟/课时</p>
+            </div>
             <span>{course.creator}</span>
             <span>{course.updatedAt}</span>
-            <span>{course.updatedBy}</span>
             <div className="flex flex-wrap justify-end gap-2">
               <Button tone="ghost" onClick={() => setAction({
                 title: "确认下架推荐课程",
@@ -356,6 +359,7 @@ function CoursePickerModal({ open, onClose }) {
   const [keyword, setKeyword] = useState("");
   const [page, setPage] = useState(1);
   const [selectedCourse, setSelectedCourse] = useState(null);
+  const [trialLessonCount, setTrialLessonCount] = useState(3);
   const pageSize = 5;
   const rows = courseLibrary
     .filter((item) => item.status !== "推荐中" && item.shelfStatus === "上架")
@@ -369,7 +373,7 @@ function CoursePickerModal({ open, onClose }) {
       <div className="grid gap-5 text-sm">
         <div className="rounded-ui border border-line bg-slate-50 p-4">
           <strong>首页推荐位：{courseLibrary.filter((item) => item.status === "推荐中").length} / {recommendedCourseLimit}</strong>
-          <p className="mb-0 mt-2 text-muted">只可选择已上架课程。达到 {recommendedCourseLimit} 个后，需要先下架或移除已有推荐课程。</p>
+          <p className="mb-0 mt-2 text-muted">只可选择已上架课程。达到 {recommendedCourseLimit} 个后，需要先下架或移除已有推荐课程。添加时只配置试看课时数，每课时试看 5 分钟。</p>
         </div>
         <Card className="p-4">
           <div className="grid gap-3 md:grid-cols-[220px_1fr]">
@@ -402,17 +406,27 @@ function CoursePickerModal({ open, onClose }) {
               <Tag>{getCourseSubjectLabel(course)}</Tag>
               <span>{course.creator}</span>
               <span>{course.updatedAt}</span>
-              <Button onClick={() => setSelectedCourse(course)}>选择</Button>
+              <Button onClick={() => {
+                setSelectedCourse(course);
+                setTrialLessonCount(course.trialLessonCount || 3);
+              }}>选择</Button>
             </>
           )}
         />
         {selectedCourse ? (
           <Card className="border-l-4 border-l-blue-600">
-            <div className="flex items-center justify-between gap-4">
+            <div className="grid gap-4 md:grid-cols-[1fr_180px_auto] md:items-end">
               <div>
                 <h3 className="m-0 text-base">已选择：{selectedCourse.title}</h3>
                 <p className="mb-0 mt-2 text-sm text-muted">确认后，该课程会加入首页推荐课程列表，默认按当前排序规则展示。</p>
               </div>
+              <label className="grid gap-2 text-sm">
+                试看课时数
+                <select className="min-h-10 rounded-ui border border-line bg-white px-3" value={trialLessonCount} onChange={(event) => setTrialLessonCount(Number(event.target.value))}>
+                  {[1, 2, 3, 4, 5].map((count) => <option key={count} value={count}>{count} 课时</option>)}
+                </select>
+                <span className="text-xs text-muted">每课时试看 5 分钟</span>
+              </label>
               <Meta>
                 <Button tone="secondary" onClick={() => setSelectedCourse(null)}>重新选择</Button>
                 <Button onClick={onClose}>确认添加</Button>
@@ -434,11 +448,11 @@ function CoursePickerModal({ open, onClose }) {
 
 function CourseInfo({ course }) {
   return (
-    <div className="flex items-center gap-3">
+    <div className="flex min-w-0 items-center gap-3">
       <div className="grid h-12 w-16 shrink-0 place-items-center rounded-ui bg-slate-100 text-xs text-muted">课程图</div>
-      <div>
-        <strong>{course.title}</strong>
-        <p className="mb-0 mt-1 text-xs text-muted">{course.lessonCount} 课时 · {course.courseType}</p>
+      <div className="min-w-0">
+        <strong className="block truncate">{course.title}</strong>
+        <p className="mb-0 mt-1 truncate text-xs text-muted">{course.lessonCount} 课时 · {course.courseType}</p>
       </div>
     </div>
   );
