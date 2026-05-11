@@ -6,6 +6,7 @@ const newsTypes = ["全部", "政策解读", "考试通知", "平台公告", "�
 const publishStatuses = ["全部", "已发布", "草稿", "已下架"];
 const courseShelfStatuses = ["全部", "上架", "下架"];
 const courseSubjectOptions = ["全部", "语文", "数学", "英语", ...categories.map((item) => item.name)];
+const recommendedCourseLimit = 12;
 
 const adminNews = news.map((item, index) => ({
   ...item,
@@ -61,6 +62,8 @@ export function AdminNewsPage() {
   const [status, setStatus] = useState("全部");
   const [keyword, setKeyword] = useState("");
   const [action, setAction] = useState(null);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   const rows = useMemo(() => {
     return adminNews.filter((item) => {
@@ -71,24 +74,32 @@ export function AdminNewsPage() {
       return matchType && matchStatus && matchKeyword;
     }).sort((a, b) => b.date.localeCompare(a.date));
   }, [keyword, status, type]);
+  const totalPages = Math.max(1, Math.ceil(rows.length / pageSize));
+  const currentPage = Math.min(page, totalPages);
+  const currentRows = rows.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+
+  function resetNewsFilter(next) {
+    setPage(1);
+    next();
+  }
 
   return (
     <AdminShell>
       <PageHeader title="平台资讯管理" action={<Button href="#/admin/news/new">新增资讯</Button>} />
       <Card className="mb-5 p-4">
         <div className="grid gap-3 md:grid-cols-[180px_160px_1fr]">
-          <SelectFilter label="资讯类型" options={newsTypes} value={type} onChange={setType} />
-          <SelectFilter label="状态" options={publishStatuses} value={status} onChange={setStatus} />
+          <SelectFilter label="资讯类型" options={newsTypes} value={type} onChange={(value) => resetNewsFilter(() => setType(value))} />
+          <SelectFilter label="状态" options={publishStatuses} value={status} onChange={(value) => resetNewsFilter(() => setStatus(value))} />
           <label className="grid gap-2 text-sm">
             关键词
-            <input className="min-h-10 rounded-ui border border-line px-3" placeholder="搜索标题或摘要" value={keyword} onChange={(event) => setKeyword(event.target.value)} />
+            <input className="min-h-10 rounded-ui border border-line px-3" placeholder="搜索标题或摘要" value={keyword} onChange={(event) => resetNewsFilter(() => setKeyword(event.target.value))} />
           </label>
         </div>
       </Card>
       <DataTable
         columns={["标题", "类型", "发布时间", "状态", "操作"]}
         gridTemplateColumns="minmax(260px,1.8fr) 110px 120px 90px 260px"
-        rows={rows}
+        rows={currentRows}
         renderRow={(item) => (
           <>
             <div>
@@ -114,6 +125,18 @@ export function AdminNewsPage() {
             </div>
           </>
         )}
+      />
+      <SimplePagination
+        label="资讯列表"
+        page={currentPage}
+        pageSize={pageSize}
+        total={rows.length}
+        totalPages={totalPages}
+        onPageChange={setPage}
+        onPageSizeChange={(size) => {
+          setPageSize(size);
+          setPage(1);
+        }}
       />
       <AdminActionModal action={action} onClose={() => setAction(null)} />
     </AdminShell>
@@ -172,6 +195,7 @@ export function AdminRecommendCoursesPage() {
   const [pickerOpen, setPickerOpen] = useState(false);
   const [action, setAction] = useState(null);
   const [sortCourse, setSortCourse] = useState(null);
+  const recommendedCount = courseLibrary.filter((item) => item.status === "推荐中").length;
 
   const rows = useMemo(() => {
     return courseLibrary.filter((item) => item.status === "推荐中").filter((item) => matchCourseFilters(item, { subject, shelfStatus, keyword }));
@@ -180,6 +204,15 @@ export function AdminRecommendCoursesPage() {
   return (
     <AdminShell>
       <PageHeader title="首页推荐课程管理" action={<Button onClick={() => setPickerOpen(true)}>从课程库添加</Button>} />
+      <Card className="mb-5">
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <h2 className="m-0 text-lg">推荐位容量</h2>
+            <p className="mb-0 mt-2 text-sm text-muted">首页推荐课程最多展示 {recommendedCourseLimit} 个，按排序值从大到小平铺展示。</p>
+          </div>
+          <Tag tone={recommendedCount >= recommendedCourseLimit ? "amber" : "blue"}>{recommendedCount} / {recommendedCourseLimit}</Tag>
+        </div>
+      </Card>
       <Card className="mb-5 p-4">
         <div className="grid gap-3 md:grid-cols-[200px_160px_1fr]">
           <SelectFilter label="所属分类/科目" options={courseSubjectOptions} value={subject} onChange={setSubject} />
@@ -266,6 +299,28 @@ function SelectFilter({ label, options, value, onChange }) {
   );
 }
 
+function SimplePagination({ label, page, pageSize, total, totalPages, onPageChange, onPageSizeChange }) {
+  const start = total ? (page - 1) * pageSize + 1 : 0;
+  const end = Math.min(total, page * pageSize);
+  return (
+    <Card className="mt-4">
+      <div className="flex items-center justify-between gap-4">
+        <span className="text-sm text-muted">{label}：第 {page} / {totalPages} 页，显示 {start}-{end} 条，共 {total} 条</span>
+        <div className="flex items-center gap-2">
+          <label className="flex items-center gap-2 text-sm text-muted">
+            每页
+            <select className="min-h-10 rounded-ui border border-line bg-white px-3 text-slate-700" value={pageSize} onChange={(event) => onPageSizeChange(Number(event.target.value))}>
+              {[10, 20, 30].map((size) => <option key={size} value={size}>{size} 条</option>)}
+            </select>
+          </label>
+          <Button tone="secondary" onClick={() => onPageChange(Math.max(1, page - 1))}>上一页</Button>
+          <Button tone="secondary" onClick={() => onPageChange(Math.min(totalPages, page + 1))}>下一页</Button>
+        </div>
+      </div>
+    </Card>
+  );
+}
+
 function NewsEditor({ item }) {
   const [notice, setNotice] = useState(null);
 
@@ -312,6 +367,10 @@ function CoursePickerModal({ open, onClose }) {
   return (
     <Modal className="w-[min(1080px,100%)]" open={open} title="从课程库选择课程" onClose={onClose}>
       <div className="grid gap-5 text-sm">
+        <div className="rounded-ui border border-line bg-slate-50 p-4">
+          <strong>首页推荐位：{courseLibrary.filter((item) => item.status === "推荐中").length} / {recommendedCourseLimit}</strong>
+          <p className="mb-0 mt-2 text-muted">只可选择已上架课程。达到 {recommendedCourseLimit} 个后，需要先下架或移除已有推荐课程。</p>
+        </div>
         <Card className="p-4">
           <div className="grid gap-3 md:grid-cols-[220px_1fr]">
             <SelectFilter label="所属分类/科目" options={courseSubjectOptions} value={subject} onChange={(value) => {
