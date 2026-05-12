@@ -769,6 +769,25 @@ function normalizePaperPracticeStatus(status) {
   return normalizeLearningStatus(status);
 }
 
+function parsePracticeDuration(duration) {
+  if (!duration || duration === "-") return 0;
+  const hour = Number(duration.match(/(\d+)时/)?.[1] || 0);
+  const minute = Number(duration.match(/(\d+)分/)?.[1] || 0);
+  const second = Number(duration.match(/(\d+)秒/)?.[1] || 0);
+  return hour * 3600 + minute * 60 + second;
+}
+
+function formatPracticeDuration(totalSeconds) {
+  if (!totalSeconds) return "-";
+  const hour = Math.floor(totalSeconds / 3600);
+  const minute = Math.floor((totalSeconds % 3600) / 60);
+  const second = totalSeconds % 60;
+
+  if (hour > 0) return `${hour}小时${minute}分钟`;
+  if (second > 0) return `${minute}分${String(second).padStart(2, "0")}秒`;
+  return `${minute}分钟`;
+}
+
 export function PaperPracticePage() {
   const subjectTypes = ["文化课", "专业课"];
   const paperSources = ["全部", "官方", "本校"];
@@ -795,6 +814,7 @@ export function PaperPracticePage() {
   });
   const unfinishedCount = filteredPapers.filter((paper) => paper.status === "进行中").length;
   const finishedCount = filteredPapers.filter((paper) => paper.status === "已完成").length;
+  const totalPracticeDuration = formatPracticeDuration(filteredPapers.reduce((sum, paper) => sum + parsePracticeDuration(paper.duration), 0));
   const currentPapers = paginateRows(filteredPapers, page, pageSize);
   const isProfessional = selectedSubjectType === "专业课";
   const categoryOptions = Array.from(new Set(visiblePaperPracticeRecords.filter((paper) => paper.subject === "专业课").map((paper) => paper.category)));
@@ -833,9 +853,10 @@ export function PaperPracticePage() {
           </select>
         </label>
       </div>
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-4">
         <Stat label="进行中" value={unfinishedCount} />
         <Stat label="已完成" value={finishedCount} />
+        <Stat label="累计用时" value={totalPracticeDuration} />
         <Stat label="筛选结果" value={filteredPapers.length} />
       </div>
       <div className="mt-6">

@@ -332,37 +332,21 @@ export function Modal({ open, title, children, onClose, className = "w-[min(620p
 }
 
 export function SchoolApplyModal({ open, onClose }) {
-  const [identity, setIdentity] = useState("student");
-  const isStudent = identity === "student";
-  const proofNote = isStudent
-    ? "请上传您的身份证明，需体现您的姓名、院系等信息，或者其他能证明您学生身份的证件。"
-    : "请上传您的工作证，需体现您的姓名、工作院系等信息，或者其他能证明您教师身份的证件。";
+  const proofNote = "请上传您的身份证明，需体现您的姓名、院系等信息，或者其他能证明您学生身份的证件。";
 
   return (
     <Modal open={open} title="申请加入学校" onClose={onClose}>
       <div className="grid gap-5 text-sm">
-        <div className="rounded-ui bg-slate-50 p-3">
-          <div className="grid gap-3 sm:grid-cols-2">
-            <ApplyIdentityOption
-              active={isStudent}
-              desc="加入学校后查看班级课程、考试和学习资源。"
-              label="学生身份"
-              onClick={() => setIdentity("student")}
-            />
-            <ApplyIdentityOption
-              active={!isStudent}
-              desc="用于教师入驻、课程管理或后续教学协作。"
-              label="教师身份"
-              onClick={() => setIdentity("teacher")}
-            />
-          </div>
+        <div className="rounded-ui border border-blue-100 bg-blue-50 p-4">
+          <strong className="text-blue-700">学生身份认证</strong>
+          <p className="mb-0 mt-2 leading-6 text-muted">加入学校后，可查看班级课程、考试和学习资源。</p>
         </div>
 
         <ApplySection title="基础信息">
           <div className="grid gap-4 md:grid-cols-2">
             <ApplyFormField label="姓名"><input className="min-h-10 rounded-ui border border-line px-3" placeholder="请输入姓名" /></ApplyFormField>
             <ApplyFormField label="手机号"><input className="min-h-10 rounded-ui border border-line px-3" placeholder="请输入手机号" /></ApplyFormField>
-            <ApplyFormField className={isStudent ? "md:col-span-2" : ""} label="学校">
+            <ApplyFormField className="md:col-span-2" label="学校">
               <select className="min-h-10 rounded-ui border border-line bg-white px-3" defaultValue="">
                 <option value="" disabled>请选择学校</option>
                 <option>示范中职学校</option>
@@ -370,12 +354,6 @@ export function SchoolApplyModal({ open, onClose }) {
                 <option>南湖中职学校</option>
               </select>
             </ApplyFormField>
-            {!isStudent ? (
-              <>
-                <ApplyFormField label="职位（非必选）"><input className="min-h-10 rounded-ui border border-line px-3" placeholder="请输入职位" /></ApplyFormField>
-                <ApplyFormField label="职称（非必选）"><input className="min-h-10 rounded-ui border border-line px-3" placeholder="请输入职称" /></ApplyFormField>
-              </>
-            ) : null}
           </div>
         </ApplySection>
 
@@ -397,22 +375,6 @@ export function SchoolApplyModal({ open, onClose }) {
         </div>
       </div>
     </Modal>
-  );
-}
-
-function ApplyIdentityOption({ active, label, desc, onClick }) {
-  return (
-    <button
-      className={`rounded-ui border p-4 text-left transition ${active ? "border-blue-600 bg-white shadow-panel" : "border-transparent bg-transparent hover:bg-white"}`}
-      onClick={onClick}
-      type="button"
-    >
-      <span className="flex items-center justify-between gap-3">
-        <strong className={active ? "text-blue-700" : "text-slate-800"}>{label}</strong>
-        <span className={`grid h-5 w-5 place-items-center rounded-full border text-xs ${active ? "border-blue-600 bg-blue-600 text-white" : "border-line text-transparent"}`}>✓</span>
-      </span>
-      <span className="mt-2 block text-xs leading-5 text-muted">{desc}</span>
-    </button>
   );
 }
 

@@ -422,7 +422,7 @@ export function PaperCenterPage() {
                       <>
                         <Tag tone={statusTone[displayStatus]}>{displayStatus}</Tag>
                         {displayStatus === "已完成" ? <p className="mt-2 text-xs text-muted">得分 {paper.score} 分</p> : null}
-                        {displayStatus === "进行中" && paper.remainingTime ? <p className="mt-2 text-xs text-muted">剩余时间：{paper.remainingTime}</p> : null}
+                        {displayStatus === "进行中" && paper.usedTime ? <p className="mt-2 text-xs text-muted">已用时间：{paper.usedTime}</p> : null}
                       </>
                     ) : (
                       <Tag tone="gray">-</Tag>
@@ -500,6 +500,15 @@ function PaperListButton({ children, href, tone = "primary" }) {
   );
 }
 
+function formatElapsedTime(seconds) {
+  const hour = Math.floor(seconds / 3600);
+  const minute = Math.floor((seconds % 3600) / 60);
+  const second = seconds % 60;
+
+  if (hour > 0) return `${hour}时${String(minute).padStart(2, "0")}分${String(second).padStart(2, "0")}秒`;
+  return `${minute}分${String(second).padStart(2, "0")}秒`;
+}
+
 function FilterButtons({ label, options, value, onChange }) {
   return (
     <div className="flex flex-wrap items-center gap-3 text-sm">
@@ -523,6 +532,7 @@ function FilterButtons({ label, options, value, onChange }) {
 export function PaperAnswerPage() {
   const [markedQuestions, setMarkedQuestions] = useState(["single-7"]);
   const [activeKey, setActiveKey] = useState("single-4");
+  const [elapsedSeconds, setElapsedSeconds] = useState(34 * 60 + 40);
   const currentQuestionKey = activeKey;
   const isCurrentMarked = markedQuestions.includes(currentQuestionKey);
   const answerGroups = paperQuestionGroups.map((group) => ({
@@ -535,6 +545,16 @@ export function PaperAnswerPage() {
   const activeQuestion = answerQuestions.find((question) => question.key === activeKey) || answerQuestions[0];
   const activeQuestionType = getQuestionType(activeQuestion);
   const activeIsComposite = activeQuestion.groupTitle.includes("综合题");
+  const answeredCount = answerQuestions.filter((question) => question.status === "answered").length;
+  const unansweredCount = answerQuestions.length - answeredCount;
+
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      setElapsedSeconds((value) => value + 1);
+    }, 1000);
+
+    return () => window.clearInterval(timer);
+  }, []);
 
   return (
     <>
@@ -569,7 +589,13 @@ export function PaperAnswerPage() {
         </Card>
         <Card>
           <h3>答题进度</h3>
-          <p className="leading-7 text-muted">已答 12 题，未答 33 题，已标记 {markedQuestions.length} 题。</p>
+          <div className="mt-4 grid gap-3 rounded-ui border border-line bg-slate-50 p-4">
+            <div>
+              <span className="block text-xs text-muted">本次已用时间</span>
+              <strong className="mt-1 block text-2xl text-ink">{formatElapsedTime(elapsedSeconds)}</strong>
+            </div>
+            <p className="m-0 text-sm leading-6 text-muted">已答 {answeredCount} 题，未答 {unansweredCount} 题，已标记 {markedQuestions.length} 题。</p>
+          </div>
           <PrototypeNote className="mt-3">完成练习后进入试卷解析页，按题目逐条查看答案和解析；中途离开使用保存退出。</PrototypeNote>
           <PaperQuestionNavigator activeKey={activeKey} groups={answerGroups} onSelect={(question) => setActiveKey(question.key)} />
           <QuestionStatusLegend mode="answer" />

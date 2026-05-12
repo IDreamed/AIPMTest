@@ -239,9 +239,9 @@ export const categories = [
 
 export const papers = [
   { title: "语文基础模拟卷（一）", category: "文化课", subject: "语文", type: "一轮复习", source: "官方", year: "2025", duration: 50, questionCount: 35, totalScore: 100, doneCount: 0, meta: "35 题 / 50 分钟", unlocked: true, studyStatus: "未开始" },
-  { title: "数学基础模拟卷（一）", category: "文化课", subject: "数学", type: "一轮复习", source: "官方", year: "2025", duration: 60, questionCount: 45, totalScore: 100, doneCount: 1, remainingTime: "28分35秒", meta: "45 题 / 60 分钟", unlocked: true, studyStatus: "进行中", lastPractice: "上次做到 18/45 · 04-27" },
+  { title: "数学基础模拟卷（一）", category: "文化课", subject: "数学", type: "一轮复习", source: "官方", year: "2025", duration: 60, questionCount: 45, totalScore: 100, doneCount: 1, usedTime: "31分25秒", meta: "45 题 / 60 分钟", unlocked: true, studyStatus: "进行中", lastPractice: "上次做到 18/45 · 04-27" },
   { title: "英语阅读提升卷", category: "文化课", subject: "英语", type: "二轮专题", source: "官方", year: "2025", duration: 45, questionCount: 35, totalScore: 100, doneCount: 2, score: 82, advice: "阅读定位准确率较好，建议继续强化完形填空中的语境判断。", meta: "35 题 / 45 分钟", unlocked: true, studyStatus: "已结束", lastPractice: "得分 82 · 04-26" },
-  { title: "电子与信息类专业综合卷（一）", category: "电子与信息类", subject: "专业课", type: "一轮复习", source: "本校", year: "2025", duration: 70, questionCount: 50, totalScore: 100, doneCount: 1, remainingTime: "35分20秒", meta: "50 题 / 70 分钟", unlocked: true, studyStatus: "进行中", lastPractice: "上次做到 22/50 · 04-27" },
+  { title: "电子与信息类专业综合卷（一）", category: "电子与信息类", subject: "专业课", type: "一轮复习", source: "本校", year: "2025", duration: 70, questionCount: 50, totalScore: 100, doneCount: 1, usedTime: "34分40秒", meta: "50 题 / 70 分钟", unlocked: true, studyStatus: "进行中", lastPractice: "上次做到 22/50 · 04-27" },
   { title: "数据库基础专项训练", category: "电子与信息类", subject: "专业课", type: "二轮专题", source: "官方", year: "2024", duration: 40, questionCount: 30, totalScore: 100, doneCount: 0, meta: "30 题 / 40 分钟", unlocked: true, studyStatus: "未开始" },
   { title: "英语阅读提升卷（二）", category: "文化课", subject: "英语", type: "三轮冲刺", source: "本校", year: "2024", duration: 45, questionCount: 35, totalScore: 100, doneCount: 0, meta: "35 题 / 45 分钟", unlocked: true, studyStatus: "未开始" },
   { title: "旅游类综合模拟卷", category: "旅游类", subject: "专业课", type: "模拟测试", source: "官方", year: "2025", duration: 70, questionCount: 50, totalScore: 100, doneCount: 0, meta: "50 题 / 70 分钟", unlocked: false, studyStatus: "未开始" },
@@ -249,7 +249,7 @@ export const papers = [
   { title: "装备制造类专业综合卷", category: "装备制造类", subject: "专业课", type: "模拟测试", source: "官方", year: "2025", duration: 70, questionCount: 50, totalScore: 100, doneCount: 0, meta: "50 题 / 70 分钟", unlocked: false, studyStatus: "未开始" },
   { title: "英语专项训练卷（二）", category: "文化课", subject: "英语", type: "真题汇编", source: "官方", year: "2023", duration: 45, questionCount: 35, totalScore: 100, doneCount: 4, score: 88, advice: "整体掌握较稳定，建议把错题集中到长难句和选项干扰项辨析。", meta: "35 题 / 45 分钟", unlocked: true, studyStatus: "已结束", lastPractice: "得分 88 · 04-20" },
   { title: "土木建筑类专业基础卷", category: "土木建筑类", subject: "专业课", type: "真题汇编", source: "官方", year: "2024", duration: 65, questionCount: 45, totalScore: 100, doneCount: 0, meta: "45 题 / 65 分钟", unlocked: false, studyStatus: "未开始" },
-  { title: "语文应用文写作卷", category: "文化课", subject: "语文", type: "二轮专题", source: "本校", year: "2024", duration: 50, questionCount: 32, totalScore: 100, doneCount: 1, remainingTime: "18分10秒", meta: "32 题 / 50 分钟", unlocked: true, studyStatus: "进行中", lastPractice: "上次做到 12/32 · 04-25" },
+  { title: "语文应用文写作卷", category: "文化课", subject: "语文", type: "二轮专题", source: "本校", year: "2024", duration: 50, questionCount: 32, totalScore: 100, doneCount: 1, usedTime: "31分50秒", meta: "32 题 / 50 分钟", unlocked: true, studyStatus: "进行中", lastPractice: "上次做到 12/32 · 04-25" },
 ];
 
 export const exams = [

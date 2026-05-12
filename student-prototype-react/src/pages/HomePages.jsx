@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { courseMaterials, coursePapers, news, recommendedCourses } from "../data/mockData";
-import { Button, Card, Meta, Modal, PageHeader, PrototypeNote, Tag } from "../components/ui";
+import { Button, Card, Meta, Modal, PageHeader, PrototypeNote, Tag, usePrototypeRole } from "../components/ui";
 
 const newsCategories = ["全部", "政策解读", "考试通知", "平台公告", "备考指南"];
 
@@ -179,6 +179,7 @@ function NewsRichText({ item }) {
 }
 
 export function CoursePreviewPage() {
+  const { openSchoolApply } = usePrototypeRole();
   const [activeTab, setActiveTab] = useState("detail");
   const [activeLesson, setActiveLesson] = useState(0);
   const tabs = [
@@ -190,7 +191,7 @@ export function CoursePreviewPage() {
 
   return (
     <>
-      <PageHeader title="数学基础冲刺课" desc="首页推荐课程试看页，当前按视频试看课程处理；不等同于学习中心的班级课程详情页。" action={<Button href="#/profile">联系管理员开通</Button>} />
+      <PageHeader title="数学基础冲刺课" desc="首页推荐课程试看页，当前按视频试看课程处理；不等同于学习中心的班级课程详情页。" action={<Button onClick={openSchoolApply}>申请入校</Button>} />
       <Card className="mb-5">
         <div className="grid gap-5 md:grid-cols-[260px_1fr_160px] md:items-center">
           <div className="grid min-h-[150px] place-items-center rounded-ui bg-[linear-gradient(135deg,#2563eb,#0891b2)] p-5 text-center text-white">
@@ -238,7 +239,7 @@ export function CoursePreviewPage() {
               </button>
             ))}
           </div>
-          <Meta><Button href="#/profile" tone="ghost">联系开通</Button></Meta>
+          <Meta><Button tone="ghost" onClick={openSchoolApply}>申请入校</Button></Meta>
         </Card>
       </div>
 
