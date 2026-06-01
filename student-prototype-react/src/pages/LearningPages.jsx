@@ -23,7 +23,7 @@ export function LearningCenterPage() {
     .map((paper) => ({
       tone: getLearningStatusTone(paper.status),
       title: paper.title,
-      detail: `题目数量：${paper.questionCount} 题 · 用时：${paper.duration}`,
+      detail: `题目数量：${paper.questionCount} 题 · 已用时间：${paper.duration}`,
       meta: paper.status,
       tags: [paper.category],
       action: paper.status === "已完成" ? "查看解析" : paper.status === "进行中" ? "继续刷题" : "开始练习",
@@ -56,7 +56,7 @@ export function LearningCenterPage() {
     .map((paper) => ({
       tone: getLearningStatusTone(paper.status),
       title: paper.title,
-      detail: `题目数量：${paper.questionCount} 题 · 用时：${paper.duration}`,
+      detail: `题目数量：${paper.questionCount} 题 · 已用时间：${paper.duration}`,
       meta: paper.status,
       tags: [paper.category],
       action: paper.status === "已完成" ? "查看解析" : paper.status === "进行中" ? "继续刷题" : "开始练习",
@@ -326,9 +326,7 @@ function TaskRow({ task }) {
 }
 
 function normalizeLearningStatus(status) {
-  if (status === "学习中") return "进行中";
-  if (status === "待完成") return "未开始";
-  if (status === "已学完" || status === "已结束") return "已完成";
+  if (status === "已结束") return "已完成";
   return status;
 }
 
@@ -381,7 +379,6 @@ function getQaMessages(item) {
 export function MyExamsPage() {
   const { roleKey } = usePrototypeRole();
   const myExams = exams.filter((exam) => hasFormalExamPermission(exam, roleKey));
-  const upcomingCount = myExams.filter((exam) => exam.status === "未开始" || exam.status === "进行中").length;
   const submittedCount = myExams.filter((exam) => exam.submitted).length;
   const publishedCount = myExams.filter((exam) => exam.status === "已公示" && exam.submitted).length;
 
@@ -405,9 +402,8 @@ export function MyExamsPage() {
         desc="展示当前身份相关的正式考试：可参加、待开始、已交卷、已出分和未参加记录。班级测试仍留在学习中心的班级测试页面。"
         action={<Button href="#/learning" tone="secondary">返回学习中心</Button>}
       />
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-3">
         <Stat label="相关考试" value={myExams.length} />
-        <Stat label="待关注" value={upcomingCount} />
         <Stat label="已交卷" value={submittedCount} />
         <Stat label="已出分" value={publishedCount} />
       </div>
@@ -740,7 +736,7 @@ const classExamQuestionGroups = normalizeQuestionGroups([
 ], { prefix: "class-exam", answerCount: 8, markedIndexes: [11] });
 
 const classExamQuestions = getAllExamQuestions(classExamQuestionGroups);
-const paperPracticeColumns = ["试卷名称", "所属专业", "题目数量", "客观题数量", "客观题正确率", "用时", "状态", "操作"];
+const paperPracticeColumns = ["试卷名称", "所属专业", "题目数量", "客观题数量", "客观题正确率", "已用时间", "状态", "操作"];
 const paperPracticeGridTemplate = "minmax(220px,1.6fr) minmax(120px,0.9fr) 90px 100px 120px 100px 90px 120px";
 
 function PaperPracticeRow({ paper }) {
@@ -765,7 +761,6 @@ function PaperPracticeRow({ paper }) {
 }
 
 function normalizePaperPracticeStatus(status) {
-  if (status === "待完成") return "未开始";
   return normalizeLearningStatus(status);
 }
 
@@ -1116,8 +1111,8 @@ function CourseCatalog() {
                 <div><strong>{lesson.title}</strong><p className="mt-1 text-sm text-muted">{lesson.duration}</p></div>
                 <Tag>{lesson.type}</Tag>
                 <Tag tone={lesson.statusTone}>{lesson.status}</Tag>
-                <Button href="#/course-lesson" tone={lesson.status === "学习中" ? "primary" : "secondary"}>
-                  {lesson.status === "已学完" ? "复习" : "学习"}
+                <Button href="#/course-lesson" tone={lesson.status === "进行中" ? "primary" : "secondary"}>
+                  {lesson.status === "已完成" ? "复习" : "学习"}
                 </Button>
               </div>
             ))}
@@ -1193,7 +1188,8 @@ const lessonFormats = [
     label: "微课",
     title: "函数概念与表示",
     duration: "12 分钟",
-    progress: "62%",
+    totalSeconds: 12 * 60,
+    reportedSeconds: 7 * 60 + 26,
     summary: "通过短视频理解函数定义、定义域和值域，适合碎片时间快速复习。",
     hasPractice: true,
   },
@@ -1202,7 +1198,8 @@ const lessonFormats = [
     label: "慕课",
     title: "函数图像与性质精讲",
     duration: "48 分钟",
-    progress: "35%",
+    totalSeconds: 48 * 60,
+    reportedSeconds: 16 * 60 + 48,
     summary: "通过长视频系统讲解函数图像、单调性和常见题型，学习动作与微课一致。",
     hasPractice: true,
   },
@@ -1211,7 +1208,8 @@ const lessonFormats = [
     label: "音频",
     title: "函数概念速听",
     duration: "12 分钟",
-    progress: "48%",
+    totalSeconds: 12 * 60,
+    reportedSeconds: 5 * 60 + 46,
     summary: "用于通勤或课后复听，重点回顾函数概念、表示方法和易错点。",
     hasPractice: true,
   },
@@ -1220,7 +1218,6 @@ const lessonFormats = [
     label: "PDF",
     title: "函数基础讲义",
     duration: "8 页",
-    progress: "第 5 / 8 页",
     summary: "阅读函数基础讲义，掌握定义域、值域、函数表示法和典型例题。",
     hasPractice: false,
   },
@@ -1229,7 +1226,6 @@ const lessonFormats = [
     label: "PPT",
     title: "函数图像课件",
     duration: "18 页",
-    progress: "第 7 / 18 页",
     summary: "按页查看课堂课件，重点理解一次函数和二次函数图像特征。",
     hasPractice: false,
   },
@@ -1238,7 +1234,6 @@ const lessonFormats = [
     label: "富文本",
     title: "函数知识点图文讲解",
     duration: "图文阅读",
-    progress: "已读 60%",
     summary: "以图文方式梳理函数知识点、例题步骤和常见误区。",
     hasPractice: false,
   },
@@ -1282,6 +1277,8 @@ export function CourseLessonPage() {
   const currentLesson = lessonFormats.find((item) => item.key === activeLessonKey) || lessonFormats[0];
   const practiceQuestion = lessonPracticeQuestions[practiceIndex];
   const canPractice = currentLesson.hasPractice;
+  const lessonStatus = getLessonStatus(currentLesson);
+  const lessonProgressLabel = getLessonProgressLabel(currentLesson);
 
   function openPractice() {
     setPracticeIndex(0);
@@ -1302,7 +1299,7 @@ export function CourseLessonPage() {
     <>
       <PageHeader
         title={currentLesson.title}
-        desc="课时学习页承接班级课程、学习记录、课时练习和课程答疑；不同课时类型展示不同学习内容。"
+        desc="课时学习页承接班级课程、学习记录、课时练习和课程答疑。进度规则：PDF、PPT、富文本等非音视频课时，打开查看详情即视为完成；微课、慕课、音频在打开、切换课时、关闭浏览器或播放完成时上报当前播放时间节点；音视频进度按上报时间 / 总时长计算，上报时间达到或超过总时长后，课时状态为已完成。"
         action={<Button href="#/course-study" tone="secondary">返回课程详情</Button>}
       />
       <div className="grid gap-5 md:grid-cols-[1fr_300px]">
@@ -1310,9 +1307,9 @@ export function CourseLessonPage() {
           <LessonContent lesson={currentLesson} />
           <div className="p-5">
             <div className="flex flex-wrap items-center gap-2">
-              <Tag tone="amber">学习中</Tag>
+              <Tag tone={lessonStatus === "已完成" ? "green" : "amber"}>{lessonStatus}</Tag>
               <Tag>{currentLesson.label}</Tag>
-              <Tag tone="blue">{currentLesson.progress}</Tag>
+              <Tag tone="blue">{lessonProgressLabel}</Tag>
             </div>
             <h2 className="mb-2 mt-5 text-xl">本课要点</h2>
             <p className="leading-8 text-muted">{currentLesson.summary}</p>
@@ -1338,6 +1335,7 @@ export function CourseLessonPage() {
                       {chapter.lessons.filter((lesson) => lesson.type !== "练习").map((lesson) => {
                         const lessonKey = lessonTypeMap[lesson.type];
                         const isActive = lessonKey && activeLessonKey === lessonKey;
+                        const lessonProgress = lessonFormats.find((item) => item.key === lessonKey);
                         return (
                           <button
                             className={`rounded-ui border p-3 text-left transition ${
@@ -1351,6 +1349,7 @@ export function CourseLessonPage() {
                           >
                             <strong className="block">{lesson.title}</strong>
                             <span className="mt-1 block text-xs text-muted">{lesson.type} · {lesson.duration}</span>
+                            {lessonProgress ? <span className="mt-1 block text-xs text-muted">进度：{getLessonProgressLabel(lessonProgress)} · {getLessonStatus(lessonProgress)}</span> : null}
                           </button>
                         );
                       })}
@@ -1402,6 +1401,7 @@ function LessonContent({ lesson }) {
             <Tag tone="blue">{lesson.label}</Tag>
             <strong className="mt-4 block text-xl">{lesson.title}</strong>
             <span className="mt-2 block text-sm text-white/70">{classCourse.title} · {lesson.duration}</span>
+            <span className="mt-1 block text-xs text-white/60">已学习 {formatLessonTime(lesson.reportedSeconds)} / {formatLessonTime(lesson.totalSeconds)}</span>
           </div>
           <div className="h-2 w-[min(460px,70vw)] overflow-hidden rounded-full bg-white/15">
             <span className="block h-full rounded-full bg-white" style={{ width: getLessonProgressWidth(lesson) }} />
@@ -1420,6 +1420,7 @@ function LessonContent({ lesson }) {
             <Tag tone="cyan">{lesson.label}</Tag>
             <strong className="mt-3 block truncate text-xl">{lesson.title}</strong>
             <span className="mt-1 block text-sm text-white/70">{classCourse.title} · {lesson.duration}</span>
+            <span className="mt-1 block text-xs text-white/60">已学习 {formatLessonTime(lesson.reportedSeconds)} / {formatLessonTime(lesson.totalSeconds)}</span>
             <div className="mt-4 h-2 overflow-hidden rounded-full bg-white/15">
               <span className="block h-full rounded-full bg-white" style={{ width: getLessonProgressWidth(lesson) }} />
             </div>
@@ -1437,7 +1438,7 @@ function LessonContent({ lesson }) {
     return (
       <div className="bg-slate-100 p-6">
         <article className="mx-auto min-h-[640px] w-full max-w-3xl rounded-ui border border-line bg-white p-8 leading-8 shadow-sm">
-          <Meta><Tag>{lesson.label}</Tag><Tag>{lesson.progress}</Tag></Meta>
+          <Meta><Tag>{lesson.label}</Tag><Tag tone="green">{getLessonProgressLabel(lesson)}</Tag></Meta>
           <h2 className="mb-4 mt-5 text-xl">函数基础讲义</h2>
           <p>一、函数是描述两个变量之间对应关系的重要工具。每一个自变量取值，都对应唯一的函数值。</p>
           <p>二、复习时重点关注定义域、值域、解析式、图像表示和实际应用题中的变量关系。</p>
@@ -1452,7 +1453,7 @@ function LessonContent({ lesson }) {
     return (
       <div className="grid min-h-[460px] place-items-center bg-slate-900 p-6 text-white">
         <section className="aspect-video w-full max-w-3xl rounded-ui bg-white p-8 text-slate-900">
-          <Meta><Tag>{lesson.label}</Tag><Tag>{lesson.progress}</Tag></Meta>
+          <Meta><Tag>{lesson.label}</Tag><Tag tone="green">{getLessonProgressLabel(lesson)}</Tag></Meta>
           <h2 className="mt-5 text-2xl">函数图像与性质</h2>
           <ul className="mt-6 grid gap-3 leading-7">
             <li>观察图像与坐标轴的交点。</li>
@@ -1466,7 +1467,7 @@ function LessonContent({ lesson }) {
 
   return (
     <article className="min-h-[620px] bg-white p-8 leading-8 text-slate-700">
-      <Meta><Tag>{lesson.label}</Tag><Tag>{lesson.progress}</Tag></Meta>
+      <Meta><Tag>{lesson.label}</Tag><Tag tone="green">{getLessonProgressLabel(lesson)}</Tag></Meta>
       <h2 className="mb-4 mt-5 text-2xl text-ink">函数知识点图文讲解</h2>
       <p>函数的核心是“对应关系”。判断一个关系是不是函数，先看每一个输入值是否只能得到一个输出值。</p>
       <p>常见表示方法包括解析式、表格和图像。考试中通常会把这三种表示互相转换，要求学生识别变量关系。</p>
@@ -1489,15 +1490,33 @@ function LessonContent({ lesson }) {
 }
 
 function getLessonProgressWidth(lesson) {
-  const progressMap = {
-    micro: "62%",
-    mooc: "35%",
-    audio: "48%",
-    pdf: "62%",
-    ppt: "39%",
-    richtext: "60%",
-  };
-  return progressMap[lesson.key] || "0%";
+  return `${getLessonProgressPercent(lesson)}%`;
+}
+
+function getLessonProgressPercent(lesson) {
+  if (!isMediaLesson(lesson)) return 100;
+  if (!lesson.totalSeconds) return 0;
+  return Math.min(100, Math.round((Math.min(lesson.reportedSeconds || 0, lesson.totalSeconds) / lesson.totalSeconds) * 100));
+}
+
+function getLessonProgressLabel(lesson) {
+  if (!isMediaLesson(lesson)) return "已完成";
+  return `${getLessonProgressPercent(lesson)}%`;
+}
+
+function getLessonStatus(lesson) {
+  if (!isMediaLesson(lesson)) return "已完成";
+  return (lesson.reportedSeconds || 0) >= lesson.totalSeconds ? "已完成" : "进行中";
+}
+
+function isMediaLesson(lesson) {
+  return lesson.key === "micro" || lesson.key === "mooc" || lesson.key === "audio";
+}
+
+function formatLessonTime(seconds = 0) {
+  const minute = Math.floor(seconds / 60);
+  const second = seconds % 60;
+  return `${minute}:${String(second).padStart(2, "0")}`;
 }
 
 export function CourseMaterialPage() {

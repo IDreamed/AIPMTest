@@ -515,7 +515,7 @@ export const classCourses = [
     learnedCount: 15,
     progress: "62%",
     currentLesson: "函数概念与表示",
-    status: "学习中",
+    status: "进行中",
     statusTone: "amber",
     coverTone: "linear-gradient(135deg, #2563eb, #0f766e)",
   },
@@ -541,7 +541,7 @@ export const classCourses = [
     learnedCount: 16,
     progress: "100%",
     currentLesson: "阅读定位综合训练",
-    status: "已学完",
+    status: "已完成",
     statusTone: "green",
     coverTone: "linear-gradient(135deg, #15803d, #0891b2)",
   },
@@ -554,7 +554,7 @@ export const classCourses = [
     learnedCount: 4,
     progress: "33%",
     currentLesson: "网络协议基础",
-    status: "学习中",
+    status: "进行中",
     statusTone: "amber",
     coverTone: "linear-gradient(135deg, #4338ca, #2563eb)",
   },
@@ -567,7 +567,7 @@ export const classCourses = [
     learnedCount: 2,
     progress: "20%",
     currentLesson: "通知与申请书格式",
-    status: "学习中",
+    status: "进行中",
     statusTone: "amber",
     coverTone: "linear-gradient(135deg, #b45309, #be123c)",
   },
@@ -605,7 +605,7 @@ export const courseCatalog = [
   {
     title: "函数基础",
     lessons: [
-      { title: "函数概念与表示", type: "微课", duration: "12 分钟", status: "学习中", statusTone: "amber" },
+      { title: "函数概念与表示", type: "微课", duration: "12 分钟", status: "进行中", statusTone: "amber" },
       { title: "函数图像与性质", type: "富文本", duration: "12 分钟", status: "未开始", statusTone: "gray" },
       { title: "函数基础课堂练习", type: "练习", duration: "10 题", status: "未开始", statusTone: "gray" },
     ],
@@ -621,14 +621,14 @@ export const courseCatalog = [
   {
     title: "立体几何入门",
     lessons: [
-      { title: "空间图形识别", type: "音频", duration: "14 分钟", status: "已学完", statusTone: "green" },
+      { title: "空间图形识别", type: "音频", duration: "14 分钟", status: "已完成", statusTone: "green" },
       { title: "几何基础练习", type: "练习", duration: "12 题", status: "未开始", statusTone: "gray" },
     ],
   },
 ];
 
 export const coursePapers = [
-  { title: "函数基础随堂练习", meta: "10 题 / 15 分钟", status: "待完成", statusTone: "amber" },
+  { title: "函数基础随堂练习", meta: "10 题 / 15 分钟", status: "未开始", statusTone: "gray" },
   { title: "数列基础阶段测试", meta: "20 题 / 30 分钟", status: "未开始", statusTone: "gray" },
   { title: "数学基础结业测试", meta: "35 题 / 50 分钟", status: "未开始", statusTone: "gray" },
 ];
@@ -647,8 +647,8 @@ export const paperPracticeRecords = [
     objectiveCount: 10,
     objectiveAccuracy: "-",
     duration: "-",
-    status: "待完成",
-    statusTone: "amber",
+    status: "未开始",
+    statusTone: "gray",
     action: "开始练习",
   },
   {
@@ -663,7 +663,7 @@ export const paperPracticeRecords = [
     questionCount: 50,
     objectiveCount: 42,
     objectiveAccuracy: "76%",
-    duration: "35分20秒",
+    duration: "34分40秒",
     status: "进行中",
     statusTone: "cyan",
     action: "继续刷题",
@@ -680,7 +680,7 @@ export const paperPracticeRecords = [
     questionCount: 45,
     objectiveCount: 40,
     objectiveAccuracy: "68%",
-    duration: "28分35秒",
+    duration: "31分25秒",
     status: "进行中",
     statusTone: "cyan",
     action: "继续刷题",
@@ -765,7 +765,7 @@ export const paperPracticeRecords = [
     questionCount: 32,
     objectiveCount: 24,
     objectiveAccuracy: "71%",
-    duration: "18分10秒",
+    duration: "31分50秒",
     status: "进行中",
     statusTone: "cyan",
     action: "继续刷题",
@@ -783,8 +783,8 @@ export const paperPracticeRecords = [
     objectiveCount: 12,
     objectiveAccuracy: "-",
     duration: "-",
-    status: "待完成",
-    statusTone: "amber",
+    status: "未开始",
+    statusTone: "gray",
     action: "开始练习",
   },
 ];
@@ -886,7 +886,7 @@ export const qaRecords = [
 export const learningRecords = [
   { time: "今天 14:20", title: "数学基础强化", detail: "视频课时：函数概念与表示，学习时长 18 分钟。", status: "已完成", coverTone: "linear-gradient(135deg, #2563eb, #0f766e)" },
   { time: "昨天 19:40", title: "英语阅读提分", detail: "音频课时：阅读定位方法，学习时长 12 分钟。", status: "已完成", coverTone: "linear-gradient(135deg, #15803d, #0891b2)" },
-  { time: "04-24 20:10", title: "数据库基础", detail: "视频课时：E-R 模型与关系判断，已学 60%。", status: "学习中", coverTone: "linear-gradient(135deg, #0f766e, #16a34a)" },
+  { time: "04-24 20:10", title: "数据库基础", detail: "视频课时：E-R 模型与关系判断，已学 60%。", status: "进行中", coverTone: "linear-gradient(135deg, #0f766e, #16a34a)" },
 ];
 
 export const wrongQuestions = [
