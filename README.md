@@ -1,6 +1,6 @@
-# 职教高考学生端 React 原型
+# AI生成的职教高考学生端 React 原型
 
-这是一个基于 Vite、React 和 Tailwind CSS 的前端交互原型，用于向设计和业务同学展示学生端页面流程。
+这是一个Codex生成的基于 Vite、React 和 Tailwind CSS 的前端交互原型，用于向设计和业务同学展示学生端页面流程。
 
 ## 在线预览
 
