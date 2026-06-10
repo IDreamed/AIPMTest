@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { categories, classCourse, classCourses, classExams, classes, courseCatalog, courseMaterials, cultureSubjects, exams, learningRecords, paperPracticeRecords, qaRecords, wrongQuestions } from "../data/mockData";
+import { categories, classCourse, classCourses, classExams, classes, courseCatalog, courseMaterials, cultureSubjects, learningRecords, paperPracticeRecords, qaRecords, wrongQuestions } from "../data/mockData";
 import { ExamAnswerInput, ExamQuestionNavigator, ExamQuestionStatusLegend, getAllExamQuestions, getExamQuestionType, normalizeQuestionGroups } from "../components/examWorkflows";
 import { Button, Card, DataTable, Meta, Modal, PageHeader, Pagination, PrototypeNote, Stat, Tag, usePrototypeRole } from "../components/ui";
 
 export function LearningCenterPage() {
   const { role, roleKey } = usePrototypeRole();
+  const [practiceConfig, setPracticeConfig] = useState(null);
   const currentIdentity = classes[0];
   const courseTasks = classCourses.slice(0, 2).map((course) => {
     const status = normalizeLearningStatus(course.status);
@@ -37,19 +38,6 @@ export function LearningCenterPage() {
     action: getClassExamActionConfig(exam).label,
     href: getClassExamActionConfig(exam).href,
   }));
-  const examScheduleTasks = exams
-    .filter((exam) => hasFormalExamPermission(exam, roleKey))
-    .filter((exam) => ["未开始", "进行中", "评审中"].includes(exam.status))
-    .slice(0, 3)
-    .map((exam) => ({
-      tone: exam.statusTone === "gray" ? "blue" : exam.statusTone,
-      title: exam.title,
-      detail: `${exam.startAt || exam.time} 至 ${exam.endAt || exam.time}`,
-      meta: exam.status,
-      tags: [exam.type],
-      action: exam.status === "进行中" && !exam.submitted ? "开始考试" : "查看详情",
-      href: exam.status === "进行中" && !exam.submitted ? "#/exam-answer" : `#/exam-detail?id=${exam.id}`,
-    }));
   const registeredPaperPracticeTasks = paperPracticeRecords
     .filter((paper) => paper.source === "试卷中心" && !paper.relation.includes("电子与信息类"))
     .slice(0, 3)
@@ -62,7 +50,7 @@ export function LearningCenterPage() {
       action: paper.status === "已完成" ? "查看解析" : paper.status === "进行中" ? "继续刷题" : "开始练习",
       href: paper.status === "已完成" ? "#/paper-analysis" : "#/paper-answer",
     }));
-  const registeredPendingCount = registeredPaperPracticeTasks.length + examScheduleTasks.length + 2;
+  const registeredPendingCount = registeredPaperPracticeTasks.length + 1;
   const qaTasks = qaRecords.slice(0, 2).map((item) => ({
     tone: hasQaReply(item) ? "green" : "gray",
     title: getQaRelation(item),
@@ -71,7 +59,19 @@ export function LearningCenterPage() {
     action: "查看记录",
     href: `#/qa-detail?id=${item.id}`,
   }));
-  const pendingTaskCount = courseTasks.length + paperPracticeTasks.length + classTestTasks.length + examScheduleTasks.length + qaTasks.length + 2;
+  const quickPracticeCards = [
+    {
+      title: "智能练题",
+      desc: "从当前可练题库中随机抽题，适合课后快速巩固。",
+      tone: "blue",
+    },
+    {
+      title: "错题再练",
+      desc: "从你的错题中随机抽题，优先巩固薄弱内容。",
+      tone: "amber",
+    },
+  ];
+  const pendingTaskCount = courseTasks.length + paperPracticeTasks.length + classTestTasks.length + qaTasks.length + 2;
 
   if (roleKey === "visitor") {
     return (
@@ -81,7 +81,7 @@ export function LearningCenterPage() {
           <div>
             <h2 className="mb-3 text-xl">登录后查看学习中心</h2>
             <p className="leading-8 text-muted">
-              登录或注册后，学生可以查看公开考试、试卷练习、错题巩固；加入学校班级后继续解锁班级课程、班级测试和班级答疑。
+              登录并完成入校认证后，学生可以查看老师安排的课程、课程试卷、错题巩固、班级测试和班级答疑。
             </p>
             <PrototypeNote className="mt-3">
               未登录时不展示学习工作台数据，避免把学习中心做成公开内容页。
@@ -96,8 +96,8 @@ export function LearningCenterPage() {
             <div className="mt-4 grid gap-3 text-sm text-slate-700">
               <span>当前学校班级</span>
               <span>学习任务摘要</span>
-              <span>班级课程 / 班级测试 / 班级答疑</span>
-              <span>我的考试 / 错题巩固 / 学习记录</span>
+              <span>班级课程 / 课程试卷 / 班级测试</span>
+              <span>错题巩固 / 班级答疑 / 学习记录</span>
             </div>
           </div>
         </Card>
@@ -108,46 +108,38 @@ export function LearningCenterPage() {
   if (roleKey === "registered") {
     return (
       <>
-        <PageHeader title="学习中心" desc="注册用户没有班级学习内容，但可以查看公开考试、试卷练习、错题巩固，并继续提交入校申请。" />
+        <PageHeader title="学习中心" desc="注册用户认证通过前不能进入学习中心；可在个人中心查看认证状态。" />
         <Card className="mb-4">
           <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
             <div>
               <span className="text-sm text-muted">当前身份</span>
               <h2 className="mb-2 mt-2 text-xl">注册用户</h2>
-              <p className="m-0 text-muted">暂未加入学校班级，可参加公开考试并提交入校申请。</p>
+              <p className="m-0 text-muted">暂未加入学校班级，认证通过后可进入学习中心。</p>
             </div>
             <div className="flex flex-wrap gap-2 md:justify-end">
-              <Button href="#/school-apply">申请加入学校</Button>
-              <Button href="#/my-exams" tone="secondary">我的考试</Button>
+              <Button href="#/profile">查看认证</Button>
               <Tag tone="amber">未加入班级</Tag>
             </div>
           </div>
         </Card>
         <div className="grid gap-4 md:grid-cols-4">
           <Stat label="待处理事项" value={registeredPendingCount} />
-          <Stat label="公开考试" value={examScheduleTasks.length} />
-          <Stat label="试卷练习" value={registeredPaperPracticeTasks.length} />
-          <Stat label="入校状态" value="待申请" />
+          <Stat label="课程试卷" value={registeredPaperPracticeTasks.length} />
+          <Stat label="入校状态" value="审核中" />
         </div>
 
         <section className="mt-8">
           <PageHeader title="学习任务摘要" desc="注册用户的学习中心只展示个人可用内容；班级课程、班级测试和班级答疑在加入班级后展示。" />
           <div className="grid gap-4">
             <TaskGroup
-              title="考试安排"
-              desc="展示注册用户可参加或需要关注的公开考试。"
-              tasks={examScheduleTasks}
-              footer={<Button href="#/my-exams" tone="secondary">查看我的考试</Button>}
-            />
-            <TaskGroup
-              title="试卷练习"
-              desc="展示试卷中心里已经开始但尚未完成的试卷。"
+              title="课程试卷"
+              desc="展示老师为课程绑定、学生已经开始但尚未完成的试卷。"
               tasks={registeredPaperPracticeTasks}
-              footer={<Button href="#/paper-practice" tone="secondary">查看试卷练习</Button>}
+              footer={<Button href="#/paper-practice" tone="secondary">查看课程试卷</Button>}
             />
           </div>
           <PrototypeNote className="mt-4">
-            注册用户可以参加公开考试，因此学习中心保留个人考试、试卷练习和学习记录；班级课程、班级测试、班级答疑需要加入学校班级后才展示。
+            注册用户认证通过前不能进入学习中心；认证通过后再展示课程、刷题、考试和学习记录。
           </PrototypeNote>
         </section>
 
@@ -186,7 +178,28 @@ export function LearningCenterPage() {
       </Card>
 
       <section className="mt-8">
-        <PageHeader title="学习任务摘要" desc="首页只展示各类学习资源的摘要，不承接完整列表。课程学习来自班级课程，试卷练习来自试卷中心，班级测试来自当前班级布置，考试安排只做正式考试提醒。" />
+        <PageHeader title="快速练习" desc="学生自主练习入口，只选择题数，不选择教材、章节、知识点、题型或难度。" />
+        <div className="grid gap-4 md:grid-cols-2">
+          {quickPracticeCards.map((item) => (
+            <Card key={item.title}>
+              <Meta><Tag tone={item.tone}>{item.title}</Tag><Tag>{currentIdentity.category}</Tag></Meta>
+              <h3 className="mb-2 mt-4 text-xl">{item.title}</h3>
+              <p className="leading-7 text-muted">{item.desc}</p>
+              <div className="mt-4 flex flex-wrap gap-2">
+                {[10, 20, 30].map((count) => (
+                  <Button key={count} tone={count === 10 ? "primary" : "secondary"} onClick={() => setPracticeConfig({ type: item.title, count })}>
+                    练 {count} 题
+                  </Button>
+                ))}
+              </div>
+            </Card>
+          ))}
+        </div>
+        <PrototypeNote className="mt-4">智能练题和错题再练是学生自主巩固，不替代老师安排的课程、课程试卷和班级测试。</PrototypeNote>
+      </section>
+
+      <section className="mt-8">
+        <PageHeader title="老师安排的学习" desc="学习中心突出老师为学生安排的课程内容：班级课程、课程试卷、班级测试、答疑和学习记录。" />
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           <TaskSummaryCard
             title="课程学习"
@@ -196,11 +209,11 @@ export function LearningCenterPage() {
             listAction="进入课程"
           />
           <TaskSummaryCard
-            title="试卷练习"
-            desc="展示试卷中心里已经开始或已经完成的试卷。"
+            title="课程试卷"
+            desc="展示老师为课程绑定、学生已经开始或已经完成的试卷。"
             tasks={paperPracticeTasks}
             href="#/paper-practice"
-            listAction="进入练习"
+            listAction="进入试卷"
           />
           <TaskSummaryCard
             title="班级测试"
@@ -208,13 +221,6 @@ export function LearningCenterPage() {
             tasks={classTestTasks}
             href="#/class-exam"
             listAction="进入测试"
-          />
-          <TaskSummaryCard
-            title="考试安排"
-            desc="只提醒当前学生近期需要关注的正式考试，完整筛选和历史记录仍进入考试中心。"
-            tasks={examScheduleTasks}
-            href="#/my-exams"
-            listAction="查看安排"
           />
           <TaskSummaryCard
             title="班级答疑"
@@ -230,7 +236,32 @@ export function LearningCenterPage() {
       </section>
 
       <LearningRecordSummary note="学习中心现在以“当前学校班级 + 学习任务摘要 + 学习记录”组织页面。学生只能加入一个学校，并在该学校下加入一个班级；班级课程、班级测试和班级答疑入口合并到当前学校班级与学习任务摘要中。" />
+      <Modal open={Boolean(practiceConfig)} title={practiceConfig ? `${practiceConfig.type} · ${practiceConfig.count} 题` : ""} onClose={() => setPracticeConfig(null)}>
+        <div className="grid gap-4">
+          <p className="m-0 leading-7 text-muted">
+            系统将从当前学生可练题库中生成一次临时练习。当前原型先展示组卷确认，后续接入题库抽题后进入答题页。
+          </p>
+          <div className="rounded-ui border border-line bg-slate-50 p-4">
+            <InfoLine label="练习类型" value={practiceConfig?.type} />
+            <InfoLine label="题数" value={`${practiceConfig?.count || 0} 题`} />
+            <InfoLine label="范围" value={`${currentIdentity.category} · 当前可练题库`} />
+          </div>
+          <Meta>
+            <Button href="#/paper-answer" onClick={() => setPracticeConfig(null)}>开始练习</Button>
+            <Button tone="secondary" onClick={() => setPracticeConfig(null)}>取消</Button>
+          </Meta>
+        </div>
+      </Modal>
     </>
+  );
+}
+
+function InfoLine({ label, value }) {
+  return (
+    <div className="flex justify-between gap-4 border-b border-line py-2 text-sm last:border-0">
+      <span className="text-muted">{label}</span>
+      <strong>{value}</strong>
+    </div>
   );
 }
 
@@ -376,123 +407,6 @@ function getQaMessages(item) {
   return messages;
 }
 
-export function MyExamsPage() {
-  const { roleKey } = usePrototypeRole();
-  const myExams = exams.filter((exam) => hasFormalExamPermission(exam, roleKey));
-  const submittedCount = myExams.filter((exam) => exam.submitted).length;
-  const publishedCount = myExams.filter((exam) => exam.status === "已公示" && exam.submitted).length;
-
-  if (roleKey === "visitor") {
-    return (
-      <>
-        <PageHeader title="我的考试" desc="登录后查看当前账号可参加、已交卷、已出分或未参加的正式考试。" />
-        <Card>
-          <h2 className="m-0 text-xl">登录后查看我的考试</h2>
-          <p className="mb-0 mt-3 leading-7 text-muted">游客可以浏览考试中心，但需要登录或注册后查看自己的公开考试和考试记录。</p>
-          <Meta><Button href="#/login">登录/注册</Button><Button href="#/exams" tone="secondary">浏览考试中心</Button></Meta>
-        </Card>
-      </>
-    );
-  }
-
-  return (
-    <>
-      <PageHeader
-        title="我的考试"
-        desc="展示当前身份相关的正式考试：可参加、待开始、已交卷、已出分和未参加记录。班级测试仍留在学习中心的班级测试页面。"
-        action={<Button href="#/learning" tone="secondary">返回学习中心</Button>}
-      />
-      <div className="grid gap-4 md:grid-cols-3">
-        <Stat label="相关考试" value={myExams.length} />
-        <Stat label="已交卷" value={submittedCount} />
-        <Stat label="已出分" value={publishedCount} />
-      </div>
-      <div className="mt-6">
-        {myExams.length ? (
-          <DataTable
-            columns={["考试", "考试类型", "科目/大类", "考试时间", "参加状态", "我的得分", "操作"]}
-            gridTemplateColumns="minmax(220px,1.6fr) 100px 120px 170px 100px 90px minmax(150px,1fr)"
-            rows={myExams}
-            renderRow={(exam) => {
-              const participation = getFormalExamParticipation(exam, roleKey);
-              const canSeeScore = exam.status === "已公示" && exam.submitted;
-
-              return (
-                <>
-                  <div>
-                    <strong>{exam.title}</strong>
-                    <p className="mb-0 mt-1 text-xs leading-5 text-muted">{exam.paperTitle}</p>
-                  </div>
-                  <Tag tone={exam.type === "学校联考" ? "blue" : "cyan"}>{exam.type}</Tag>
-                  <span>{exam.subject === "专业课" ? exam.category : exam.subject}</span>
-                  <span>
-                    <strong className="block text-sm">{exam.startAt || exam.time}</strong>
-                    <span className="mt-1 block text-xs text-muted">至 {exam.endAt || exam.time}</span>
-                  </span>
-                  <Tag tone={participation.tone}>{participation.label}</Tag>
-                  <span>{canSeeScore ? exam.score : "-"}</span>
-                  <MyExamAction exam={exam} />
-                </>
-              );
-            }}
-          />
-        ) : (
-          <Card>
-            <h3 className="m-0">暂无我的考试</h3>
-            <p className="mb-0 mt-3 leading-7 text-muted">
-              当前身份暂无可参加或已参加的正式考试。注册用户可参加公开考试；班级学生可参加公开考试和当前班级授权的学校联考。
-            </p>
-            <Meta><Button href="#/exams" tone="secondary">浏览考试中心</Button></Meta>
-          </Card>
-        )}
-      </div>
-      <PrototypeNote className="mt-5">
-        “我的考试”是学习中心下的个人考试列表；考试中心用于浏览全部公开考试和学校联考，班级测试不进入本页。
-      </PrototypeNote>
-    </>
-  );
-}
-
-function hasFormalExamPermission(exam, roleKey) {
-  if (exam.permission === "registered") return roleKey !== "visitor";
-  if (exam.permission === "student") return roleKey === "student";
-  return false;
-}
-
-function getFormalExamParticipation(exam, roleKey) {
-  if (!hasFormalExamPermission(exam, roleKey)) return { label: "无权限", tone: "gray" };
-  if (exam.status === "未开始") return { label: "待开始", tone: "amber" };
-  if (exam.status === "进行中") return { label: exam.submitted ? "已交卷" : "可参加", tone: "green" };
-  if (exam.status === "评审中") return { label: exam.submitted ? "已交卷" : "未参加", tone: exam.submitted ? "green" : "gray" };
-  if (exam.status === "已公示") return { label: exam.submitted ? "已出分" : "未参加", tone: exam.submitted ? "green" : "gray" };
-  return { label: exam.submitted ? "已交卷" : "未参加", tone: exam.submitted ? "green" : "gray" };
-}
-
-function MyExamAction({ exam }) {
-  const detailHref = `#/exam-detail?id=${exam.id}`;
-  const actionClassName = "grid min-w-[120px] gap-2 [&>a]:w-full";
-
-  if (exam.status === "进行中" && !exam.submitted) {
-    return (
-      <div className={actionClassName}>
-        <Button href={detailHref} tone="secondary">查看详情</Button>
-        <Button href="#/exam-answer">开始考试</Button>
-      </div>
-    );
-  }
-
-  if (exam.status === "已公示" && exam.submitted) {
-    return (
-      <div className={actionClassName}>
-        <Button href={`#/exam-analysis?id=${exam.id}`}>查看解析</Button>
-        {exam.rankEnabled ? <Button href={`#/exam-rank?id=${exam.id}`} tone="secondary">查看排行</Button> : null}
-      </div>
-    );
-  }
-
-  return <div className={actionClassName}><Button href={detailHref} tone="secondary">查看详情</Button></div>;
-}
-
 export function ClassDetailPage() {
   return (
     <>
@@ -626,7 +540,7 @@ export function ClassExamPage() {
                 <span>开始时间：{exam.startAt}</span>
                 {exam.remainingTime ? <span>剩余时间：{exam.remainingTime}</span> : null}
                 <span className="flex flex-wrap gap-2 md:justify-end">
-                  <Tag tone={exam.statusTone}>考试{exam.status}</Tag>
+                  <Tag tone={exam.statusTone}>测试{exam.status}</Tag>
                   {exam.studentStatus !== "未开始" ? <Tag tone={exam.studentStatusTone}>学生{exam.studentStatus}</Tag> : null}
                 </span>
               </div>
@@ -647,7 +561,7 @@ export function ClassExamPage() {
         total={classExams.length}
       />
       <PrototypeNote className="mt-5">
-        班级测试采用考试型答题和解析界面，但列表不再按题型、课程或专业分类展示；它只呈现测试本身的关键字段。
+        班级测试采用统一答题和解析界面，但列表不再按题型、课程或专业分类展示；它只呈现测试本身的关键字段。
       </PrototypeNote>
     </>
   );
@@ -662,7 +576,7 @@ function ClassExamAction({ exam }) {
 
 function getClassExamActionConfig(exam) {
   if (exam.status === "进行中" && exam.studentStatus !== "已交卷") {
-    return { label: "开始考试", href: "#/class-exam-answer", tone: "primary" };
+    return { label: "开始测试", href: "#/class-exam-answer", tone: "primary" };
   }
 
   if (exam.status === "进行中" && exam.studentStatus === "已交卷") {
@@ -944,7 +858,7 @@ export function ClassExamAnswerPage() {
           <p className="leading-7 text-muted">按大题分组展示题号，覆盖单选、多选、判断、填空、简答和综合题。</p>
           <ExamQuestionNavigator activeKey={activeKey} groups={answerGroups} onSelect={(question) => setActiveKey(question.key)} />
           <ExamQuestionStatusLegend mode="answer" />
-          <PrototypeNote className="mt-4">班级测试答题页不强调正式考试氛围，不展示赛事型考试介绍、联考排行或跨校信息。</PrototypeNote>
+          <PrototypeNote className="mt-4">班级测试答题页不强调正式考试氛围，不展示赛事型考试介绍、正式考试排行或跨校信息。</PrototypeNote>
         </Card>
       </div>
       <Modal open={confirmSubmit} title="确认提交测试" onClose={() => setConfirmSubmit(false)}>
@@ -1134,7 +1048,7 @@ function CoursePapers() {
         rows={coursePaperRows}
         renderRow={(paper) => <PaperPracticeRow paper={paper} />}
       />
-      <PrototypeNote className="mt-5">课程试卷与学习中心试卷练习使用同一套字段、状态和操作；这里只展示当前课程关联的练习记录。</PrototypeNote>
+      <PrototypeNote className="mt-5">课程试卷与学习中心课程试卷使用同一套字段、状态和操作；这里只展示当前课程关联的练习记录。</PrototypeNote>
     </div>
   );
 }

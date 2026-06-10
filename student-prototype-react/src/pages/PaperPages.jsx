@@ -324,7 +324,7 @@ export function PaperCenterPage() {
   const pageAction = roleKey === "visitor"
     ? <Button href="#/login" tone="ghost">登录/注册</Button>
     : roleKey === "registered"
-      ? <Button href="#/school-apply" tone="ghost">申请入校</Button>
+      ? <Button href="#/profile" tone="ghost">查看认证</Button>
       : null;
   const statusTone = {
     未开始: "gray",
@@ -458,7 +458,7 @@ function LockedPaperAction({ roleKey }) {
   }
 
   if (roleKey === "registered") {
-    return <PaperListButton href="#/school-apply" tone="secondary">申请入校</PaperListButton>;
+    return <PaperListButton href="#/profile" tone="secondary">查看认证</PaperListButton>;
   }
 
   return <Tag tone="gray">暂无权限</Tag>;

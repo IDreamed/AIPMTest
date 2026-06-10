@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { navItems, prototypeRoles } from "../data/mockData";
+import { navItems, platformSchools, professionalCategories, prototypeRoles } from "../data/mockData";
 
 const PrototypeRoleContext = createContext(null);
 
@@ -16,10 +16,12 @@ export function AppShell({ children }) {
   const [accountOpen, setAccountOpen] = useState(false);
   const [prototypeControlsOpen, setPrototypeControlsOpen] = useState(false);
   const [schoolApplyOpen, setSchoolApplyOpen] = useState(false);
+  const [accessPrompt, setAccessPrompt] = useState(null);
   const [roleKey, setRoleKey] = useState(() => window.localStorage.getItem("prototype-role") || "visitor");
   const [showNotes, setShowNotes] = useState(() => window.localStorage.getItem("prototype-notes") === "true");
   const hash = window.location.hash || "#/";
   const role = prototypeRoles.find((item) => item.key === roleKey) || prototypeRoles[0];
+  const blockedStudentRoute = isProtectedStudentRoute(hash) && role.key !== "student";
 
   useEffect(() => {
     window.localStorage.setItem("prototype-role", role.key);
@@ -37,16 +39,25 @@ export function AppShell({ children }) {
     setSchoolApplyOpen(true);
   }
 
+  function requestStudentAreaAccess() {
+    if (role.key === "student") return true;
+    setAccessPrompt(getAccessPromptCopy(role.key));
+    return false;
+  }
+
   function handleShellClickCapture(event) {
-    const link = event.target.closest?.('a[href="#/school-apply"]');
-    if (link) {
+    const link = event.target.closest?.("a[href]");
+    if (!link) return;
+    if (link.dataset.publicBannerLink === "true") return;
+
+    const href = link.getAttribute("href");
+    if (isProtectedStudentRoute(href) && !requestStudentAreaAccess()) {
       event.preventDefault();
-      openSchoolApply();
     }
   }
 
   return (
-    <PrototypeRoleContext.Provider value={{ role, roleKey: role.key, setRoleKey, roles: prototypeRoles, showNotes, setShowNotes, openSchoolApply }}>
+    <PrototypeRoleContext.Provider value={{ role, roleKey: role.key, setRoleKey, roles: prototypeRoles, showNotes, setShowNotes, openSchoolApply, requestStudentAreaAccess }}>
       <div className="min-h-screen bg-wash" onClickCapture={handleShellClickCapture}>
         <header className="sticky top-0 z-20 border-b border-line bg-white/95 backdrop-blur">
           <div className="mx-auto flex min-h-[68px] w-[calc(100%_-_40px)] max-w-[1180px] flex-wrap items-center justify-between gap-4">
@@ -112,7 +123,9 @@ export function AppShell({ children }) {
             </div>
           </div>
         </header>
-        <main className="mx-auto w-[calc(100%_-_40px)] max-w-[1180px] py-8">{children}</main>
+        <main className="mx-auto w-[calc(100%_-_40px)] max-w-[1180px] py-8">
+          {blockedStudentRoute ? <AccessBlockedPanel roleKey={role.key} /> : children}
+        </main>
         <div className="fixed right-4 top-20 z-40">
           {prototypeControlsOpen ? (
             <div className="w-[min(280px,calc(100vw_-_32px))] rounded-ui border border-line bg-white p-3 shadow-lift">
@@ -167,6 +180,7 @@ export function AppShell({ children }) {
           )}
         </div>
         <SchoolApplyModal open={schoolApplyOpen} onClose={() => setSchoolApplyOpen(false)} />
+        <AccessPromptModal prompt={accessPrompt} onClose={() => setAccessPrompt(null)} />
       </div>
     </PrototypeRoleContext.Provider>
   );
@@ -185,10 +199,68 @@ function Avatar({ text, muted = false }) {
 function activeNav(hash, path) {
   if (path === "#/") return hash === "#/" || hash.startsWith("#/news") || hash.startsWith("#/course-preview");
   if (path === "#/papers") return hash.startsWith("#/papers") || hash.startsWith("#/paper-answer");
-  if (path === "#/exams") return hash.startsWith("#/exams") || hash.startsWith("#/exam-");
-  if (path === "#/learning") return hash.startsWith("#/learning") || hash.startsWith("#/class") || hash.startsWith("#/course-study") || hash.startsWith("#/course-lesson") || hash.startsWith("#/course-material") || hash.startsWith("#/paper-practice") || hash.startsWith("#/my-exams") || hash.startsWith("#/qa") || hash.startsWith("#/learning-record") || hash.startsWith("#/wrong");
-  if (path === "#/profile") return hash.startsWith("#/profile") || hash.startsWith("#/school-apply");
+  if (path === "#/exams") return hash.startsWith("#/exams") || hash.startsWith("#/exam-") || hash.startsWith("#/my-exams");
+  if (path === "#/learning") return hash.startsWith("#/learning") || hash.startsWith("#/class") || hash.startsWith("#/course-study") || hash.startsWith("#/course-lesson") || hash.startsWith("#/course-material") || hash.startsWith("#/paper-practice") || hash.startsWith("#/qa") || hash.startsWith("#/learning-record") || hash.startsWith("#/wrong");
+  if (path === "#/profile") return hash.startsWith("#/profile");
   return hash.startsWith(path);
+}
+
+function isProtectedStudentRoute(href = "") {
+  const path = href.split("?")[0];
+  if (path === "#/papers" || path.startsWith("#/paper-")) return true;
+  if (path === "#/exams" || path.startsWith("#/exam-") || path === "#/my-exams") return true;
+  return path === "#/learning"
+    || path.startsWith("#/class")
+    || path.startsWith("#/course-study")
+    || path.startsWith("#/course-lesson")
+    || path.startsWith("#/course-material")
+    || path.startsWith("#/paper-practice")
+    || path.startsWith("#/qa")
+    || path.startsWith("#/learning-record")
+    || path.startsWith("#/wrong");
+}
+
+function getAccessPromptCopy(roleKey) {
+  if (roleKey === "visitor") {
+    return {
+      title: "请先登录/注册",
+      desc: "登录并完成入校认证后，可使用课程学习、开始刷题和考试活动。",
+      action: <Button href="#/login">登录/注册</Button>,
+    };
+  }
+
+  return {
+    title: "当前账号尚未加入学校",
+    desc: roleKey === "rejected"
+      ? "入校认证未通过，可在个人中心查看原因并再次申请入校。"
+      : "入校认证审核中，认证通过后可使用课程学习、开始刷题和考试活动。",
+    action: <Button href="#/profile">进入个人中心</Button>,
+  };
+}
+
+function AccessPromptModal({ prompt, onClose }) {
+  return (
+    <Modal open={Boolean(prompt)} title={prompt?.title} onClose={onClose}>
+      <div onClickCapture={(event) => {
+        if (event.target.closest?.("a,button")) onClose();
+      }}>
+        <p className="m-0 leading-7 text-muted">{prompt?.desc}</p>
+        <Meta>{prompt?.action}</Meta>
+      </div>
+    </Modal>
+  );
+}
+
+function AccessBlockedPanel({ roleKey }) {
+  const copy = getAccessPromptCopy(roleKey);
+  return (
+    <Card className="mx-auto max-w-2xl">
+      <Tag tone={roleKey === "visitor" ? "blue" : "amber"}>{roleKey === "visitor" ? "未登录" : "未加入学校"}</Tag>
+      <h1 className="mb-0 mt-4 text-2xl">{copy.title}</h1>
+      <p className="mb-0 mt-3 leading-7 text-muted">{copy.desc}</p>
+      <Meta>{copy.action}<Button href="#/" tone="secondary">返回首页</Button></Meta>
+    </Card>
+  );
 }
 
 export function PageHeader({ title, desc, action }) {
@@ -332,41 +404,32 @@ export function Modal({ open, title, children, onClose, className = "w-[min(620p
 }
 
 export function SchoolApplyModal({ open, onClose }) {
-  const proofNote = "请上传您的身份证明，需体现您的姓名、院系等信息，或者其他能证明您学生身份的证件。";
-
   return (
-    <Modal open={open} title="申请加入学校" onClose={onClose}>
+    <Modal open={open} title="再次申请入校" onClose={onClose}>
       <div className="grid gap-5 text-sm">
         <div className="rounded-ui border border-blue-100 bg-blue-50 p-4">
-          <strong className="text-blue-700">学生身份认证</strong>
-          <p className="mb-0 mt-2 leading-6 text-muted">加入学校后，可查看班级课程、考试和学习资源。</p>
+          <strong className="text-blue-700">重新提交认证信息</strong>
+          <p className="mb-0 mt-2 leading-6 text-muted">被拒绝后可在个人中心再次申请入校；审核中不可重复提交。</p>
         </div>
 
-        <ApplySection title="基础信息">
+        <ApplySection title="入校信息">
           <div className="grid gap-4 md:grid-cols-2">
-            <ApplyFormField label="姓名"><input className="min-h-10 rounded-ui border border-line px-3" placeholder="请输入姓名" /></ApplyFormField>
-            <ApplyFormField label="手机号"><input className="min-h-10 rounded-ui border border-line px-3" placeholder="请输入手机号" /></ApplyFormField>
-            <ApplyFormField className="md:col-span-2" label="学校">
+            <ApplyFormField label="要加入的学校">
               <select className="min-h-10 rounded-ui border border-line bg-white px-3" defaultValue="">
                 <option value="" disabled>请选择学校</option>
-                <option>示范中职学校</option>
-                <option>东方职业学校</option>
-                <option>南湖中职学校</option>
+                {platformSchools.map((school) => <option key={school}>{school}</option>)}
               </select>
             </ApplyFormField>
+            <ApplyFormField label="目标专业">
+              <select className="min-h-10 rounded-ui border border-line bg-white px-3" defaultValue="">
+                <option value="" disabled>请选择目标专业</option>
+                {professionalCategories.map((category) => <option key={category}>{category}</option>)}
+              </select>
+            </ApplyFormField>
+            <ApplyFormField className="md:col-span-2" label="申请说明">
+              <textarea className="min-h-24 rounded-ui border border-line p-3" placeholder="可补充说明学校、专业选择或被拒后重新提交的原因" />
+            </ApplyFormField>
           </div>
-        </ApplySection>
-
-        <ApplySection title="身份证明">
-          <label className="grid cursor-pointer gap-4 rounded-ui border border-dashed border-blue-200 bg-blue-50/60 p-4 hover:bg-blue-50 md:grid-cols-[86px_1fr] md:items-center">
-            <input accept=".jpg,.jpeg,.png,image/jpeg,image/png" className="sr-only" type="file" />
-            <span className="grid h-20 w-20 place-items-center rounded-ui border border-blue-100 bg-white text-xl font-semibold text-blue-600">+</span>
-            <span>
-              <strong className="block text-slate-800">上传图片</strong>
-              <span className="mt-1 block text-sm leading-6 text-muted">{proofNote}</span>
-              <span className="mt-2 block text-xs text-blue-700">支持 jpg、jpeg、png 格式，文件大小不得超过 10MB</span>
-            </span>
-          </label>
         </ApplySection>
 
         <div className="flex justify-end gap-2 border-t border-line pt-4">

@@ -1,7 +1,7 @@
 import { AppShell } from "./components/ui";
 import { CoursePreviewPage, HomePage, NewsPage } from "./pages/HomePages";
 import { PaperAnalysisPage, PaperAnswerPage, PaperCenterPage } from "./pages/PaperPages";
-import { ExamAnalysisPage, ExamAnswerPage, ExamCenterPage, ExamDetailPage, ExamRankPage } from "./pages/ExamPages";
+import { ExamAnalysisPage, ExamAnswerPage, ExamCenterPage, ExamDetailPage, ExamRankPage, MyExamsPage } from "./pages/ExamPages";
 import { AdminDashboardPage, AdminNewsCreatePage, AdminNewsEditPage, AdminNewsPage, AdminNewsPreviewPage, AdminRecommendCoursesPage } from "./pages/AdminPages";
 import {
   ClassDetailPage,
@@ -15,7 +15,6 @@ import {
   CourseStudyPage,
   LearningCenterPage,
   LearningRecordPage,
-  MyExamsPage,
   PaperPracticePage,
   QADetailPage,
   QAPage,
@@ -23,7 +22,7 @@ import {
   WrongPracticePage,
   WrongQuestionPage,
 } from "./pages/LearningPages";
-import { LoginPage, ProfilePage, SchoolApplyPage } from "./pages/ProfilePages";
+import { LoginPage, ProfilePage } from "./pages/ProfilePages";
 import { useEffect, useState } from "react";
 
 const routes = {
@@ -57,7 +56,6 @@ const routes = {
   "#/wrong-practice": WrongPracticePage,
   "#/learning-record": LearningRecordPage,
   "#/profile": ProfilePage,
-  "#/school-apply": SchoolApplyPage,
   "#/login": LoginPage,
   "#/admin": AdminDashboardPage,
   "#/admin/news": AdminNewsPage,

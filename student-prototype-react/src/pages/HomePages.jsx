@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { courseMaterials, coursePapers, news, recommendedCourses } from "../data/mockData";
+import { courseMaterials, coursePapers, homeBanners, news, recommendedCourses } from "../data/mockData";
 import { Button, Card, Meta, Modal, PageHeader, PrototypeNote, Tag, usePrototypeRole } from "../components/ui";
 
 const newsCategories = ["全部", "政策解读", "考试通知", "平台公告", "备考指南"];
@@ -12,37 +12,81 @@ const previewLessons = [
 ];
 
 export function HomePage() {
+  const { requestStudentAreaAccess } = usePrototypeRole();
+  const [activeBanner, setActiveBanner] = useState(0);
   const [activeNews, setActiveNews] = useState(null);
+  const banner = homeBanners[activeBanner] || homeBanners[0];
+  const entryCards = [
+    { title: "课程学习", desc: "进入学习中心查看班级课程、学习任务和学习记录。", href: "#/learning", tone: "from-blue-600 to-cyan-600" },
+    { title: "开始刷题", desc: "进入试卷中心筛选试卷，完成练习并沉淀错题。", href: "#/papers", tone: "from-emerald-600 to-teal-600" },
+    { title: "考试活动", desc: "进入考试中心查看学校安排的模拟考试。", href: "#/exams", tone: "from-rose-600 to-orange-500" },
+  ];
+
+  function showPrevBanner() {
+    setActiveBanner((index) => (index - 1 + homeBanners.length) % homeBanners.length);
+  }
+
+  function showNextBanner() {
+    setActiveBanner((index) => (index + 1) % homeBanners.length);
+  }
 
   return (
     <>
-      <section className="grid min-h-[500px] gap-8 overflow-hidden rounded-ui bg-[linear-gradient(120deg,rgba(15,23,42,.96),rgba(30,64,175,.78))] p-8 text-white md:grid-cols-[1.05fr_.95fr] md:p-11">
-        <div className="self-center">
-          <Tag tone="cyan">职教高考备考平台</Tag>
-          <h1 className="m-0 mt-5 max-w-3xl text-4xl font-semibold leading-tight tracking-normal">职教高考轻量化教考平台</h1>
-          <p className="mt-5 max-w-2xl text-base leading-8 text-white/80">
-            连接课程学习、试卷练习、在线考试与成长记录，让学生在清晰的备考路径中持续积累、及时测评、稳步提升。
-          </p>
-          <p className="mt-4 max-w-2xl text-sm leading-7 text-white/65">
-            面向职教高考备考场景，平台以轻量易用的学生端体验承接推荐课程试看、公共课与专业课练习、公开考试和学校联考，并沉淀学习过程中的错题与记录。
-          </p>
-          <Meta>
-            <Button href="#/papers">进入试卷中心</Button>
-            <Button href="#/exams" tone="secondary">查看考试活动</Button>
-          </Meta>
-        </div>
-        <div className="grid gap-4">
-          {[
-            { title: "系统化备考", desc: "围绕公共课、专业课、课程学习和练习测评建立连续备考节奏。" },
-            { title: "教考一体", desc: "从推荐试看到班级学习，从日常练习到正式考试，学习链路自然衔接。" },
-            { title: "过程可追踪", desc: "学习进度、作答记录、错题沉淀持续保留，帮助学生看见自己的成长。" },
-          ].map((item) => (
-            <div key={item.title} className="rounded-ui border border-white/20 bg-white/10 p-5">
-              <strong className="mb-2 block text-lg">{item.title}</strong>
-              <span className="leading-7 text-white/75">{item.desc}</span>
+      <section className="relative overflow-hidden rounded-ui border border-line bg-white shadow-panel">
+        <img
+          alt=""
+          className="h-[260px] w-full object-cover md:h-[420px]"
+          src={banner.image}
+        />
+        {homeBanners.length > 1 ? (
+          <>
+            <button
+              aria-label="上一张"
+              className="absolute left-4 top-1/2 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full border border-white/70 bg-white/80 text-xl text-slate-800 shadow-panel hover:bg-white"
+              onClick={showPrevBanner}
+              type="button"
+            >
+              ‹
+            </button>
+            <button
+              aria-label="下一张"
+              className="absolute right-4 top-1/2 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full border border-white/70 bg-white/80 text-xl text-slate-800 shadow-panel hover:bg-white"
+              onClick={showNextBanner}
+              type="button"
+            >
+              ›
+            </button>
+            <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2">
+              {homeBanners.map((item, index) => (
+                <button
+                  aria-label={`第 ${index + 1} 张`}
+                  className={`h-2.5 rounded-full transition-all ${index === activeBanner ? "w-8 bg-white" : "w-2.5 bg-white/60"}`}
+                  key={item.image}
+                  onClick={() => setActiveBanner(index)}
+                  type="button"
+                />
+              ))}
             </div>
-          ))}
-        </div>
+          </>
+        ) : null}
+      </section>
+
+      <section className="mt-5 grid gap-4 md:grid-cols-3">
+        {entryCards.map((item) => (
+          <a
+            className="group overflow-hidden rounded-ui border border-line bg-white p-5 shadow-panel transition hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-lg"
+            href={item.href}
+            key={item.title}
+            onClick={(event) => {
+              if (!requestStudentAreaAccess()) event.preventDefault();
+            }}
+          >
+            <span className={`mb-4 block h-1.5 rounded-full bg-gradient-to-r ${item.tone}`} />
+            <strong className="text-xl text-slate-900">{item.title}</strong>
+            <p className="mb-0 mt-3 min-h-[52px] leading-7 text-muted">{item.desc}</p>
+          </a>
+        ))}
+        <PrototypeNote className="md:col-span-3">首页轮播由后台配置，当前 mock 只保留图片地址和跳转链接；三张入口卡片统一校验是否已认证加入学校。</PrototypeNote>
       </section>
 
       <section className="mt-9">
@@ -179,7 +223,7 @@ function NewsRichText({ item }) {
 }
 
 export function CoursePreviewPage() {
-  const { openSchoolApply } = usePrototypeRole();
+  const { roleKey } = usePrototypeRole();
   const [activeTab, setActiveTab] = useState("detail");
   const [activeLesson, setActiveLesson] = useState(0);
   const tabs = [
@@ -188,10 +232,15 @@ export function CoursePreviewPage() {
     { key: "materials", label: "课件" },
   ];
   const lesson = previewLessons[activeLesson];
+  function renderPreviewAction() {
+    if (roleKey === "student") return <Button href="#/learning">进入学习中心</Button>;
+    if (roleKey === "visitor") return <Button href="#/login">登录/注册</Button>;
+    return <Button href="#/profile" tone="ghost">查看认证状态</Button>;
+  }
 
   return (
     <>
-      <PageHeader title="数学基础冲刺课" desc="首页推荐课程试看页，当前按视频试看课程处理；不等同于学习中心的班级课程详情页。" action={<Button onClick={openSchoolApply}>申请入校</Button>} />
+      <PageHeader title="数学基础冲刺课" desc="首页推荐课程试看页，当前按视频试看课程处理；不等同于学习中心的班级课程详情页。" action={renderPreviewAction()} />
       <Card className="mb-5">
         <div className="grid gap-5 md:grid-cols-[260px_1fr_160px] md:items-center">
           <div className="grid min-h-[150px] place-items-center rounded-ui bg-[linear-gradient(135deg,#2563eb,#0891b2)] p-5 text-center text-white">
@@ -239,7 +288,7 @@ export function CoursePreviewPage() {
               </button>
             ))}
           </div>
-          <Meta><Button tone="ghost" onClick={openSchoolApply}>申请入校</Button></Meta>
+          <Meta>{renderPreviewAction()}</Meta>
         </Card>
       </div>
 

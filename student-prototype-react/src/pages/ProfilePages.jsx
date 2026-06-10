@@ -1,21 +1,43 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button, Card, Meta, Modal, PageHeader, Tag, usePrototypeRole } from "../components/ui";
+import { platformSchools, professionalCategories } from "../data/mockData";
 
-const schoolApplication = {
-  school: "示范中职学校",
-  identity: "学生身份",
-  target: "高三计算机冲刺班",
-  status: "审核中",
-  tone: "amber",
-  submittedAt: "2026-05-02",
-  result: "学校正在审核证明材料，请等待处理结果。",
+const schoolApplications = {
+  pending: {
+    school: "示范中职学校",
+    targetMajor: "电子与信息类",
+    status: "审核中",
+    tone: "amber",
+    submittedAt: "2026-05-02",
+    reviewedAt: "-",
+    result: "入校认证审核中，请等待学校审核。",
+  },
+  approved: {
+    school: "示范中职学校",
+    targetMajor: "电子与信息类",
+    className: "高三计算机冲刺班",
+    status: "已认证",
+    tone: "green",
+    submittedAt: "2026-05-02",
+    reviewedAt: "2026-05-03",
+    result: "认证已通过，当前账号已加入学校和班级。",
+  },
+  rejected: {
+    school: "示范中职学校",
+    targetMajor: "电子与信息类",
+    status: "认证未通过",
+    tone: "red",
+    submittedAt: "2026-05-02",
+    reviewedAt: "2026-05-03",
+    result: "学校未查询到对应学生信息，请核对学校和目标专业后再次提交。",
+  },
 };
 
 export function ProfilePage() {
   const { openSchoolApply, roleKey } = usePrototypeRole();
   const [reviewOpen, setReviewOpen] = useState(false);
   const profileName = roleKey === "visitor" ? "" : "刘同学";
-  const schoolReviewState = roleKey === "student" ? "approved" : roleKey === "registered" ? "pending" : "none";
+  const schoolReviewState = roleKey === "student" ? "approved" : roleKey === "registered" ? "pending" : roleKey === "rejected" ? "rejected" : "none";
   const schoolReview = getSchoolReview(schoolReviewState);
 
   return (
@@ -54,6 +76,12 @@ export function ProfilePage() {
                   {schoolReview.school}
                 </span>
               </label>
+              <label className="grid min-w-[240px] gap-2 text-sm">
+                目标专业：
+                <span className="inline-flex min-h-10 items-center rounded-ui border border-line bg-slate-50 px-3 text-slate-700">
+                  {schoolReview.targetMajor}
+                </span>
+              </label>
               <div className="mt-6 flex flex-wrap items-center gap-3">
                 {schoolReview.tag ? <Tag tone={schoolReview.tagTone}>{schoolReview.tag}</Tag> : null}
                 {schoolReview.canView ? (
@@ -63,7 +91,7 @@ export function ProfilePage() {
                 ) : null}
                 {schoolReview.canApply ? (
                   <button className="text-sm text-blue-600 hover:text-blue-700" onClick={openSchoolApply} type="button">
-                    加入学校
+                    再次申请入校
                   </button>
                 ) : null}
               </div>
@@ -81,36 +109,42 @@ export function ProfilePage() {
         </div>
       </Card>
 
-      <ReviewDetailModal open={reviewOpen} onClose={() => setReviewOpen(false)} />
+      <ReviewDetailModal application={schoolReview.application} open={reviewOpen} onClose={() => setReviewOpen(false)} />
     </>
   );
 }
 
 function getSchoolReview(state) {
+  const pending = schoolApplications.pending;
+  const approved = schoolApplications.approved;
+  const rejected = schoolApplications.rejected;
   const reviews = {
-    none: { school: "无", canApply: true },
-    pending: { school: "无", tag: "审核中", tagTone: "amber", canView: true },
-    approved: { school: "示范中职学校", tag: "已认证", tagTone: "green" },
-    rejected: { school: "无", tag: "已驳回", tagTone: "red", canApply: true, canView: true },
+    none: { school: "无", targetMajor: "无" },
+    pending: { school: pending.school, targetMajor: pending.targetMajor, tag: pending.status, tagTone: pending.tone, canView: true, application: pending },
+    approved: { school: approved.school, targetMajor: approved.targetMajor, tag: approved.status, tagTone: approved.tone, canView: true, application: approved },
+    rejected: { school: rejected.school, targetMajor: rejected.targetMajor, tag: rejected.status, tagTone: rejected.tone, canApply: true, canView: true, application: rejected },
   };
 
   return reviews[state] || reviews.none;
 }
 
-function ReviewDetailModal({ open, onClose }) {
+function ReviewDetailModal({ application = schoolApplications.pending, open, onClose }) {
   return (
     <Modal open={open} title="审核信息" onClose={onClose}>
       <div className="grid gap-4 text-sm">
         <div className="grid gap-3 rounded-ui border border-line p-4 md:grid-cols-2">
-          <InfoItem label="申请学校" value={schoolApplication.school} />
-          <InfoItem label="申请身份" value={schoolApplication.identity} />
-          <InfoItem label="申请班级" value={schoolApplication.target} />
-          <InfoItem label="提交时间" value={schoolApplication.submittedAt} />
+          <InfoItem label="申请学校" value={application.school} />
+          <InfoItem label="目标专业" value={application.targetMajor} />
+          <InfoItem label="审核班级" value={application.className || "待学校分配"} />
+          <InfoItem label="提交时间" value={application.submittedAt} />
+          <InfoItem label="审核时间" value={application.reviewedAt} />
         </div>
-        <div className="rounded-ui bg-amber-50 px-3 py-2 leading-6 text-amber-800">
-          {schoolApplication.result}
+        <div className={`rounded-ui px-3 py-2 leading-6 ${
+          application.tone === "red" ? "bg-red-50 text-red-700" : application.tone === "green" ? "bg-green-50 text-green-700" : "bg-amber-50 text-amber-800"
+        }`}>
+          {application.result}
         </div>
-        <Meta><Tag tone={schoolApplication.tone}>{schoolApplication.status}</Tag></Meta>
+        <Meta><Tag tone={application.tone}>{application.status}</Tag></Meta>
       </div>
     </Modal>
   );
@@ -154,49 +188,120 @@ function SecurityRow({ label, text, action, tone = "primary" }) {
 export function SchoolApplyPage() {
   return (
     <>
-      <PageHeader title="入校申请/审核状态" desc="申请信息并入个人中心，字段保持精简：选择学校、选择专业、填写理由。" />
-      <div className="grid gap-5 md:grid-cols-2">
-        <Card>
-          <h3>提交入校申请</h3>
-          <div className="mt-4 grid gap-4">
-            <label className="grid gap-2">选择学校<select className="min-h-10 rounded-ui border border-line px-3"><option>示范中职学校</option><option>东方职业学校</option><option>直属平台班级</option></select></label>
-            <label className="grid gap-2">选择专业<select className="min-h-10 rounded-ui border border-line px-3"><option>计算机应用类</option><option>财经商贸类</option><option>旅游服务类</option></select></label>
-            <label className="grid gap-2">申请理由<textarea className="min-h-28 rounded-ui border border-line p-3" placeholder="请填写申请入校或加入班级的原因" /></label>
-            <Button>提交申请</Button>
-          </div>
-        </Card>
-        <Card>
-          <h3>审核状态</h3>
-          <p className="leading-7 text-muted">当前申请：示范中职学校 · 计算机应用类。</p>
-          <Meta><Tag tone="amber">审核中</Tag><Tag>提交于 2026-04-27</Tag></Meta>
-          <div className="mt-5 rounded-ui border border-line border-l-blue-600 bg-white p-4 text-slate-700">审核通过后，学生会加入对应班级，并获得该班级课程、考试和绑定大类试卷权限。</div>
-        </Card>
-      </div>
+      <PageHeader title="入校申请已并入注册" desc="独立入校申请入口已取消；首次申请在注册时提交，被拒后从个人中心再次申请。" />
+      <Card>
+        <h2 className="m-0 text-xl">请从注册或个人中心处理入校认证</h2>
+        <p className="mb-0 mt-3 leading-7 text-muted">新用户在注册时选择学校和目标专业；认证未通过的用户可在个人中心再次申请入校。</p>
+        <Meta><Button href="#/login">登录/注册</Button><Button href="#/profile" tone="secondary">个人中心</Button></Meta>
+      </Card>
     </>
   );
 }
 
 export function LoginPage() {
   const { setRoleKey } = usePrototypeRole();
+  const [activeMode, setActiveMode] = useState("login");
+  const [codeCountdown, setCodeCountdown] = useState(0);
+
+  useEffect(() => {
+    if (codeCountdown <= 0) return undefined;
+    const timer = window.setTimeout(() => setCodeCountdown((value) => value - 1), 1000);
+    return () => window.clearTimeout(timer);
+  }, [codeCountdown]);
+
+  function sendRegisterCode() {
+    if (codeCountdown > 0) return;
+    setCodeCountdown(60);
+  }
 
   return (
-    <div className="grid gap-5 md:grid-cols-2">
-      <Card>
-        <h1 className="text-2xl">账号登录</h1>
-        <p className="leading-7 text-muted">登录后可查看学习进度、考试安排、试卷练习和答疑记录。</p>
-        <div className="mt-5 grid gap-4">
-          <input className="min-h-10 rounded-ui border border-line px-3" placeholder="手机号/账号" />
-          <input className="min-h-10 rounded-ui border border-line px-3" type="password" placeholder="密码" />
-          <Button href="#/learning" onClick={() => setRoleKey("student")}>登录并进入学习中心</Button>
+    <div className="mx-auto grid max-w-[520px] gap-5">
+      <Card className="p-0">
+        <div className="border-b border-line px-6 py-5 text-center">
+          <h1 className="m-0 text-2xl">账号登录/注册</h1>
+          <p className="mb-0 mt-2 text-sm leading-6 text-muted">登录后进入学习平台；新用户注册时同步提交入校认证。</p>
         </div>
-      </Card>
-      <Card>
-        <h1 className="text-2xl">注册账号</h1>
-        <p className="leading-7 text-muted">注册后可提交入校申请，审核通过后进入班级学习。</p>
-        <div className="mt-5 grid gap-4">
-          <input className="min-h-10 rounded-ui border border-line px-3" placeholder="手机号" />
-          <input className="min-h-10 rounded-ui border border-line px-3" placeholder="验证码" />
-          <Button href="#/school-apply" tone="ghost" onClick={() => setRoleKey("registered")}>注册后完善申请</Button>
+
+        <div className="grid grid-cols-2 border-b border-line p-2">
+          {[
+            ["login", "登录"],
+            ["register", "注册"],
+          ].map(([key, label]) => (
+            <button
+              className={`min-h-10 rounded-ui text-sm ${activeMode === key ? "bg-blue-600 text-white" : "text-slate-700 hover:bg-slate-50"}`}
+              key={key}
+              onClick={() => setActiveMode(key)}
+              type="button"
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+
+        <div className="grid gap-4 p-6">
+          {activeMode === "login" ? (
+            <>
+              <label className="grid gap-2 text-sm">
+                手机号/账号
+                <input className="min-h-10 rounded-ui border border-line px-3" placeholder="请输入手机号或账号" />
+              </label>
+              <label className="grid gap-2 text-sm">
+                密码
+                <input className="min-h-10 rounded-ui border border-line px-3" placeholder="请输入密码" type="password" />
+              </label>
+              <Button href="#/learning" onClick={() => setRoleKey("student")}>登录</Button>
+              <button className="text-sm text-blue-600 hover:text-blue-700" onClick={() => setActiveMode("register")} type="button">
+                还没有账号？立即注册
+              </button>
+            </>
+          ) : (
+            <>
+              <label className="grid gap-2 text-sm">
+                手机号
+                <input className="min-h-10 rounded-ui border border-line px-3" placeholder="请输入手机号" />
+              </label>
+              <label className="grid gap-2 text-sm">
+                验证码
+                <span className="grid gap-2 sm:grid-cols-[1fr_128px]">
+                  <input className="min-h-10 rounded-ui border border-line px-3" placeholder="请输入验证码" />
+                  <button
+                    className="min-h-10 rounded-ui border border-blue-600 bg-white px-3 text-sm text-blue-600 hover:bg-blue-50 disabled:cursor-not-allowed disabled:border-line disabled:bg-slate-50 disabled:text-muted"
+                    disabled={codeCountdown > 0}
+                    onClick={sendRegisterCode}
+                    type="button"
+                  >
+                    {codeCountdown > 0 ? `${codeCountdown}s 后重发` : "发送验证码"}
+                  </button>
+                </span>
+              </label>
+              <label className="grid gap-2 text-sm">
+                密码
+                <input className="min-h-10 rounded-ui border border-line px-3" placeholder="请设置登录密码" type="password" />
+              </label>
+              <label className="grid gap-2 text-sm">
+                确认密码
+                <input className="min-h-10 rounded-ui border border-line px-3" placeholder="请再次输入密码" type="password" />
+              </label>
+              <label className="grid gap-2 text-sm">
+                要加入的学校
+                <select className="min-h-10 rounded-ui border border-line bg-white px-3" defaultValue="">
+                  <option value="" disabled>请选择要加入的学校</option>
+                  {platformSchools.map((school) => <option key={school}>{school}</option>)}
+                </select>
+              </label>
+              <label className="grid gap-2 text-sm">
+                目标专业
+                <select className="min-h-10 rounded-ui border border-line bg-white px-3" defaultValue="">
+                  <option value="" disabled>请选择目标专业</option>
+                  {professionalCategories.map((category) => <option key={category}>{category}</option>)}
+                </select>
+              </label>
+              <Button href="#/profile" tone="ghost" onClick={() => setRoleKey("registered")}>注册并提交认证</Button>
+              <button className="text-sm text-blue-600 hover:text-blue-700" onClick={() => setActiveMode("login")} type="button">
+                已有账号？返回登录
+              </button>
+            </>
+          )}
         </div>
       </Card>
     </div>

@@ -21,7 +21,6 @@ const schoolRankRows = [
 export function ExamCenterPage() {
   const { roleKey } = usePrototypeRole();
   const subjectTypes = ["文化课", "专业课"];
-  const examTypes = ["全部考试", "公开考试", "学校联考"];
   const examStatuses = ["全部状态", "未开始", "进行中", "评审中", "已公示"];
   const defaultCategory = categories.find((category) => category.unlocked)?.name || categories[0].name;
   const [selectedSubjectType, setSelectedSubjectType] = useState("文化课");
@@ -29,7 +28,6 @@ export function ExamCenterPage() {
   const [selectedCategory, setSelectedCategory] = useState(defaultCategory);
   const [showAllCategories, setShowAllCategories] = useState(false);
   const [showAllCultureSubjects, setShowAllCultureSubjects] = useState(false);
-  const [selectedType, setSelectedType] = useState("全部考试");
   const [selectedStatus, setSelectedStatus] = useState("全部状态");
   const [keyword, setKeyword] = useState("");
   const [page, setPage] = useState(1);
@@ -44,8 +42,8 @@ export function ExamCenterPage() {
   const filteredExams = exams.filter((exam) => {
     const subjectMatched = isProfessional
       ? exam.subject === "专业课" && exam.category === selectedCategory
-      : exam.subject === selectedCultureSubject;
-    const typeMatched = selectedType === "全部考试" || exam.type === selectedType;
+      : exam.category === "文化课" && exam.subject === selectedCultureSubject;
+    const typeMatched = exam.type === "模拟考试";
     const statusMatched = selectedStatus === "全部状态" || exam.status === selectedStatus;
     const keywordMatched = !keyword.trim() || exam.title.includes(keyword.trim());
     return subjectMatched && typeMatched && statusMatched && keywordMatched;
@@ -54,7 +52,7 @@ export function ExamCenterPage() {
   const currentPage = Math.min(page, totalPages);
   const paginatedExams = filteredExams.slice((currentPage - 1) * pageSize, currentPage * pageSize);
   const emptyTitle = "暂无符合条件的考试";
-  const emptyDesc = "请调整考试类型、状态、科目或关键词后再查看；个人相关考试请进入学习中心的“我的考试”。";
+  const emptyDesc = "请调整科目/专业、状态或关键词后再查看；个人相关考试请进入考试中心的“我的考试”。";
 
   useEffect(() => {
     if (isProfessional && !availableCategories.some((category) => category.name === selectedCategory) && availableCategories[0]) {
@@ -64,17 +62,17 @@ export function ExamCenterPage() {
 
   useEffect(() => {
     setPage(1);
-  }, [roleKey, selectedSubjectType, selectedCultureSubject, selectedCategory, selectedType, selectedStatus, keyword, pageSize]);
+  }, [roleKey, selectedSubjectType, selectedCultureSubject, selectedCategory, selectedStatus, keyword, pageSize]);
 
   return (
     <>
       <PageHeader
         title="考试中心"
-        desc="公开考试与学校联考统一展示，包含未开始、进行中、评审中和已公示考试；排行和成绩归属于具体考试。"
+        desc="考试中心只展示学校为学生安排的模拟考试，包含文化课和专业课；未入校或认证未通过用户不能参加考试。"
         action={<Button href="#/my-exams" tone="secondary">我的考试</Button>}
       />
       <PrototypeNote className="mb-5">
-        不做报名流程；有权限且考试进行中即可进入考试。交卷才算参加考试，未交卷不生成成绩、答题记录或排行。
+        模拟考试不做报名流程，已入校学生在考试进行中可进入考试。交卷才算参加考试，未交卷不生成成绩、答题记录或排行。
       </PrototypeNote>
       <Card className="mb-5 p-4">
         <div className="grid gap-4">
@@ -96,45 +94,37 @@ export function ExamCenterPage() {
                 </button>
               ))}
             </div>
-            {isProfessional && sortedCategories.length > 6 ? (
-              <Button tone="secondary" onClick={() => setShowAllCategories((value) => !value)}>
-                {showAllCategories ? "收起" : "展开全部"}
-              </Button>
-            ) : null}
-            {!isProfessional && sortedCultureSubjects.length > 6 ? (
-              <Button tone="secondary" onClick={() => setShowAllCultureSubjects((value) => !value)}>
-                {showAllCultureSubjects ? "收起" : "展开全部"}
+            {(isProfessional ? sortedCategories : sortedCultureSubjects).length > 6 ? (
+              <Button tone="secondary" onClick={() => (isProfessional ? setShowAllCategories((value) => !value) : setShowAllCultureSubjects((value) => !value))}>
+                {(isProfessional ? showAllCategories : showAllCultureSubjects) ? "收起" : "展开全部"}
               </Button>
             ) : null}
           </div>
           <PrototypeNote>
-            类型用于切换文化课/专业课；科目或专业筛选保留原有逻辑，资源数量只展示考试配置数量。
+            模拟考试按文化课科目或学生所属专业大类展示；未入校用户会被全局权限拦截，不能进入考试中心。
           </PrototypeNote>
         </div>
       </Card>
 
       <div className="mb-5 flex flex-wrap gap-3 rounded-ui border border-line bg-white p-4">
-        <select className="min-h-10 rounded-ui border border-line px-3" value={selectedType} onChange={(event) => setSelectedType(event.target.value)}>
-          {examTypes.map((item) => <option key={item}>{item}</option>)}
-        </select>
         <select className="min-h-10 rounded-ui border border-line px-3" value={selectedStatus} onChange={(event) => setSelectedStatus(event.target.value)}>
           {examStatuses.map((item) => <option key={item}>{item}</option>)}
         </select>
         <input className="min-h-10 rounded-ui border border-line px-3" placeholder="搜索考试名称" value={keyword} onChange={(event) => setKeyword(event.target.value)} />
         <PrototypeNote>
-          考试中心用于浏览公开考试和学校联考；当前账号相关的可参加、已交卷、已出分考试进入学习中心的“我的考试”查看。
+          考试中心用于浏览学校为学生安排的模拟考试；当前账号相关的可参加、已交卷、已出分考试进入“我的考试”查看。
         </PrototypeNote>
       </div>
       {filteredExams.length ? (
         <>
           <DataTable
-            columns={["考试", "考试类型", "科目/大类", "考试时间", "参加状态", "操作"]}
+            columns={["考试", "类型", "科目/专业大类", "考试时间", "参加状态", "操作"]}
             gridTemplateColumns="minmax(260px,2fr) 110px 120px 170px 120px 170px"
             rows={paginatedExams}
             renderRow={(exam) => (
               <>
                 <div><strong>{exam.title}</strong></div>
-                <Tag tone={exam.type === "学校联考" ? "blue" : "cyan"}>{exam.type}</Tag>
+                <Tag tone="blue">{exam.type}</Tag>
                 <span>{exam.subject === "专业课" ? exam.category : exam.subject}</span>
                 <span>
                   <strong className="block text-sm">{exam.startAt || exam.time}</strong>
@@ -165,10 +155,30 @@ export function ExamCenterPage() {
   );
 }
 
+function ExamFilterButtons({ label, options, value, onChange }) {
+  return (
+    <div className="flex flex-wrap items-center gap-3 text-sm">
+      <span className="w-12 font-semibold">{label}</span>
+      <div className="flex flex-wrap gap-2">
+        {options.map((option) => (
+          <button
+            className={`min-h-10 rounded-ui border px-4 transition ${
+              value === option ? "border-blue-600 bg-blue-50 text-blue-700" : "border-line bg-white hover:bg-slate-50"
+            }`}
+            key={option}
+            onClick={() => onChange(option)}
+            type="button"
+          >
+            {option}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function hasExamPermission(exam, roleKey) {
-  if (exam.permission === "registered") return roleKey !== "visitor";
-  if (exam.permission === "student") return roleKey === "student";
-  return false;
+  return exam.type === "模拟考试" && roleKey === "student";
 }
 
 function getExamParticipation(exam, roleKey) {
@@ -184,7 +194,7 @@ function getExamParticipation(exam, roleKey) {
 
   if (!hasExamPermission(exam, roleKey)) return { label: "无权限", tone: "gray" };
   if (exam.status === "未开始") return { label: "待开始", tone: "amber" };
-  if (exam.status === "进行中") return { label: "可参加", tone: "green" };
+  if (exam.status === "进行中") return { label: exam.submitted ? "已交卷" : "可参加", tone: "green" };
   if (exam.status === "已公示" && exam.submitted) return { label: "已出分", tone: "green" };
   if (exam.status === "已公示" && !exam.submitted) return { label: "未参加", tone: "gray" };
   if (exam.status === "评审中" && exam.submitted) return { label: "已交卷", tone: "green" };
@@ -267,7 +277,7 @@ function ExamAction({ exam, roleKey }) {
     return <div className="flex justify-end whitespace-nowrap"><Button href={detailHref} tone="secondary">查看详情</Button></div>;
   }
 
-  if (exam.status === "进行中") {
+  if (exam.status === "进行中" && !exam.submitted) {
     return (
       <div className="flex justify-end gap-2 whitespace-nowrap">
         <Button href={detailHref} tone="secondary">查看详情</Button>
@@ -288,39 +298,11 @@ function ExamAction({ exam, roleKey }) {
   return <div className="flex justify-end whitespace-nowrap"><Button href={detailHref} tone="secondary">查看详情</Button></div>;
 }
 
-function ExamFilterButtons({ label, options, value, onChange }) {
-  return (
-    <div className="flex flex-wrap items-center gap-3 text-sm">
-      <span className="w-12 font-semibold">{label}</span>
-      <div className="flex flex-wrap gap-2">
-        {options.map((option) => (
-          <button
-            className={`min-h-9 rounded-ui px-4 ${value === option ? "bg-blue-600 text-white" : "text-slate-700 hover:bg-slate-50"}`}
-            key={option}
-            onClick={() => onChange(option)}
-            type="button"
-          >
-            {option}
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-}
-
 function getExamPermissionCopy(exam, roleKey, permitted) {
   if (permitted) {
-    if (exam.type === "学校联考") {
-      return {
-        title: "当前班级已获得本场学校联考权限",
-        desc: "本场考试面向已授权学校和指定班级开放，当前身份可查看考试详情，并在考试进行中进入答题。",
-        action: null,
-      };
-    }
-
     return {
-      title: "当前身份可参加公开考试",
-      desc: "公开考试面向注册用户和班级学生开放，考试进行中可直接进入答题。",
+      title: "当前班级已获得本场模拟考试权限",
+      desc: "本场考试面向已入校并加入指定班级的学生开放，当前身份可查看考试详情，并在考试进行中进入答题。",
       action: null,
     };
   }
@@ -328,39 +310,112 @@ function getExamPermissionCopy(exam, roleKey, permitted) {
   if (roleKey === "visitor") {
     return {
       title: "游客暂无考试参加权限",
-      desc: "请先登录或注册账号；公开考试登录后可参加，学校联考还需要加入授权班级。",
+      desc: "模拟考试仅面向已入校并加入指定班级的学生开放，请先登录并完成入校认证。",
       action: <Button href="#/login">登录/注册</Button>,
     };
   }
 
   if (roleKey === "registered") {
     return {
-      title: exam.type === "学校联考" ? "学校联考需要班级授权" : "当前考试暂不可参加",
-      desc: exam.type === "学校联考" ? "注册用户可以浏览联考信息，但需要提交入校申请并加入授权班级后才能参加。" : "请确认考试开放范围或联系管理员处理权限。",
-      action: <Button href="#/school-apply">申请入校</Button>,
+      title: "模拟考试需要入校认证",
+      desc: "当前账号尚未加入学校，认证通过并加入授权班级后才能参加模拟考试。",
+      action: <Button href="#/profile">查看认证</Button>,
     };
   }
 
   return {
     title: "当前班级暂无本场考试授权",
-    desc: "学校联考由后台按学校、班级和专业大类授权；如需参加，请联系管理员确认授权范围。",
+    desc: "模拟考试由后台按学校、班级和专业大类授权；如需参加，请联系管理员确认授权范围。",
     action: <Button href="#/profile" tone="secondary">查看个人中心</Button>,
   };
+}
+
+export function MyExamsPage() {
+  const { roleKey } = usePrototypeRole();
+  const myExams = exams.filter((exam) => exam.type === "模拟考试" && hasExamPermission(exam, roleKey));
+  const submittedCount = myExams.filter((exam) => exam.submitted).length;
+  const publishedCount = myExams.filter((exam) => exam.status === "已公示" && exam.submitted).length;
+
+  if (roleKey !== "student") {
+    return (
+      <>
+        <PageHeader title="我的考试" desc="我的考试属于考试中心，展示当前学生可参加、已交卷、已出分或未参加的模拟考试。" />
+        <Card>
+          <h2 className="m-0 text-xl">完成入校认证后查看我的考试</h2>
+          <p className="mb-0 mt-3 leading-7 text-muted">模拟考试仅面向已入校并加入指定班级的学生开放。</p>
+          <Meta><Button href="#/profile">查看认证</Button><Button href="#/exams" tone="secondary">返回考试中心</Button></Meta>
+        </Card>
+      </>
+    );
+  }
+
+  return (
+    <>
+      <PageHeader
+        title="我的考试"
+        desc="展示当前学生相关的模拟考试：可参加、待开始、已交卷、已出分和未参加记录。"
+        action={<Button href="#/exams" tone="secondary">返回考试中心</Button>}
+      />
+      <div className="grid gap-4 md:grid-cols-3">
+        <Stat label="相关考试" value={myExams.length} />
+        <Stat label="已交卷" value={submittedCount} />
+        <Stat label="已出分" value={publishedCount} />
+      </div>
+      <div className="mt-6">
+        {myExams.length ? (
+          <DataTable
+            columns={["考试", "类型", "专业大类", "考试时间", "参加状态", "我的得分", "操作"]}
+            gridTemplateColumns="minmax(220px,1.6fr) 100px 120px 170px 100px 90px minmax(150px,1fr)"
+            rows={myExams}
+            renderRow={(exam) => {
+              const participation = getExamParticipation(exam, roleKey);
+              const canSeeScore = exam.status === "已公示" && exam.submitted;
+
+              return (
+                <>
+                  <div>
+                    <strong>{exam.title}</strong>
+                    <p className="mb-0 mt-1 text-xs leading-5 text-muted">{exam.paperTitle}</p>
+                  </div>
+                  <Tag tone="blue">{exam.type}</Tag>
+                  <span>{exam.category}</span>
+                  <span>
+                    <strong className="block text-sm">{exam.startAt || exam.time}</strong>
+                    <span className="mt-1 block text-xs text-muted">至 {exam.endAt || exam.time}</span>
+                  </span>
+                  <Tag tone={participation.tone}>{participation.label}</Tag>
+                  <span>{canSeeScore ? exam.score : "-"}</span>
+                  <ExamAction exam={exam} roleKey={roleKey} />
+                </>
+              );
+            }}
+          />
+        ) : (
+          <Card>
+            <h3 className="m-0">暂无我的考试</h3>
+            <p className="mb-0 mt-3 leading-7 text-muted">当前暂无可参加或已参加的模拟考试。</p>
+            <Meta><Button href="#/exams" tone="secondary">浏览考试中心</Button></Meta>
+          </Card>
+        )}
+      </div>
+      <PrototypeNote className="mt-5">“我的考试”现在归入考试中心；学习中心不再展示考试相关模块。</PrototypeNote>
+    </>
+  );
 }
 
 export function ExamDetailPage() {
   const { roleKey } = usePrototypeRole();
   const params = new URLSearchParams((window.location.hash.split("?")[1] || ""));
-  const exam = exams.find((item) => item.id === params.get("id")) || exams[1];
+  const mockExams = exams.filter((item) => item.type === "模拟考试");
+  const exam = mockExams.find((item) => item.id === params.get("id")) || mockExams[0];
   const permitted = hasExamPermission(exam, roleKey);
   const participation = getExamParticipation(exam, roleKey);
-  const canEnter = permitted && exam.status === "进行中";
+  const canEnter = permitted && exam.status === "进行中" && !exam.submitted;
   const canSeeResult = permitted && exam.status === "已公示" && exam.submitted;
-  const isSchoolExam = exam.type === "学校联考";
   const permissionCopy = getExamPermissionCopy(exam, roleKey, permitted);
   const resultSummary = getExamResultSummary(exam, participation, canSeeResult);
   const examIntro = exam.intro || [
-    isSchoolExam ? "本场学校联考面向已授权学校及指定班级开放。" : "本场公开考试面向注册用户开放。",
+    "本场模拟考试面向已入校并加入指定班级的学生开放。",
     "考试介绍由后台富文本配置，学生端按配置内容展示。",
   ];
   const timeStages = [
@@ -377,8 +432,8 @@ export function ExamDetailPage() {
         action={canEnter ? <Button href="#/exam-answer">开始考试</Button> : null}
       />
       <div className="grid gap-4 md:grid-cols-4">
-        <Stat label="考试类型" value={exam.type === "学校联考" ? "联考" : "公开"} />
-        <Stat label="科目" value={exam.subject === "专业课" ? exam.category : exam.subject} />
+        <Stat label="考试类型" value="模拟考试" />
+        <Stat label="专业大类" value={exam.category} />
         <Stat label="状态" value={exam.status} />
         <Stat label="参加状态" value={participation.label} />
       </div>
@@ -460,7 +515,8 @@ export function ExamRankPage() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
   const params = new URLSearchParams((window.location.hash.split("?")[1] || ""));
-  const exam = exams.find((item) => item.id === params.get("id")) || exams[3];
+  const mockExams = exams.filter((item) => item.type === "模拟考试");
+  const exam = mockExams.find((item) => item.id === params.get("id")) || mockExams[0];
   const pagination = activeTab === "student"
     ? { total: 308, label: "考生排行" }
     : { total: 26, label: "学校排行" };
@@ -557,7 +613,8 @@ export function ExamRankPage() {
 
 export function ExamAnalysisPage() {
   const params = new URLSearchParams((window.location.hash.split("?")[1] || ""));
-  const exam = exams.find((item) => item.id === params.get("id")) || exams[3];
+  const mockExams = exams.filter((item) => item.type === "模拟考试");
+  const exam = mockExams.find((item) => item.id === params.get("id")) || mockExams[0];
   const analysisGroups = examQuestionGroups.map((group) => ({
     ...group,
     questions: group.questions.map((question, index) => {
