@@ -297,19 +297,19 @@ export function Card({ children, className = "" }) {
   return <section className={`rounded-ui border border-line bg-white p-5 shadow-panel ${className}`}>{children}</section>;
 }
 
-export function Button({ children, href, tone = "primary", onClick }) {
+export function Button({ children, className = "", href, tone = "primary", onClick }) {
   const cls = {
     primary: "border-blue-600 bg-blue-600 text-white hover:bg-blue-700",
     secondary: "border-line bg-white text-ink hover:bg-slate-50",
     ghost: "border-transparent bg-blue-50 text-blue-600 hover:bg-blue-100",
     warning: "border-amber-600 bg-amber-600 text-white",
   }[tone];
-  const className = `inline-flex min-h-10 items-center justify-center rounded-ui border px-4 py-2 ${cls}`;
-  if (href) return <a className={className} href={href} onClick={onClick}>{children}</a>;
-  return <button className={className} onClick={onClick}>{children}</button>;
+  const buttonClassName = `inline-flex min-h-10 items-center justify-center rounded-ui border px-4 py-2 ${cls} ${className}`;
+  if (href) return <a className={buttonClassName} href={href} onClick={onClick}>{children}</a>;
+  return <button className={buttonClassName} onClick={onClick}>{children}</button>;
 }
 
-export function Tag({ children, tone = "gray" }) {
+export function Tag({ children, className = "", tone = "gray" }) {
   const cls = {
     gray: "bg-slate-100 text-slate-700",
     blue: "bg-blue-50 text-blue-600",
@@ -318,11 +318,11 @@ export function Tag({ children, tone = "gray" }) {
     red: "bg-red-50 text-red-700",
     cyan: "bg-cyan-50 text-cyan-700",
   }[tone];
-  return <span className={`inline-flex min-h-7 items-center rounded-full px-3 text-xs ${cls}`}>{children}</span>;
+  return <span className={`inline-flex min-h-7 items-center rounded-full px-3 text-xs ${cls} ${className}`}>{children}</span>;
 }
 
-export function Meta({ children }) {
-  return <div className="mt-4 flex flex-wrap gap-2">{children}</div>;
+export function Meta({ children, className = "" }) {
+  return <div className={`mt-4 flex flex-wrap gap-2 ${className}`}>{children}</div>;
 }
 
 export function DataTable({ columns, rows, renderRow, gridTemplateColumns }) {

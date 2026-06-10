@@ -72,6 +72,9 @@ export function LearningCenterPage() {
     },
   ];
   const pendingTaskCount = courseTasks.length + paperPracticeTasks.length + classTestTasks.length + qaTasks.length + 2;
+  const myPracticeCount = paperPracticeRecords.filter((paper) => ["进行中", "已完成"].includes(normalizeLearningStatus(paper.status))).length;
+  const repliedQaCount = qaRecords.filter(hasQaReply).length;
+  const unmasteredWrongCount = wrongQuestions.filter((question) => question.status !== "已掌握").length;
 
   if (roleKey === "visitor") {
     return (
@@ -150,109 +153,108 @@ export function LearningCenterPage() {
 
   return (
     <>
-      <PageHeader title="学习中心" desc="学生只能加入一个学校；在该学校下只能加入一个班级。学习中心直接展示当前学校班级，不再提供多班级切换。" />
-      <Card className="mb-4">
-        <div className="grid gap-5 md:grid-cols-[1.5fr_1fr_1fr] md:items-center">
-          <div>
-            <span className="text-sm text-muted">当前班级</span>
-            <div className="mb-2 mt-2 flex flex-wrap items-center gap-2">
-              <h2 className="m-0 text-xl">{currentIdentity.name}</h2>
-              <Tag tone="blue">{currentIdentity.category}</Tag>
-            </div>
-            <p className="m-0 text-muted">{currentIdentity.school}</p>
-          </div>
-          <div className="rounded-ui bg-slate-50 p-4">
-            <span className="text-sm text-muted">待处理事项</span>
-            <b className="mt-2 block text-2xl">{pendingTaskCount}</b>
-          </div>
-          <div className="rounded-ui bg-slate-50 p-4">
-            <div className="flex items-center justify-between gap-4">
+      <PageHeader title="学习中心" desc="进入学习中心默认展示老师和学校安排给我的课程；试卷、提问、记录和错题作为个人学习辅助入口。" />
+      <div className="grid gap-5 lg:grid-cols-[260px_1fr]">
+        <aside className="space-y-4">
+          <Card>
+            <div className="grid place-items-center gap-3 border-b border-line pb-5 text-center">
+              <div className="grid h-20 w-20 place-items-center rounded-full bg-slate-100 text-2xl font-semibold text-slate-400">张</div>
               <div>
-                <span className="text-sm text-muted">累计错题</span>
-                <b className="mt-2 block text-2xl">38</b>
+                <strong className="block text-lg">张同学</strong>
+                <span className="mt-1 block text-sm text-muted">{currentIdentity.school}</span>
+                <span className="mt-1 block text-sm text-muted">{currentIdentity.name}</span>
               </div>
-              <Button href="#/wrong-book" tone="ghost">进入错题本</Button>
+            </div>
+            <nav className="mt-5 grid gap-2">
+              <LearningNavItem active href="#/learning" label="我的课程" />
+              <LearningNavItem count={myPracticeCount} href="#/paper-practice" label="我的试卷/练习" />
+              <LearningNavItem count={qaRecords.length} href="#/qa" label="提问记录" />
+              <LearningNavItem count={learningRecords.length} href="#/learning-record" label="学习记录" />
+              <LearningNavItem count={unmasteredWrongCount} href="#/wrong-book" label="错题巩固" />
+            </nav>
+          </Card>
+          <Card>
+            <Tag tone="blue">{currentIdentity.category}</Tag>
+            <h3 className="mb-2 mt-4 text-lg">当前学习安排</h3>
+            <p className="m-0 text-sm leading-6 text-muted">
+              我的课程只展示当前学校和班级分配给学生的课程，课程内的练习、测试和资料进入课程详情后处理。
+            </p>
+          </Card>
+        </aside>
+
+        <section>
+          <div className="mb-5 flex flex-col justify-between gap-3 md:flex-row md:items-end">
+            <div>
+              <Tag tone="green">默认页</Tag>
+              <h2 className="mb-0 mt-3 text-2xl">我的课程</h2>
+              <p className="mb-0 mt-2 text-muted">平铺展示老师和学校安排给我的课程，学生直接选择课程继续学习。</p>
+            </div>
+            <div className="flex flex-wrap gap-2 md:justify-end">
+              <Tag tone="blue">{classCourses.length} 门课程</Tag>
+              <Tag tone="amber">{myPracticeCount} 份试卷/练习记录</Tag>
+              <Tag tone="green">{repliedQaCount} 条老师回复</Tag>
             </div>
           </div>
-        </div>
-      </Card>
 
-      <section className="mt-8">
-        <PageHeader title="快速练习" desc="学生自主练习入口，只选择题数，不选择教材、章节、知识点、题型或难度。" />
-        <div className="grid gap-4 md:grid-cols-2">
-          {quickPracticeCards.map((item) => (
-            <Card key={item.title}>
-              <Meta><Tag tone={item.tone}>{item.title}</Tag><Tag>{currentIdentity.category}</Tag></Meta>
-              <h3 className="mb-2 mt-4 text-xl">{item.title}</h3>
-              <p className="leading-7 text-muted">{item.desc}</p>
-              <div className="mt-4 flex flex-wrap gap-2">
-                {[10, 20, 30].map((count) => (
-                  <Button key={count} tone={count === 10 ? "primary" : "secondary"} onClick={() => setPracticeConfig({ type: item.title, count })}>
-                    练 {count} 题
-                  </Button>
-                ))}
-              </div>
-            </Card>
-          ))}
-        </div>
-        <PrototypeNote className="mt-4">智能练题和错题再练是学生自主巩固，不替代老师安排的课程、课程试卷和班级测试。</PrototypeNote>
-      </section>
+          <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+            {classCourses.map((course, index) => {
+              const status = normalizeLearningStatus(course.status);
+              const actionText = course.progress === "0%" ? "开始学习" : course.progress === "100%" ? "复习课程" : "继续学习";
+              const sourceTone = index % 2 === 0 ? "green" : "blue";
+              const sourceText = index % 2 === 0 ? "本校" : "官方";
 
-      <section className="mt-8">
-        <PageHeader title="老师安排的学习" desc="学习中心突出老师为学生安排的课程内容：班级课程、课程试卷、班级测试、答疑和学习记录。" />
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          <TaskSummaryCard
-            title="课程学习"
-            desc="只展示最近学习或新分配的班级课程，不混入课堂练习。"
-            tasks={courseTasks}
-            href="#/class-courses"
-            listAction="进入课程"
-          />
-          <TaskSummaryCard
-            title="课程试卷"
-            desc="展示老师为课程绑定、学生已经开始或已经完成的试卷。"
-            tasks={paperPracticeTasks}
-            href="#/paper-practice"
-            listAction="进入试卷"
-          />
-          <TaskSummaryCard
-            title="班级测试"
-            desc="展示当前班级布置的随堂测试、阶段测试和结业测试。"
-            tasks={classTestTasks}
-            href="#/class-exam"
-            listAction="进入测试"
-          />
-          <TaskSummaryCard
-            title="班级答疑"
-            desc="展示老师已回复、要求补充或需要学生继续处理的问题。"
-            tasks={qaTasks}
-            href="#/qa"
-            listAction="进入答疑"
-          />
-        </div>
-        <PrototypeNote className="mt-4">
-          学习任务摘要按资源来源拆分，但首页只展示摘要卡片和最近一条，完整列表进入对应二级页面。
-        </PrototypeNote>
-      </section>
-
-      <LearningRecordSummary note="学习中心现在以“当前学校班级 + 学习任务摘要 + 学习记录”组织页面。学生只能加入一个学校，并在该学校下加入一个班级；班级课程、班级测试和班级答疑入口合并到当前学校班级与学习任务摘要中。" />
-      <Modal open={Boolean(practiceConfig)} title={practiceConfig ? `${practiceConfig.type} · ${practiceConfig.count} 题` : ""} onClose={() => setPracticeConfig(null)}>
-        <div className="grid gap-4">
-          <p className="m-0 leading-7 text-muted">
-            系统将从当前学生可练题库中生成一次临时练习。当前原型先展示组卷确认，后续接入题库抽题后进入答题页。
-          </p>
-          <div className="rounded-ui border border-line bg-slate-50 p-4">
-            <InfoLine label="练习类型" value={practiceConfig?.type} />
-            <InfoLine label="题数" value={`${practiceConfig?.count || 0} 题`} />
-            <InfoLine label="范围" value={`${currentIdentity.category} · 当前可练题库`} />
+              return (
+                <Card key={course.title} className="flex h-full flex-col gap-4">
+                  <div
+                    className="relative grid min-h-[140px] place-items-center overflow-hidden rounded-ui p-5 text-center text-white"
+                    style={{ background: course.coverTone }}
+                  >
+                    <Tag className="absolute left-3 top-3 bg-white text-slate-800" tone={sourceTone}>{sourceText}</Tag>
+                    <strong className="max-w-[220px] text-lg leading-7">{course.title}</strong>
+                  </div>
+                  <div className="flex flex-1 flex-col">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Tag tone={getLearningStatusTone(status)}>{status}</Tag>
+                      <Tag>{course.category}</Tag>
+                    </div>
+                    <h3 className="mb-2 mt-4 text-lg">{course.currentLesson}</h3>
+                    <p className="m-0 text-sm leading-6 text-muted">
+                      发布人：{course.publisher} · {course.lessonCount} 课时
+                    </p>
+                    <div className="mt-4">
+                      <div className="mb-2 flex justify-between text-sm text-muted">
+                        <span>学习进度</span>
+                        <strong className="text-slate-700">{course.progress}</strong>
+                      </div>
+                      <div className="h-2 overflow-hidden rounded-full bg-slate-100">
+                        <span className="block h-full rounded-full bg-blue-600" style={{ width: course.progress }} />
+                      </div>
+                    </div>
+                    <Meta className="mt-auto">
+                      <span className="text-sm text-muted">已学 {course.learnedCount}/{course.lessonCount}</span>
+                      <Button href="#/course-study">{actionText}</Button>
+                    </Meta>
+                  </div>
+                </Card>
+              );
+            })}
           </div>
-          <Meta>
-            <Button href="#/paper-answer" onClick={() => setPracticeConfig(null)}>开始练习</Button>
-            <Button tone="secondary" onClick={() => setPracticeConfig(null)}>取消</Button>
-          </Meta>
-        </div>
-      </Modal>
+
+          <PrototypeNote className="mt-5">
+            课程试卷、班级测试和课程资料不作为学习中心一级入口，统一放回课程详情；我的试卷/练习只展示学生开始过或完成过的记录。
+          </PrototypeNote>
+        </section>
+      </div>
     </>
+  );
+}
+
+function LearningNavItem({ active = false, count, href, label }) {
+  return (
+    <Button className="justify-between" href={href} tone={active ? "primary" : "secondary"}>
+      <span>{label}</span>
+      {typeof count === "number" ? <span className="text-xs opacity-80">{count}</span> : null}
+    </Button>
   );
 }
 
