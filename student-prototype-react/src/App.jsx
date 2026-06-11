@@ -1,6 +1,6 @@
 import { AppShell } from "./components/ui";
 import { CoursePreviewPage, HomePage, NewsPage } from "./pages/HomePages";
-import { PaperAnalysisPage, PaperAnswerPage, PaperCenterPage } from "./pages/PaperPages";
+import { PaperAnalysisPage, PaperAnswerPage } from "./pages/PaperPages";
 import { ExamAnalysisPage, ExamAnswerPage, ExamCenterPage, ExamDetailPage, ExamRankPage, MyExamsPage } from "./pages/ExamPages";
 import { AdminDashboardPage, AdminNewsCreatePage, AdminNewsEditPage, AdminNewsPage, AdminNewsPreviewPage, AdminRecommendCoursesPage } from "./pages/AdminPages";
 import {
@@ -29,7 +29,7 @@ const routes = {
   "#/": HomePage,
   "#/news": NewsPage,
   "#/course-preview": CoursePreviewPage,
-  "#/papers": PaperCenterPage,
+  "#/papers": PaperPracticePage,
   "#/paper-answer": PaperAnswerPage,
   "#/paper-analysis": PaperAnalysisPage,
   "#/exams": ExamCenterPage,

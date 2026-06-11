@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { categories, cultureSubjects, exams } from "../data/mockData";
+import { exams } from "../data/mockData";
 import { examAnalysisQuestions, examQuestionGroups, ExamAnswerInput, ExamQuestionNavigator, ExamQuestionStatusLegend, getAllExamQuestions, getExamQuestionType } from "../components/examWorkflows";
 import { Button, Card, DataTable, Meta, Modal, PageHeader, Pagination, PrototypeNote, Stat, Tag, usePrototypeRole } from "../components/ui";
 
@@ -20,110 +20,50 @@ const schoolRankRows = [
 
 export function ExamCenterPage() {
   const { roleKey } = usePrototypeRole();
-  const subjectTypes = ["文化课", "专业课"];
-  const examStatuses = ["全部状态", "未开始", "进行中", "评审中", "已公示"];
-  const defaultCategory = categories.find((category) => category.unlocked)?.name || categories[0].name;
-  const [selectedSubjectType, setSelectedSubjectType] = useState("文化课");
-  const [selectedCultureSubject, setSelectedCultureSubject] = useState(cultureSubjects[0].name);
-  const [selectedCategory, setSelectedCategory] = useState(defaultCategory);
-  const [showAllCategories, setShowAllCategories] = useState(false);
-  const [showAllCultureSubjects, setShowAllCultureSubjects] = useState(false);
-  const [selectedStatus, setSelectedStatus] = useState("全部状态");
-  const [keyword, setKeyword] = useState("");
+  const subjectOptions = ["语文", "数学", "英语", "专业课"];
+  const [selectedSubject, setSelectedSubject] = useState("专业课");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
-  const isProfessional = selectedSubjectType === "专业课";
-  const isStudent = roleKey === "student";
-  const availableCategories = isStudent ? categories.filter((category) => category.unlocked) : categories;
-  const sortedCategories = [...availableCategories].sort((a, b) => b.papers - a.papers);
-  const visibleCategories = showAllCategories ? sortedCategories : sortedCategories.slice(0, 6);
-  const sortedCultureSubjects = [...cultureSubjects].sort((a, b) => b.exams - a.exams);
-  const visibleCultureSubjects = showAllCultureSubjects ? sortedCultureSubjects : sortedCultureSubjects.slice(0, 6);
   const filteredExams = exams.filter((exam) => {
-    const subjectMatched = isProfessional
-      ? exam.subject === "专业课" && exam.category === selectedCategory
-      : exam.category === "文化课" && exam.subject === selectedCultureSubject;
-    const typeMatched = exam.type === "模拟考试";
-    const statusMatched = selectedStatus === "全部状态" || exam.status === selectedStatus;
-    const keywordMatched = !keyword.trim() || exam.title.includes(keyword.trim());
-    return subjectMatched && typeMatched && statusMatched && keywordMatched;
-  });
+    const subjectMatched = selectedSubject === "专业课" ? exam.subject === "专业课" : exam.subject === selectedSubject;
+    return subjectMatched
+      && exam.type === "模拟考试"
+      && ["未开始", "进行中"].includes(exam.status)
+      && !exam.submitted
+      && hasExamPermission(exam, roleKey);
+  }).sort(sortExamCenterRows);
   const totalPages = Math.max(1, Math.ceil(filteredExams.length / pageSize));
   const currentPage = Math.min(page, totalPages);
   const paginatedExams = filteredExams.slice((currentPage - 1) * pageSize, currentPage * pageSize);
-  const emptyTitle = "暂无符合条件的考试";
-  const emptyDesc = "请调整科目/专业、状态或关键词后再查看；个人相关考试请进入考试中心的“我的考试”。";
-
-  useEffect(() => {
-    if (isProfessional && !availableCategories.some((category) => category.name === selectedCategory) && availableCategories[0]) {
-      setSelectedCategory(availableCategories[0].name);
-    }
-  }, [availableCategories, isProfessional, selectedCategory]);
+  const emptyTitle = "暂无可参加考试";
+  const emptyDesc = "当前科目下没有未开始或正在进行的可参加考试；已参加过的考试请进入考试记录查看。";
 
   useEffect(() => {
     setPage(1);
-  }, [roleKey, selectedSubjectType, selectedCultureSubject, selectedCategory, selectedStatus, keyword, pageSize]);
+  }, [roleKey, selectedSubject, pageSize]);
 
   return (
     <>
       <PageHeader
         title="考试中心"
-        desc="考试中心只展示学校为学生安排的模拟考试，包含文化课和专业课；未入校或认证未通过用户不能参加考试。"
-        action={<Button href="#/my-exams" tone="secondary">我的考试</Button>}
+        desc="考试中心只显示当前学生能参加的未开始或进行中考试。"
+        action={<Button href="#/my-exams" tone="secondary">考试记录</Button>}
       />
       <PrototypeNote className="mb-5">
-        模拟考试不做报名流程，已入校学生在考试进行中可进入考试。交卷才算参加考试，未交卷不生成成绩、答题记录或排行。
+        已结束、评审中、已交卷或无权限考试不在考试中心主列表展示；学生已经参加过的考试统一进入考试记录。
       </PrototypeNote>
       <Card className="mb-5 p-4">
-        <div className="grid gap-4">
-          <ExamFilterButtons label="类型" options={subjectTypes} value={selectedSubjectType} onChange={setSelectedSubjectType} />
-          <div className="flex flex-wrap items-start gap-3 text-sm">
-            <span className="w-12 pt-2 font-semibold">{isProfessional ? "专业" : "科目"}</span>
-            <div className="grid flex-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
-              {(isProfessional ? visibleCategories : visibleCultureSubjects).map((item) => (
-                <button
-                  className={`flex min-h-10 items-center justify-between gap-3 rounded-ui border bg-white px-3 text-left transition ${
-                    (isProfessional ? selectedCategory : selectedCultureSubject) === item.name ? "border-blue-600 text-blue-700" : "border-line hover:bg-slate-50"
-                  }`}
-                  key={item.name}
-                  onClick={() => (isProfessional ? setSelectedCategory(item.name) : setSelectedCultureSubject(item.name))}
-                  type="button"
-                >
-                  <span className="truncate">{item.name}</span>
-                  <strong className="shrink-0 text-xs">{isProfessional ? item.papers : item.exams} 项</strong>
-                </button>
-              ))}
-            </div>
-            {(isProfessional ? sortedCategories : sortedCultureSubjects).length > 6 ? (
-              <Button tone="secondary" onClick={() => (isProfessional ? setShowAllCategories((value) => !value) : setShowAllCultureSubjects((value) => !value))}>
-                {(isProfessional ? showAllCategories : showAllCultureSubjects) ? "收起" : "展开全部"}
-              </Button>
-            ) : null}
-          </div>
-          <PrototypeNote>
-            模拟考试按文化课科目或学生所属专业大类展示；未入校用户会被全局权限拦截，不能进入考试中心。
-          </PrototypeNote>
-        </div>
+        <ExamFilterButtons label="科目" options={subjectOptions} value={selectedSubject} onChange={setSelectedSubject} />
       </Card>
-
-      <div className="mb-5 flex flex-wrap gap-3 rounded-ui border border-line bg-white p-4">
-        <select className="min-h-10 rounded-ui border border-line px-3" value={selectedStatus} onChange={(event) => setSelectedStatus(event.target.value)}>
-          {examStatuses.map((item) => <option key={item}>{item}</option>)}
-        </select>
-        <input className="min-h-10 rounded-ui border border-line px-3" placeholder="搜索考试名称" value={keyword} onChange={(event) => setKeyword(event.target.value)} />
-        <PrototypeNote>
-          考试中心用于浏览学校为学生安排的模拟考试；当前账号相关的可参加、已交卷、已出分考试进入“我的考试”查看。
-        </PrototypeNote>
-      </div>
       {filteredExams.length ? (
         <>
           <DataTable
-            columns={["考试", "类型", "科目/专业大类", "考试时间", "参加状态", "操作"]}
+            columns={["考试", "类型", "科目/专业大类", "考试时间", "考试状态", "操作"]}
             gridTemplateColumns="minmax(260px,2fr) 110px 120px 170px 120px 170px"
             rows={paginatedExams}
             renderRow={(exam) => (
               <>
-                <div><strong>{exam.title}</strong></div>
+                <div><strong>{getExamListTitle(exam)}</strong></div>
                 <Tag tone="blue">{exam.type}</Tag>
                 <span>{exam.subject === "专业课" ? exam.category : exam.subject}</span>
                 <span>
@@ -148,7 +88,7 @@ export function ExamCenterPage() {
         <Card>
           <h3 className="m-0">{emptyTitle}</h3>
           <p className="mb-0 mt-3 leading-7 text-muted">{emptyDesc}</p>
-          <Meta><Button href="#/my-exams" tone="secondary">查看我的考试</Button></Meta>
+          <Meta><Button href="#/my-exams" tone="secondary">查看考试记录</Button></Meta>
         </Card>
       )}
     </>
@@ -179,6 +119,17 @@ function ExamFilterButtons({ label, options, value, onChange }) {
 
 function hasExamPermission(exam, roleKey) {
   return exam.type === "模拟考试" && roleKey === "student";
+}
+
+function sortExamCenterRows(a, b) {
+  const statusOrder = { 进行中: 0, 未开始: 1 };
+  const statusDiff = (statusOrder[a.status] ?? 9) - (statusOrder[b.status] ?? 9);
+  if (statusDiff !== 0) return statusDiff;
+  return String(a.startAt || a.time).localeCompare(String(b.startAt || b.time), "zh-Hans-CN");
+}
+
+function getExamListTitle(exam) {
+  return exam.title.replace(/（[^）]*(未开始|进行中|评审中|已公示|已交卷|未参加|已出分)[^）]*）/g, "");
 }
 
 function getExamParticipation(exam, roleKey) {
@@ -332,16 +283,16 @@ function getExamPermissionCopy(exam, roleKey, permitted) {
 
 export function MyExamsPage() {
   const { roleKey } = usePrototypeRole();
-  const myExams = exams.filter((exam) => exam.type === "模拟考试" && hasExamPermission(exam, roleKey));
-  const submittedCount = myExams.filter((exam) => exam.submitted).length;
-  const publishedCount = myExams.filter((exam) => exam.status === "已公示" && exam.submitted).length;
+  const myExams = exams.filter((exam) => exam.type === "模拟考试" && hasExamPermission(exam, roleKey) && exam.submitted);
+  const publishedCount = myExams.filter((exam) => exam.status === "已公示").length;
+  const reviewingCount = myExams.filter((exam) => exam.status === "评审中" || exam.status === "进行中").length;
 
   if (roleKey !== "student") {
     return (
       <>
-        <PageHeader title="我的考试" desc="我的考试属于考试中心，展示当前学生可参加、已交卷、已出分或未参加的模拟考试。" />
+        <PageHeader title="考试记录" desc="考试记录展示学生已经参加过的考试。" />
         <Card>
-          <h2 className="m-0 text-xl">完成入校认证后查看我的考试</h2>
+          <h2 className="m-0 text-xl">完成入校认证后查看考试记录</h2>
           <p className="mb-0 mt-3 leading-7 text-muted">模拟考试仅面向已入校并加入指定班级的学生开放。</p>
           <Meta><Button href="#/profile">查看认证</Button><Button href="#/exams" tone="secondary">返回考试中心</Button></Meta>
         </Card>
@@ -352,20 +303,20 @@ export function MyExamsPage() {
   return (
     <>
       <PageHeader
-        title="我的考试"
-        desc="展示当前学生相关的模拟考试：可参加、待开始、已交卷、已出分和未参加记录。"
+        title="考试记录"
+        desc="展示学生参加过的所有考试记录，可查看成绩、答题解析和排行。"
         action={<Button href="#/exams" tone="secondary">返回考试中心</Button>}
       />
       <div className="grid gap-4 md:grid-cols-3">
-        <Stat label="相关考试" value={myExams.length} />
-        <Stat label="已交卷" value={submittedCount} />
+        <Stat label="参加记录" value={myExams.length} />
         <Stat label="已出分" value={publishedCount} />
+        <Stat label="待出分" value={reviewingCount} />
       </div>
       <div className="mt-6">
         {myExams.length ? (
           <DataTable
-            columns={["考试", "类型", "专业大类", "考试时间", "参加状态", "我的得分", "操作"]}
-            gridTemplateColumns="minmax(220px,1.6fr) 100px 120px 170px 100px 90px minmax(150px,1fr)"
+            columns={["考试", "科目", "考试时间", "考试状态", "成绩", "操作"]}
+            gridTemplateColumns="minmax(240px,1.7fr) 110px 180px 120px 90px minmax(220px,1fr)"
             rows={myExams}
             renderRow={(exam) => {
               const participation = getExamParticipation(exam, roleKey);
@@ -374,32 +325,57 @@ export function MyExamsPage() {
               return (
                 <>
                   <div>
-                    <strong>{exam.title}</strong>
-                    <p className="mb-0 mt-1 text-xs leading-5 text-muted">{exam.paperTitle}</p>
+                    <strong>{getExamListTitle(exam)}</strong>
                   </div>
-                  <Tag tone="blue">{exam.type}</Tag>
-                  <span>{exam.category}</span>
+                  <span>{exam.subject === "专业课" ? "专业课" : exam.subject}</span>
                   <span>
                     <strong className="block text-sm">{exam.startAt || exam.time}</strong>
                     <span className="mt-1 block text-xs text-muted">至 {exam.endAt || exam.time}</span>
                   </span>
-                  <Tag tone={participation.tone}>{participation.label}</Tag>
+                  <ExamParticipation exam={exam} roleKey={roleKey} />
                   <span>{canSeeScore ? exam.score : "-"}</span>
-                  <ExamAction exam={exam} roleKey={roleKey} />
+                  <ExamRecordActions exam={exam} participation={participation} canSeeScore={canSeeScore} />
                 </>
               );
             }}
           />
         ) : (
           <Card>
-            <h3 className="m-0">暂无我的考试</h3>
-            <p className="mb-0 mt-3 leading-7 text-muted">当前暂无可参加或已参加的模拟考试。</p>
-            <Meta><Button href="#/exams" tone="secondary">浏览考试中心</Button></Meta>
+            <h3 className="m-0">暂无考试记录</h3>
+            <p className="mb-0 mt-3 leading-7 text-muted">当前暂无已参加的模拟考试。</p>
+            <Meta><Button href="#/exams" tone="secondary">返回考试中心</Button></Meta>
           </Card>
         )}
       </div>
-      <PrototypeNote className="mt-5">“我的考试”现在归入考试中心；学习中心不再展示考试相关模块。</PrototypeNote>
+      <PrototypeNote className="mt-5">考试记录只展示学生已经参加并交卷的考试；列表状态和按钮沿用考试中心的考试状态与学生参加状态规则。</PrototypeNote>
     </>
+  );
+}
+
+function ExamRecordActions({ exam, participation, canSeeScore }) {
+  if (exam.status === "进行中" && participation.label === "已交卷") {
+    return (
+      <div className="flex flex-wrap gap-2">
+        <Button href={`#/exam-detail?id=${exam.id}`} tone="secondary">查看详情</Button>
+      </div>
+    );
+  }
+
+  if (exam.status === "评审中" && participation.label === "已交卷") {
+    return (
+      <div className="flex flex-wrap gap-2">
+        <Button href={`#/exam-detail?id=${exam.id}`} tone="secondary">查看详情</Button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-wrap gap-2">
+      <Button href={`#/exam-detail?id=${exam.id}`} tone="secondary">查看详情</Button>
+      {canSeeScore ? <Button href={`#/exam-analysis?id=${exam.id}`}>查看成绩</Button> : null}
+      {canSeeScore ? <Button href={`#/exam-analysis?id=${exam.id}`} tone="ghost">答题解析</Button> : null}
+      {canSeeScore && exam.rankEnabled ? <Button href={`#/exam-rank?id=${exam.id}`} tone="ghost">排行</Button> : null}
+    </div>
   );
 }
 

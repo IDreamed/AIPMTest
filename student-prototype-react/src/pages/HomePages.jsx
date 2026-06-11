@@ -17,9 +17,8 @@ export function HomePage() {
   const [activeNews, setActiveNews] = useState(null);
   const banner = homeBanners[activeBanner] || homeBanners[0];
   const entryCards = [
-    { title: "课程学习", desc: "进入学习中心查看班级课程、学习任务和学习记录。", href: "#/learning", tone: "from-blue-600 to-cyan-600" },
-    { title: "开始刷题", desc: "进入试卷中心筛选试卷，完成练习并沉淀错题。", href: "#/papers", tone: "from-emerald-600 to-teal-600" },
-    { title: "考试活动", desc: "进入考试中心查看学校安排的模拟考试。", href: "#/exams", tone: "from-rose-600 to-orange-500" },
+    { title: "学习中心", desc: "进入课程、试卷题库、班级测试、学习记录和错题本。", href: "#/learning", tone: "from-blue-600 to-cyan-600" },
+    { title: "考试中心", desc: "查看当前可以参加的考试，以及已经参加过的考试记录。", href: "#/exams", tone: "from-rose-600 to-orange-500" },
   ];
 
   function showPrevBanner() {
@@ -71,7 +70,7 @@ export function HomePage() {
         ) : null}
       </section>
 
-      <section className="mt-5 grid gap-4 md:grid-cols-3">
+      <section className="mt-5 grid gap-4 md:grid-cols-2">
         {entryCards.map((item) => (
           <a
             className="group overflow-hidden rounded-ui border border-line bg-white p-5 shadow-panel transition hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-lg"
@@ -86,7 +85,7 @@ export function HomePage() {
             <p className="mb-0 mt-3 min-h-[52px] leading-7 text-muted">{item.desc}</p>
           </a>
         ))}
-        <PrototypeNote className="md:col-span-3">首页轮播由后台配置，当前 mock 只保留图片地址和跳转链接；三张入口卡片统一校验是否已认证加入学校。</PrototypeNote>
+        <PrototypeNote className="md:col-span-2">首页轮播由后台配置，当前 mock 只保留图片地址和跳转链接；快捷入口复用现有学生功能权限校验。</PrototypeNote>
       </section>
 
       <section className="mt-9">
@@ -319,7 +318,7 @@ export function CoursePreviewPage() {
               <Meta><Tag>{paper.meta}</Tag><Tag tone="gray">需开通</Tag></Meta>
             </Card>
           ))}
-          <PrototypeNote>推荐课程中的试卷用于展示课程绑定练习结构，不等同于考试中心考试，也不等同于班级测试。</PrototypeNote>
+          <PrototypeNote>推荐课程中的试卷用于展示课程绑定练习结构，不等同于考试中心，也不等同于班级测试。</PrototypeNote>
         </div>
       ) : null}
       {activeTab === "materials" ? (

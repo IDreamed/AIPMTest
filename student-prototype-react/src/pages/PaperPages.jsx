@@ -345,7 +345,7 @@ export function PaperCenterPage() {
 
   return (
     <>
-      <PageHeader title="试卷中心" action={pageAction} />
+      <PageHeader title="题库练习" action={pageAction} />
       <Card className="mb-5 p-4">
         <div className="grid gap-4">
           <FilterButtons label="类型" options={subjectTypes} value={selectedSubjectType} onChange={setSelectedSubjectType} />
@@ -454,7 +454,7 @@ export function PaperCenterPage() {
 
 function LockedPaperAction({ roleKey }) {
   if (roleKey === "visitor") {
-    return <PaperListButton href="#/login" tone="secondary">登录后刷题</PaperListButton>;
+    return <PaperListButton href="#/login" tone="secondary">登录后练习</PaperListButton>;
   }
 
   if (roleKey === "registered") {
@@ -466,7 +466,7 @@ function LockedPaperAction({ roleKey }) {
 
 function PaperAction({ status }) {
   if (status === "进行中") {
-    return <PaperListButton href="#/paper-answer">继续刷题</PaperListButton>;
+    return <PaperListButton href="#/paper-answer">继续练习</PaperListButton>;
   }
 
   if (status === "已完成") {
@@ -478,7 +478,7 @@ function PaperAction({ status }) {
     );
   }
 
-  return <PaperListButton href="#/paper-answer">开始刷题</PaperListButton>;
+  return <PaperListButton href="#/paper-answer">开始练习</PaperListButton>;
 }
 
 function normalizePaperStatus(status) {
@@ -530,6 +530,9 @@ function FilterButtons({ label, options, value, onChange }) {
 }
 
 export function PaperAnswerPage() {
+  const answerParams = new URLSearchParams(window.location.hash.split("?")[1] || "");
+  const isQuickPractice = answerParams.get("mode") === "quick";
+  const quickPracticeSubject = answerParams.get("subject") || "当前科目";
   const [markedQuestions, setMarkedQuestions] = useState(["single-7"]);
   const [activeKey, setActiveKey] = useState("single-4");
   const [elapsedSeconds, setElapsedSeconds] = useState(34 * 60 + 40);
@@ -558,7 +561,11 @@ export function PaperAnswerPage() {
 
   return (
     <>
-      <PageHeader title="试卷刷题答题页" desc="试卷中心进入，偏练习场景；有权限的班级学生才能进入作答界面，提交后系统判卷客观题并展示解析。" action={<Tag tone="blue">练习模式</Tag>} />
+      <PageHeader
+        title={isQuickPractice ? `${quickPracticeSubject}快速练习答题页` : "题库练习答题页"}
+        desc={isQuickPractice ? "系统按当前科目从学生可用题库中随机组卷，学生直接作答，提交后查看解析。" : "从学习中心题库练习进入，偏练习场景；有权限的班级学生才能进入作答界面，提交后系统判卷客观题并展示解析。"}
+        action={<Tag tone="blue">{isQuickPractice ? "快速练习" : "练习模式"}</Tag>}
+      />
       <div className="grid gap-5 md:grid-cols-[1fr_280px]">
         <Card className="min-h-[420px]">
           <Meta><Tag>{activeQuestion.groupTitle}</Tag><Tag>第 {activeQuestion.label} 题</Tag><Tag tone="cyan">函数</Tag></Meta>
@@ -629,8 +636,8 @@ export function PaperAnalysisPage() {
     <>
       <PageHeader
         title="试卷解析"
-        desc="练习提交后按题目逐条展示答案和解析；解析页只承接本次试卷练习结果，不处理学习中心中的个人资产。"
-        action={<Button href="#/papers" tone="ghost">返回试卷中心</Button>}
+        desc="练习提交后按题目逐条展示答案和解析；解析页只承接本次题库练习结果。"
+        action={<Button href="#/papers" tone="ghost">返回题库练习</Button>}
       />
 
       <div className="grid gap-4 md:grid-cols-4">
@@ -692,7 +699,7 @@ export function PaperAnalysisPage() {
         </div>
       </section>
 
-      <Meta><Button href="#/paper-answer" tone="secondary">重新练习</Button><Button href="#/papers">返回试卷中心</Button></Meta>
+      <Meta><Button href="#/paper-answer" tone="secondary">重新练习</Button><Button href="#/papers">返回题库练习</Button></Meta>
     </>
   );
 }

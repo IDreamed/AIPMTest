@@ -39,8 +39,8 @@ src/
 - `#/` 首页
 - `#/news` 资讯中心
 - `#/course-preview` 运营课程试看
-- `#/papers` 试卷中心
-- `#/paper-answer` 试卷刷题
+- `#/papers` 题库练习
+- `#/paper-answer` 试卷答题
 - `#/exams` 考试中心
 - `#/exam-detail` 考试详情
 - `#/exam-answer` 考试答题
@@ -51,8 +51,7 @@ src/
 - `#/class-courses` 班级课程
 - `#/course-study` 班级课程学习
 - `#/course-lesson` 课时学习
-- `#/paper-practice` 试卷练习
-- `#/my-exams` 考试安排
+- `#/my-exams` 考试记录
 - `#/qa` 班级答疑
 - `#/qa-detail` 答疑记录
 - `#/wrong-book` 错题本

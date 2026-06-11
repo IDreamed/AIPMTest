@@ -198,9 +198,8 @@ function Avatar({ text, muted = false }) {
 
 function activeNav(hash, path) {
   if (path === "#/") return hash === "#/" || hash.startsWith("#/news") || hash.startsWith("#/course-preview");
-  if (path === "#/papers") return hash.startsWith("#/papers") || hash.startsWith("#/paper-answer");
   if (path === "#/exams") return hash.startsWith("#/exams") || hash.startsWith("#/exam-") || hash.startsWith("#/my-exams");
-  if (path === "#/learning") return hash.startsWith("#/learning") || hash.startsWith("#/class") || hash.startsWith("#/course-study") || hash.startsWith("#/course-lesson") || hash.startsWith("#/course-material") || hash.startsWith("#/paper-practice") || hash.startsWith("#/qa") || hash.startsWith("#/learning-record") || hash.startsWith("#/wrong");
+  if (path === "#/learning") return hash.startsWith("#/learning") || hash.startsWith("#/papers") || hash.startsWith("#/paper-") || hash.startsWith("#/class") || hash.startsWith("#/course-study") || hash.startsWith("#/course-lesson") || hash.startsWith("#/course-material") || hash.startsWith("#/paper-practice") || hash.startsWith("#/qa") || hash.startsWith("#/learning-record") || hash.startsWith("#/wrong");
   if (path === "#/profile") return hash.startsWith("#/profile");
   return hash.startsWith(path);
 }
@@ -224,7 +223,7 @@ function getAccessPromptCopy(roleKey) {
   if (roleKey === "visitor") {
     return {
       title: "请先登录/注册",
-      desc: "登录并完成入校认证后，可使用课程学习、开始刷题和考试活动。",
+      desc: "登录并完成入校认证后，可使用考试中心、学习中心和个人中心。",
       action: <Button href="#/login">登录/注册</Button>,
     };
   }
@@ -233,7 +232,7 @@ function getAccessPromptCopy(roleKey) {
     title: "当前账号尚未加入学校",
     desc: roleKey === "rejected"
       ? "入校认证未通过，可在个人中心查看原因并再次申请入校。"
-      : "入校认证审核中，认证通过后可使用课程学习、开始刷题和考试活动。",
+      : "入校认证审核中，认证通过后可使用考试中心和学习中心。",
     action: <Button href="#/profile">进入个人中心</Button>,
   };
 }
