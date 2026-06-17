@@ -219,12 +219,12 @@ export function AdminRecommendCoursesPage() {
           <SelectFilter label="上架状态" options={courseShelfStatuses} value={shelfStatus} onChange={setShelfStatus} />
           <label className="grid gap-2 text-sm">
             关键词
-            <input className="min-h-10 rounded-ui border border-line px-3" placeholder="搜索课程名称、课程ID、创建人" value={keyword} onChange={(event) => setKeyword(event.target.value)} />
+            <input className="min-h-10 rounded-ui border border-line px-3" placeholder="搜索课程名称、课程ID、发布人" value={keyword} onChange={(event) => setKeyword(event.target.value)} />
           </label>
         </div>
       </Card>
       <DataTable
-        columns={["课程ID", "课程信息", "所属分类/科目", "排序", "推荐状态", "试看设置", "创建人", "更新时间", "操作"]}
+        columns={["课程ID", "课程信息", "所属分类/科目", "排序", "推荐状态", "试看设置", "发布人", "更新时间", "操作"]}
         gridTemplateColumns="92px minmax(180px,1fr) 116px 64px 84px 106px 80px 128px 160px"
         rows={rows}
         renderRow={(course) => (
@@ -385,7 +385,7 @@ function CoursePickerModal({ open, onClose }) {
               关键词
               <input
                 className="min-h-10 rounded-ui border border-line px-3"
-                placeholder="搜索课程名称、课程ID、创建人"
+                placeholder="搜索课程名称、课程ID、发布人"
                 value={keyword}
                 onChange={(event) => {
                   setKeyword(event.target.value);
@@ -396,7 +396,7 @@ function CoursePickerModal({ open, onClose }) {
           </div>
         </Card>
         <DataTable
-          columns={["课程ID", "课程信息", "所属分类/科目", "创建人", "更新时间", "操作"]}
+          columns={["课程ID", "课程信息", "所属分类/科目", "发布人", "更新时间", "操作"]}
           gridTemplateColumns="92px minmax(260px,1.5fr) 130px 100px 150px 90px"
           rows={currentRows}
           renderRow={(course) => (

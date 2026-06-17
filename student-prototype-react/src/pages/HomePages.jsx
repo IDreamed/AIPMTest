@@ -85,11 +85,11 @@ export function HomePage() {
             <p className="mb-0 mt-3 min-h-[52px] leading-7 text-muted">{item.desc}</p>
           </a>
         ))}
-        <PrototypeNote className="md:col-span-2">首页轮播由后台配置，当前 mock 只保留图片地址和跳转链接；快捷入口复用现有学生功能权限校验。</PrototypeNote>
+        <PrototypeNote className="md:col-span-2">首页轮播只作为学生端展示入口；快捷入口复用现有登录与入校认证校验。</PrototypeNote>
       </section>
 
       <section className="mt-9">
-        <PageHeader title="推荐课程" desc="首页推荐课程由平台运营配置，当前按视频试看课程处理；可配置试看课时和试看时长，不等同于班级课程。" />
+        <PageHeader title="推荐课程" desc="首页推荐课程面向学生试看，当前按视频试看课程处理；试看课程不等同于班级课程。" />
         <div className="grid grid-cols-4 gap-4">
           {recommendedCourses.slice(0, 12).map((course) => (
             <a
@@ -109,7 +109,7 @@ export function HomePage() {
                 <h3 className="m-0 text-base font-semibold leading-6 text-slate-900">{course.title}</h3>
                 <div className="grid gap-2 text-sm leading-6 text-muted">
                   <span>{course.subject} · {course.lessonCount} 课时</span>
-                  <span>创建人：{course.creator}</span>
+                  <span>发布人：{course.creator}</span>
                 </div>
               </div>
             </a>
@@ -155,7 +155,7 @@ export function NewsPage() {
 
   return (
     <>
-      <PageHeader title="资讯中心" desc="资讯类型为固定枚举，不提供动态类型管理；考试通知只作为信息发布，不替代考试中心流程。" />
+      <PageHeader title="资讯中心" desc="资讯中心用于查看政策解读、考试通知、平台公告和备考指南；考试通知只作为信息提醒，不替代考试中心流程。" />
       <div className="mb-5 grid gap-3 rounded-ui border border-line bg-white p-4 md:grid-cols-[1fr_260px] md:items-center">
         <div className="flex flex-wrap gap-2">
           {newsCategories.map((type) => (
@@ -226,7 +226,7 @@ export function CoursePreviewPage() {
   const [activeTab, setActiveTab] = useState("detail");
   const [activeLesson, setActiveLesson] = useState(0);
   const tabs = [
-    { key: "detail", label: "详情" },
+    { key: "detail", label: "介绍" },
     { key: "papers", label: "试卷" },
     { key: "materials", label: "课件" },
   ];
@@ -249,11 +249,9 @@ export function CoursePreviewPage() {
           <div>
             <div className="flex flex-wrap gap-2">
               <Tag tone="blue">推荐课程</Tag>
-              <Tag>发布人：平台运营</Tag>
+              <Tag>平台精选</Tag>
               <Tag tone="amber">可试看 3 课时</Tag>
             </div>
-            <h2 className="mb-2 mt-5 text-xl">函数、数列与几何高频基础巩固</h2>
-            <p className="leading-7 text-muted">围绕职教高考数学基础模块，提供视频试看、课程介绍、绑定试卷和课件资源预览。</p>
             <PrototypeNote className="mt-3">推荐课程没有价格；当前试看课时默认按视频课处理，试看时长只对视频生效。完整多类型课时学习放在学习中心课程详情页处理。</PrototypeNote>
           </div>
           <Button href="#/course-preview">开始试看</Button>

@@ -378,7 +378,7 @@ export function PaperCenterPage() {
             ) : null}
           </div>
           <PrototypeNote>
-            类型用于切换文化课/专业课；科目或专业筛选保留原有逻辑，资源数量只展示总试卷数，权限与作答状态只在具体试卷列表中体现。
+            类型用于切换文化课/专业课；科目或专业筛选保留原有逻辑，资源数量只展示总试卷数，是否可练习和作答状态只在具体试卷列表中体现。
           </PrototypeNote>
         </div>
       </Card>
@@ -445,7 +445,7 @@ export function PaperCenterPage() {
       ) : (
         <Card>
           <p className="leading-7 text-muted">暂无试卷</p>
-          <PrototypeNote className="mt-3">该大类下的试卷列表正在配置中。原型阶段先展示筛选关系，后续可继续补充更多 mock 试卷。</PrototypeNote>
+          <PrototypeNote className="mt-3">该分类下暂时没有可练习试卷，后续可继续补充更多示例试卷。</PrototypeNote>
         </Card>
       )}
     </>
@@ -461,7 +461,7 @@ function LockedPaperAction({ roleKey }) {
     return <PaperListButton href="#/profile" tone="secondary">查看认证</PaperListButton>;
   }
 
-  return <Tag tone="gray">暂无权限</Tag>;
+  return <Tag tone="gray">暂不可练习</Tag>;
 }
 
 function PaperAction({ status }) {
@@ -563,7 +563,7 @@ export function PaperAnswerPage() {
     <>
       <PageHeader
         title={isQuickPractice ? `${quickPracticeSubject}快速练习答题页` : "题库练习答题页"}
-        desc={isQuickPractice ? "系统按当前科目从学生可用题库中随机组卷，学生直接作答，提交后查看解析。" : "从学习中心题库练习进入，偏练习场景；有权限的班级学生才能进入作答界面，提交后系统判卷客观题并展示解析。"}
+        desc={isQuickPractice ? "系统按当前科目从学生可用题库中随机组卷，学生直接作答，提交后查看解析。" : "从学习中心题库练习进入，偏练习场景；当前班级学生可进入作答界面，提交后系统判卷客观题并展示解析。"}
         action={<Tag tone="blue">{isQuickPractice ? "快速练习" : "练习模式"}</Tag>}
       />
       <div className="grid gap-5 md:grid-cols-[1fr_280px]">
@@ -682,7 +682,7 @@ export function PaperAnalysisPage() {
                 </div>
               </div>
               <PrototypeNote className="mt-4">
-                题目解析来自后台出题人配置的富文本内容，可能包含文字、图片、视频或外部资料链接。
+                题目解析由出题老师提供，可能包含文字、图片、视频或外部资料链接。
               </PrototypeNote>
             </section>
             <Meta>

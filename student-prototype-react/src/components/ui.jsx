@@ -303,7 +303,7 @@ export function Button({ children, className = "", href, tone = "primary", onCli
     ghost: "border-transparent bg-blue-50 text-blue-600 hover:bg-blue-100",
     warning: "border-amber-600 bg-amber-600 text-white",
   }[tone];
-  const buttonClassName = `inline-flex min-h-10 items-center justify-center rounded-ui border px-4 py-2 ${cls} ${className}`;
+  const buttonClassName = `inline-flex h-10 min-h-10 items-center justify-center gap-2 whitespace-nowrap rounded-ui border px-4 text-sm font-medium leading-none ${cls} ${className}`;
   if (href) return <a className={buttonClassName} href={href} onClick={onClick}>{children}</a>;
   return <button className={buttonClassName} onClick={onClick}>{children}</button>;
 }
@@ -317,11 +317,159 @@ export function Tag({ children, className = "", tone = "gray" }) {
     red: "bg-red-50 text-red-700",
     cyan: "bg-cyan-50 text-cyan-700",
   }[tone];
-  return <span className={`inline-flex min-h-7 items-center rounded-full px-3 text-xs ${cls} ${className}`}>{children}</span>;
+  return <span className={`inline-flex h-7 min-h-7 items-center justify-center whitespace-nowrap rounded-full px-3 text-xs font-medium leading-none ${cls} ${className}`}>{children}</span>;
 }
 
 export function Meta({ children, className = "" }) {
-  return <div className={`mt-4 flex flex-wrap gap-2 ${className}`}>{children}</div>;
+  return <div className={`mt-4 flex flex-wrap items-center gap-2 ${className}`}>{children}</div>;
+}
+
+export function ListPageFrame({ children, className = "" }) {
+  return <div className={`-mx-5 bg-wash md:-mx-0 ${className}`}>{children}</div>;
+}
+
+export function FilterPanel({ children, className = "" }) {
+  return <section className={`bg-white px-5 py-8 md:px-8 ${className}`}>{children}</section>;
+}
+
+export function FilterTagRow({ label, children, className = "" }) {
+  return (
+    <div className={`flex min-h-12 flex-wrap items-center gap-4 text-base ${className}`}>
+      <span className="flex h-10 w-20 shrink-0 items-center font-medium leading-none text-ink">{label}</span>
+      <div className="flex flex-wrap items-center gap-3">{children}</div>
+    </div>
+  );
+}
+
+export function FilterChip({ children, active = true, className = "" }) {
+  return (
+    <span
+      className={`inline-flex min-h-10 items-center justify-center rounded-full px-5 text-base font-medium ${
+        active ? "bg-blue-50 text-blue-600" : "bg-slate-100 text-slate-600"
+      } whitespace-nowrap leading-none ${className}`}
+    >
+      {children}
+    </span>
+  );
+}
+
+export function ListDivider({ className = "" }) {
+  return <div className={`h-6 bg-wash ${className}`} />;
+}
+
+export function ListToolbar({ left, right, children, className = "" }) {
+  return (
+    <section className={`flex flex-col gap-4 bg-white px-4 py-8 md:flex-row md:items-center md:justify-between ${className}`}>
+      <div className="flex flex-wrap items-center gap-3">{left}</div>
+      <div className="flex flex-wrap items-center justify-end gap-3">{right || children}</div>
+    </section>
+  );
+}
+
+export function SelectControl({ value, onChange, options = [], className = "", "aria-label": ariaLabel = "请选择" }) {
+  return (
+    <select
+      aria-label={ariaLabel}
+      className={`h-11 min-w-36 rounded border border-line bg-white px-4 text-base text-ink outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100 ${className}`}
+      onChange={onChange}
+      value={value}
+    >
+      {options.map((option) => {
+        const item = typeof option === "string" ? { label: option, value: option } : option;
+        return <option key={item.value} value={item.value}>{item.label}</option>;
+      })}
+    </select>
+  );
+}
+
+export function TextControl({ value, onChange, placeholder = "", className = "", type = "text", "aria-label": ariaLabel = placeholder || "请输入" }) {
+  return (
+    <input
+      aria-label={ariaLabel}
+      className={`h-11 min-w-0 rounded border border-line bg-white px-4 text-base text-ink outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 ${className}`}
+      onChange={onChange}
+      placeholder={placeholder}
+      type={type}
+      value={value}
+    />
+  );
+}
+
+export function SearchControl({ value, onChange, onSearch, placeholder = "请输入关键词", buttonText = "查询", className = "" }) {
+  return (
+    <div className={`flex min-w-0 items-center gap-3 ${className}`}>
+      <TextControl className="w-[min(360px,58vw)]" onChange={onChange} placeholder={placeholder} value={value} />
+      <button
+        className="inline-flex h-11 min-w-28 items-center justify-center rounded bg-blue-600 px-5 text-base font-medium text-white hover:bg-blue-700"
+        onClick={onSearch}
+        type="button"
+      >
+        {buttonText}
+      </button>
+    </div>
+  );
+}
+
+export function AdminDataTable({ columns, rows, rowKey, emptyText = "暂无数据", className = "", gridTemplateColumns }) {
+  const gridStyle = { gridTemplateColumns: gridTemplateColumns || columns.map((column) => column.width || "minmax(0, 1fr)").join(" ") };
+
+  return (
+    <section className={`overflow-hidden rounded-ui border border-line bg-white ${className}`}>
+      <div className="hidden min-h-14 items-center gap-4 bg-slate-50 px-6 text-base font-medium leading-none text-slate-700 md:grid" style={gridStyle}>
+        {columns.map((column) => (
+          <div key={column.key} className={`${getCellAlignClass(column.align)} ${column.headerClassName || ""}`}>{column.title}</div>
+        ))}
+      </div>
+      {rows.length ? rows.map((row, index) => (
+        <div
+          key={rowKey ? rowKey(row, index) : row.id || row.title || index}
+          className="grid min-h-[72px] gap-4 border-t border-line px-6 py-[18px] text-base leading-6 text-ink md:items-center"
+          style={gridStyle}
+        >
+          {columns.map((column) => (
+            <div key={column.key} className={`${getCellAlignClass(column.align)} ${column.className || ""}`}>
+              {column.render ? column.render(row, index) : row[column.key]}
+            </div>
+          ))}
+        </div>
+      )) : (
+        <div className="border-t border-line px-6 py-10 text-center text-muted">{emptyText}</div>
+      )}
+    </section>
+  );
+}
+
+export function AdminPagination({ total, page, pageSize = 20, onPageChange, className = "" }) {
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  const currentPage = Math.min(page, totalPages);
+  const buttonClass = "inline-flex h-10 min-w-10 items-center justify-center rounded border border-line bg-white px-3 text-base text-slate-500 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50";
+
+  return (
+    <section className={`flex flex-wrap items-center justify-center gap-3 bg-wash px-4 py-8 text-base text-ink ${className}`}>
+      <span>共 {total} 条</span>
+      <button className={buttonClass} disabled={currentPage <= 1} onClick={() => onPageChange?.(Math.max(1, currentPage - 1))} type="button">‹</button>
+      <button className="inline-flex h-10 min-w-10 items-center justify-center rounded border border-blue-600 bg-blue-600 px-3 text-base font-medium text-white" type="button">{currentPage}</button>
+      <button className={buttonClass} disabled={currentPage >= totalPages} onClick={() => onPageChange?.(Math.min(totalPages, currentPage + 1))} type="button">›</button>
+      <span>前往</span>
+      <input
+        aria-label="分页页码"
+        className="h-10 w-20 rounded border border-line bg-white px-3 text-center outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+        onChange={(event) => {
+          const nextPage = Number(event.target.value);
+          if (Number.isFinite(nextPage) && nextPage >= 1 && nextPage <= totalPages) onPageChange?.(nextPage);
+        }}
+        type="number"
+        value={currentPage}
+      />
+      <span>页</span>
+    </section>
+  );
+}
+
+function getCellAlignClass(align = "center") {
+  if (align === "left") return "flex min-w-0 items-center justify-start text-left";
+  if (align === "right") return "flex min-w-0 items-center justify-end text-right";
+  return "flex min-w-0 items-center justify-center text-center";
 }
 
 export function DataTable({ columns, rows, renderRow, gridTemplateColumns }) {
@@ -329,11 +477,11 @@ export function DataTable({ columns, rows, renderRow, gridTemplateColumns }) {
 
   return (
     <div className="overflow-hidden rounded-ui border border-line bg-white">
-      <div className="hidden gap-4 bg-slate-50 px-4 py-3 text-xs text-muted md:grid" style={gridStyle}>
-        {columns.map((column) => <span key={column}>{column}</span>)}
+      <div className="hidden min-h-12 items-center gap-4 bg-slate-50 px-4 py-3 text-xs font-medium leading-none text-muted md:grid [&>*]:self-center" style={gridStyle}>
+        {columns.map((column) => <span className="flex min-w-0 items-center" key={column}>{column}</span>)}
       </div>
       {rows.map((row, index) => (
-        <div key={row.title || index} className="grid gap-3 border-t border-line px-4 py-4 md:items-center" style={gridStyle}>
+        <div key={row.title || index} className="grid min-h-[64px] gap-3 border-t border-line px-4 py-4 leading-6 md:items-center md:[&>*]:self-center [&>*]:min-w-0" style={gridStyle}>
           {renderRow(row)}
         </div>
       ))}

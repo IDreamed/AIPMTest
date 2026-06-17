@@ -340,7 +340,7 @@ export function ClassCoursesPage() {
     <>
       <PageHeader
         title="班级课程"
-        desc="展示当前班级分配给学生的课程列表，课程由学校端或教师端配置；点击课程进入课程学习详情。"
+        desc="展示当前班级的课程列表；点击课程进入课程学习详情。"
         action={<Button href="#/learning" tone="secondary">返回学习中心</Button>}
       />
       <div className="grid gap-4 md:grid-cols-3">
@@ -369,7 +369,10 @@ export function ClassCoursesPage() {
                   </div>
                   <h3 className="mb-2 mt-4 text-lg">{course.currentLesson}</h3>
                   <p className="m-0 leading-7 text-muted">
-                    作者：{course.publisher} · {course.learnedCount}/{course.lessonCount} 课时
+                    {course.subject} · {course.lessonCount} 课时
+                  </p>
+                  <p className="m-0 mt-1 leading-7 text-muted">
+                    发布人：{course.publisher}
                   </p>
                   <div className="mt-4 h-2 overflow-hidden rounded-full bg-slate-100">
                     <span className="block h-full rounded-full bg-blue-600" style={{ width: course.progress }} />
@@ -439,8 +442,8 @@ export function ClassExamPage() {
                 <span>开始时间：{exam.startAt}</span>
                 {exam.remainingTime ? <span>剩余时间：{exam.remainingTime}</span> : null}
                 <span className="flex flex-wrap gap-2 md:justify-end">
-                  <Tag tone={exam.statusTone}>测试{exam.status}</Tag>
-                  {exam.studentStatus !== "未开始" ? <Tag tone={exam.studentStatusTone}>学生{exam.studentStatus}</Tag> : null}
+                  <Tag tone={exam.statusTone}>{exam.status}</Tag>
+                  {exam.studentStatus !== "未开始" ? <Tag tone={exam.studentStatusTone}>{exam.studentStatus}</Tag> : null}
                 </span>
               </div>
             </div>
@@ -460,7 +463,7 @@ export function ClassExamPage() {
         total={classExams.length}
       />
       <PrototypeNote className="mt-5">
-        班级测试采用统一答题和解析界面，但列表不再按题型、课程或专业分类展示；它只呈现测试本身的关键字段。
+        班级测试采用统一答题和解析界面，列表只展示学生参加测试前需要了解的关键信息。
       </PrototypeNote>
     </LearningSectionShell>
   );
@@ -504,15 +507,15 @@ export function ClassExamDetailPage() {
     <>
       <PageHeader
         title="班级测试安排"
-        desc="展示单场班级测试的基础字段和参加入口，不展示分类筛选、课程归属或跨校排行。"
+        desc="展示单场班级测试的基本信息和参加入口，不展示分类筛选、课程归属或跨校排行。"
         action={<Button href="#/class-exam" tone="secondary">返回班级测试</Button>}
       />
       <Card>
         <div className="grid gap-6 md:grid-cols-[1fr_220px] md:items-start">
           <div>
             <div className="flex flex-wrap gap-2">
-              <Tag tone={exam.statusTone}>考试{exam.status}</Tag>
-              {exam.studentStatus !== "未开始" ? <Tag tone={exam.studentStatusTone}>学生{exam.studentStatus}</Tag> : null}
+                  <Tag tone={exam.statusTone}>{exam.status}</Tag>
+                  {exam.studentStatus !== "未开始" ? <Tag tone={exam.studentStatusTone}>{exam.studentStatus}</Tag> : null}
             </div>
             <h2 className="mb-0 mt-4 text-2xl">{exam.title}</h2>
             <div className="mt-6 grid gap-4 md:grid-cols-3">
@@ -533,7 +536,7 @@ export function ClassExamDetailPage() {
         </div>
       </Card>
       <PrototypeNote className="mt-5">
-        这个页面用于承接“查看安排”，字段与班级测试列表保持一致：名称、时长、总题数、试卷总分、开始时间、剩余时间和状态。
+        这个页面用于承接“查看安排”，信息与班级测试列表保持一致：名称、时长、总题数、试卷总分、开始时间、剩余时间和状态。
       </PrototypeNote>
     </>
   );
@@ -809,7 +812,7 @@ export function ClassExamAnalysisPage() {
 export function CourseStudyPage() {
   const [activeTab, setActiveTab] = useState("catalog");
   const tabs = [
-    { key: "detail", label: "详情" },
+    { key: "detail", label: "介绍" },
     { key: "catalog", label: "目录" },
     { key: "papers", label: "试卷" },
     { key: "materials", label: "课件" },
@@ -827,11 +830,10 @@ export function CourseStudyPage() {
           </div>
           <div>
             <div className="flex flex-wrap gap-2">
-              <Tag>作者：{classCourse.publisher}</Tag>
+              <Tag>发布人：{classCourse.publisher}</Tag>
               <Tag tone="green">进度 {classCourse.progress}</Tag>
             </div>
             <h2 className="mb-2 mt-5 text-xl">{classCourse.currentLesson}</h2>
-            <p className="leading-7 text-muted">{classCourse.summary}</p>
             <PrototypeNote className="mt-3">课程没有价格；详情展示课程介绍，目录展示课程内容，试卷展示绑定的测试题库，考试仍归考试中心或班级测试处理。</PrototypeNote>
           </div>
           <Button href="#/course-lesson">继续学习</Button>
@@ -906,7 +908,7 @@ function CoursePapers() {
         rows={coursePaperRows}
         renderRow={(paper) => <PaperPracticeRow paper={paper} />}
       />
-      <PrototypeNote className="mt-5">课程试卷与学习中心课程试卷使用同一套字段、状态和操作；这里只展示当前课程关联的练习记录。</PrototypeNote>
+      <PrototypeNote className="mt-5">课程试卷与学习中心题库练习保持相同状态和操作；这里只展示当前课程关联的练习记录。</PrototypeNote>
     </div>
   );
 }
@@ -1303,7 +1305,7 @@ export function CourseMaterialPage() {
       />
       <div className="grid gap-5 md:grid-cols-[1fr_280px]">
         <Card className="min-h-[560px]">
-          <Meta><Tag>{material.type}</Tag><Tag>{material.size}</Tag><Tag tone="blue">{classCourse.title}</Tag></Meta>
+            <Meta><Tag>{material.type}</Tag><Tag>{material.size}</Tag><Tag tone="blue">{classCourse.title}</Tag></Meta>
           <h2 className="mb-4 mt-5 text-xl">{material.title}</h2>
           <div className="grid min-h-[380px] place-items-center rounded-ui border border-dashed border-line bg-slate-50 text-center text-muted">
             <div>
@@ -1384,7 +1386,7 @@ export function QAPage() {
       </div>
       <div className="mt-6">
         <DataTable
-          columns={["关联课程", "发起时间", "更新时间", "是否回复", "操作"]}
+          columns={["提问课程", "提问时间", "最近回复", "回复状态", "操作"]}
           gridTemplateColumns="minmax(220px,1.5fr) 170px 170px 90px 110px"
           rows={currentRecords}
           renderRow={(item) => (
@@ -1395,7 +1397,7 @@ export function QAPage() {
               </div>
               <span>{item.createdAt}</span>
               <span>{item.updatedAt}</span>
-              <Tag tone={hasQaReply(item) ? "green" : "gray"}>{hasQaReply(item) ? "是" : "否"}</Tag>
+              <Tag tone={hasQaReply(item) ? "green" : "gray"}>{hasQaReply(item) ? "已回复" : "待回复"}</Tag>
               <Button href={`#/qa-detail?id=${item.id}`} tone="ghost">查看记录</Button>
             </>
           )}
@@ -1449,7 +1451,7 @@ export function QADetailPage() {
             回复 / 追问
             <textarea className="min-h-28 rounded-ui border border-line p-3" placeholder="继续补充答疑信息" />
           </label>
-          <Meta><Button>提交回复/追问</Button></Meta>
+          <Meta><Button>继续追问</Button></Meta>
         </Card>
         <Card>
           <h3 className="m-0 text-lg">关联信息</h3>
