@@ -2,6 +2,8 @@ export const navItems = [
   { label: "首页", path: "#/" },
   { label: "学习中心", path: "#/learning" },
   { label: "考试中心", path: "#/exams" },
+  { label: "报考指南", path: "#/application-guide" },
+  { label: "虚拟实训", path: "#/virtual-training" },
 ];
 
 export const homeBanners = [
@@ -58,9 +60,9 @@ export const news = [
     type: "考试通知",
     title: "春季模拟考试开放通知",
     date: "2026-04-26",
-    summary: "本次模拟考试面向已入校学生开放，可用于体验平台考试流程。",
+    summary: "本次模拟考试面向已入校学生开放，帮助学生熟悉考试要求和答题节奏。",
     content:
-      "春季模拟考试面向已完成入校认证的学生开放，考试结束后可查看个人成绩。模拟考试用于帮助学生体验平台考试流程，并引导学生保持稳定备考节奏。",
+      "春季模拟考试面向已完成入校认证的学生开放，考试结束后可查看个人成绩和答题情况。请提前确认考试时间，并在规定时间内完成交卷。",
   },
   {
     id: "news-3",
@@ -78,7 +80,7 @@ export const news = [
     date: "2026-04-24",
     summary: "建议从高频基础知识点和典型题入手，结合推荐课程试看和班级课程学习。",
     content:
-      "基础薄弱学生优先完成高频知识点的理解和基础题训练，再逐步进入综合题。班级课程由老师编排，题库练习用于练习巩固。",
+      "基础薄弱学生优先完成高频知识点的理解和基础题训练，再逐步进入综合题。班级课程由老师编排，试卷练习用于练习巩固。",
   },
 ];
 
@@ -118,6 +120,15 @@ export const prototypeRoles = [
     summary: "已加入班级，可学习班级课程、参加班级考试，并刷所在班级绑定大类试卷。",
     cta: "进入学习",
     href: "#/learning",
+  },
+  {
+    key: "teacher",
+    label: "教师",
+    accountName: "王老师",
+    avatarText: "王",
+    summary: "教师账号默认不加入学生班级，可进入教师端处理教学资源、课程、试卷和班级教学。",
+    cta: "进入教师端",
+    href: "#/teacher",
   },
 ];
 
@@ -273,7 +284,7 @@ export const categories = [
   { name: "轻工纺织类", unlocked: false, source: "", papers: 31, subjects: "语文 / 英语 / 专业综合", description: "按职教高考大类展示试卷，加入绑定该大类的班级后可练习。" },
   { name: "食品药品与粮食类", unlocked: false, source: "", papers: 40, subjects: "数学 / 专业综合", description: "按职教高考大类展示试卷，加入绑定该大类的班级后可练习。" },
   { name: "交通运输类", unlocked: false, source: "", papers: 58, subjects: "数学 / 英语 / 专业综合", description: "按职教高考大类展示试卷，加入绑定该大类的班级后可练习。" },
-  { name: "电子与信息类", unlocked: true, source: "高三计算机冲刺班", papers: 128, subjects: "数学 / 英语 / 专业综合", description: "当前账号已通过班级解锁该大类试卷，可进入题库练习。" },
+  { name: "电子与信息类", unlocked: true, source: "高三计算机冲刺班", papers: 128, subjects: "数学 / 英语 / 专业综合", description: "当前账号已通过班级解锁该大类试卷，可进入试卷练习。" },
   { name: "医药卫生类", unlocked: false, source: "", papers: 72, subjects: "语文 / 英语 / 专业综合", description: "按职教高考大类展示试卷，加入绑定该大类的班级后可练习。" },
   { name: "财经商贸类", unlocked: false, source: "", papers: 96, subjects: "英语 / 专业综合", description: "可浏览试卷资源概况，加入绑定该大类的班级后可练习。" },
   { name: "旅游类", unlocked: false, source: "", papers: 82, subjects: "数学 / 专业综合", description: "适用于旅游相关专业备考，权限同样由所在班级决定。" },
@@ -313,9 +324,9 @@ export const exams = [
     paperTitle: "2025 年数学基础模拟考试卷",
     status: "进行中",
     statusTone: "green",
-    summary: "面向已入校学生开放，适合体验平台考试流程。",
+    summary: "面向已入校学生开放，帮助学生熟悉考试要求和答题节奏。",
     intro: [
-      "本场模拟考试用于帮助学生体验平台正式考试流程，考试内容覆盖函数、数列与几何基础模块。",
+      "本场模拟考试帮助学生熟悉考试要求和答题节奏，考试内容覆盖函数、数列与几何基础模块。",
       "考试结束并完成成绩公示后，学生可进入成绩与解析页面查看得分、题目解析和个人作答情况。",
     ],
     permission: "student",
@@ -359,7 +370,7 @@ export const exams = [
     paperTitle: "电子与信息类阶段模拟考试卷",
     status: "进行中",
     statusTone: "green",
-    summary: "面向电子与信息类授权班级开放，用于模拟学生可参加考试状态。",
+    summary: "面向电子与信息类授权班级开放，重点检查近期专业课学习情况。",
     intro: [
       "本场阶段模拟考试用于检验学生近期专业课学习成果，考试内容覆盖数据库、计算机网络和程序基础。",
       "考试进行中可进入答题，交卷后等待成绩公示；未交卷不生成成绩和排行。",
@@ -371,7 +382,7 @@ export const exams = [
   },
   {
     id: "school-live-submitted",
-    title: "电子与信息类模拟考试（进行中-已交卷）",
+    title: "电子与信息类基础能力测试",
     type: "模拟考试",
     subject: "专业课",
     category: "电子与信息类",
@@ -379,12 +390,12 @@ export const exams = [
     startAt: "2026-05-06 09:00",
     endAt: "2026-05-06 11:30",
     publishAt: "2026-05-07 18:00",
-    paperTitle: "电子与信息类模拟考试已交卷样例",
+    paperTitle: "电子与信息类基础能力测试卷",
     status: "进行中",
     statusTone: "green",
-    summary: "用于验证考试仍在进行中，但当前学生已经交卷后的列表与详情状态。",
+    summary: "答卷已提交，考试结束后统一进入成绩评阅。",
     intro: [
-      "本场考试用于测试进行中已交卷状态，学生已完成提交，不能再次进入答题。",
+      "你的答卷已提交，不能再次进入答题。",
       "成绩需要等考试结束并完成评审、公示后才展示。",
     ],
     permission: "student",
@@ -394,7 +405,7 @@ export const exams = [
   },
   {
     id: "school-review-submitted",
-    title: "电子与信息类模拟考试（评审中-已交卷）",
+    title: "电子与信息类阶段检测",
     type: "模拟考试",
     subject: "专业课",
     category: "电子与信息类",
@@ -402,12 +413,12 @@ export const exams = [
     startAt: "2026-05-04 09:00",
     endAt: "2026-05-04 11:30",
     publishAt: "2026-05-05 18:00",
-    paperTitle: "电子与信息类评审中样例试卷",
+    paperTitle: "电子与信息类阶段检测试卷",
     status: "评审中",
     statusTone: "amber",
-    summary: "用于验证学生已交卷，成绩正在评审中，暂不展示成绩与解析。",
+    summary: "答卷已提交，老师正在评阅，成绩公布后可查看解析。",
     intro: [
-      "本场考试已结束，当前学生已交卷，后台正在评审成绩。",
+      "本场考试已结束，你的答卷已提交，老师正在评阅。",
       "评审中只展示交卷状态，不展示得分、解析或排行。",
     ],
     permission: "student",
@@ -417,7 +428,7 @@ export const exams = [
   },
   {
     id: "school-review-missed",
-    title: "电子与信息类模拟考试（评审中-未参加）",
+    title: "电子与信息类月度检测",
     type: "模拟考试",
     subject: "专业课",
     category: "电子与信息类",
@@ -425,12 +436,12 @@ export const exams = [
     startAt: "2026-05-03 14:00",
     endAt: "2026-05-03 16:30",
     publishAt: "2026-05-04 18:00",
-    paperTitle: "电子与信息类未参加评审样例",
+    paperTitle: "电子与信息类月度检测试卷",
     status: "评审中",
     statusTone: "amber",
-    summary: "用于验证考试已进入评审，但当前学生未参加，不生成成绩、解析和排行。",
+    summary: "本场考试已结束，你未参加本场考试。",
     intro: [
-      "本场考试已结束并进入评审中，当前学生未进入考试或未交卷。",
+      "本场考试已结束，你未进入考试或未完成交卷。",
       "未参加状态下不生成成绩、答题记录、解析或排行。",
     ],
     permission: "student",
@@ -440,7 +451,7 @@ export const exams = [
   },
   {
     id: "school-published-missed",
-    title: "电子与信息类模拟考试（已公示-未参加）",
+    title: "电子与信息类期中检测",
     type: "模拟考试",
     subject: "专业课",
     category: "电子与信息类",
@@ -448,12 +459,12 @@ export const exams = [
     startAt: "2026-05-01 09:00",
     endAt: "2026-05-01 11:30",
     publishAt: "2026-05-02 18:00",
-    paperTitle: "电子与信息类未参加公示样例",
+    paperTitle: "电子与信息类期中检测试卷",
     status: "已公示",
     statusTone: "gray",
-    summary: "用于验证成绩已公示，但当前学生未参加，不展示个人成绩和解析。",
+    summary: "本场成绩已公布，你未参加本场考试。",
     intro: [
-      "本场考试成绩已公示，当前学生未参加。",
+      "本场考试成绩已公示，你未参加本场考试。",
       "未参加学生不展示成绩、解析和排行入口，只保留考试详情。",
     ],
     permission: "student",
@@ -474,7 +485,7 @@ export const exams = [
     paperTitle: "数学基础模拟考试试卷",
     status: "进行中",
     statusTone: "green",
-    summary: "面向已入校学生开放，用于模拟文化课考试流程。",
+    summary: "面向已入校学生开放，重点考查数学基础知识。",
     intro: [
       "本场数学基础模拟考试面向已入校并加入指定班级的学生开放，重点考查函数、数列和几何基础。",
       "考试进行中可进入答题，交卷后等待成绩公示；未交卷不生成成绩和排行。",
@@ -520,7 +531,7 @@ export const exams = [
     paperTitle: "英语阅读模拟考试试卷",
     status: "未开始",
     statusTone: "amber",
-    summary: "面向已入校学生开放，用于模拟英语文化课考试。",
+    summary: "面向已入校学生开放，重点考查英语阅读与基础语法。",
     intro: [
       "本场英语模拟考试重点考查阅读理解、完形填空和基础语法。",
       "考试未开始前仅展示考试信息，开始后学生可进入答题。",
@@ -589,7 +600,7 @@ export const exams = [
     paperTitle: "三校联合模拟考试试卷",
     status: "已公示",
     statusTone: "gray",
-    summary: "模拟考试已公示，无权限用户只能查看考试介绍。",
+    summary: "考试成绩已公示，参加学生可查看成绩和排行。",
     intro: [
       "本场模拟考试由三所学校共同组织，面向电子与信息类授权班级学生开放。",
       "考试成绩已公示，开启个人排行和学校排行，学生可查看本场完整排行。",
@@ -637,7 +648,7 @@ export const classes = [
 
 export const classExams = [
   {
-    title: "《数学基础知识》阶段测试（一）",
+    title: "《数学基础知识》阶段作业（一）",
     duration: "120分钟",
     questionCount: 120,
     totalScore: 100,
@@ -697,7 +708,7 @@ export const classExams = [
     submitted: false,
   },
   {
-    title: "《计算机网络基础》阶段测试",
+    title: "《计算机网络基础》阶段作业",
     duration: "80分钟",
     questionCount: 60,
     totalScore: 100,
@@ -843,7 +854,7 @@ export const courseCatalog = [
 
 export const coursePapers = [
   { title: "函数基础随堂练习", meta: "10 题 / 15 分钟", status: "未开始", statusTone: "gray" },
-  { title: "数列基础阶段测试", meta: "20 题 / 30 分钟", status: "未开始", statusTone: "gray" },
+  { title: "数列基础阶段作业", meta: "20 题 / 30 分钟", status: "未开始", statusTone: "gray" },
   { title: "数学基础结业测试", meta: "35 题 / 50 分钟", status: "未开始", statusTone: "gray" },
 ];
 
@@ -1113,7 +1124,7 @@ export const wrongQuestions = [
   { title: "病句辨析", subject: "语文", source: "试卷", course: "语文应用文写作", point: "语病", questionType: "多选题", questionStem: "下列句子中存在语病的选项有哪些？请选出所有符合条件的选项。", wrongCount: 5, lastPractice: "04-24 18:15", status: "未掌握", detail: "语文基础模拟卷第 8 题", answer: "C. 搭配不当", analysis: "动宾搭配不成立，需要调整谓语或宾语。" },
   { title: "应用文格式", subject: "语文", source: "课程", course: "语文应用文写作", point: "应用文", questionType: "判断题", questionStem: "写申请书时，称呼通常应顶格书写。判断该说法是否正确。", wrongCount: 1, lastPractice: "04-23 20:40", status: "已掌握", detail: "写作课后练习第 1 题", answer: "A. 称呼顶格", analysis: "通知、申请等文体需按固定格式书写。" },
   { title: "SQL 查询条件", subject: "电子与信息类", source: "课程", course: "数据库基础", point: "SQL", questionType: "填空题", questionStem: "SQL 查询语句中，用于筛选记录的条件子句关键字是____。", wrongCount: 3, lastPractice: "04-22 16:30", status: "未掌握", detail: "数据库基础课时练习第 4 题", answer: "C. WHERE", analysis: "筛选记录使用 WHERE 子句。" },
-  { title: "网络协议层次", subject: "电子与信息类", source: "考试", course: "计算机网络基础", point: "计算机网络", questionType: "单选题", questionStem: "IP 协议在 TCP/IP 体系结构中主要工作在哪一层？", wrongCount: 2, lastPractice: "04-20 22:00", status: "未掌握", detail: "班级测试第 18 题", answer: "B. 网络层", analysis: "IP 协议工作在网络层。" },
+  { title: "网络协议层次", subject: "电子与信息类", source: "考试", course: "计算机网络基础", point: "计算机网络", questionType: "单选题", questionStem: "IP 协议在 TCP/IP 体系结构中主要工作在哪一层？", wrongCount: 2, lastPractice: "04-20 22:00", status: "未掌握", detail: "作业第 18 题", answer: "B. 网络层", analysis: "IP 协议工作在网络层。" },
   { title: "古诗词意象", subject: "语文", source: "考试", course: "语文阅读理解训练", point: "古诗词", questionType: "单选题", questionStem: "诗句中反复出现月、归雁等意象，最可能表达的情感是什么？", wrongCount: 2, lastPractice: "04-19 19:20", status: "未掌握", detail: "模拟考试第 6 题", answer: "D. 思乡", analysis: "月、归雁等意象常与思乡情感相关。" },
   { title: "不等式求解", subject: "数学", source: "考试", course: "数学基础强化", point: "不等式", questionType: "计算题", questionStem: "解不等式 2x-4>0，并写出最终解集。", wrongCount: 1, lastPractice: "04-18 17:00", status: "已掌握", detail: "模拟考试第 14 题", answer: "B. x>2", analysis: "移项并合并同类项后得到解集。" },
 ];

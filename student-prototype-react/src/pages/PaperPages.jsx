@@ -39,7 +39,7 @@ const paperAnalysisQuestions = [
     correctAnswer: "可结合定义、图像或导向题干条件判断函数在指定区间内随自变量增大而增减的趋势。",
     result: "已答题",
     tone: "blue",
-    analysis: "主观题在原型中展示参考答案和解析说明；已答题表示学生已提交答案，后续可由教师或系统评分规则完成打分。",
+    analysis: "答案已提交，老师完成评阅后将显示本题得分；评阅前可先对照参考答案和解析检查作答思路。",
   },
   {
     type: "简答题",
@@ -345,7 +345,10 @@ export function PaperCenterPage() {
 
   return (
     <>
-      <PageHeader title="题库练习" action={pageAction} />
+      <PageHeader title="试卷练习" action={pageAction} />
+      <PrototypeNote>
+        题库资源来自试卷库；学生可见范围由所在班级绑定的文化课科目和专业大类决定。试卷状态来自个人练习记录，不是试卷发布状态。
+      </PrototypeNote>
       <Card className="mb-5 p-4">
         <div className="grid gap-4">
           <FilterButtons label="类型" options={subjectTypes} value={selectedSubjectType} onChange={setSelectedSubjectType} />
@@ -378,7 +381,7 @@ export function PaperCenterPage() {
             ) : null}
           </div>
           <PrototypeNote>
-            类型用于切换文化课/专业课；科目或专业筛选保留原有逻辑，资源数量只展示总试卷数，是否可练习和作答状态只在具体试卷列表中体现。
+            学生先选择文化课或专业课，再按科目查看试卷；练习状态和可用权限在试卷列表中显示。
           </PrototypeNote>
         </div>
       </Card>
@@ -395,6 +398,9 @@ export function PaperCenterPage() {
       </div>
 
       <PageHeader title={isProfessional ? `${selectedCategory}试卷` : `${selectedCultureSubject}试卷`} />
+      <PrototypeNote>
+        “已做次数、状态、得分、已用时间”来自当前学生的练习记录；试卷名称、分类、年份、时长、题数和总分来自试卷基础信息。
+      </PrototypeNote>
       {filteredPapers.length ? (
         <>
           <DataTable
@@ -444,8 +450,7 @@ export function PaperCenterPage() {
         </>
       ) : (
         <Card>
-          <p className="leading-7 text-muted">暂无试卷</p>
-          <PrototypeNote className="mt-3">该分类下暂时没有可练习试卷，后续可继续补充更多示例试卷。</PrototypeNote>
+          <p className="mb-0 leading-7 text-muted">该分类下暂无可练习试卷，请选择其他科目或分类。</p>
         </Card>
       )}
     </>
@@ -562,8 +567,8 @@ export function PaperAnswerPage() {
   return (
     <>
       <PageHeader
-        title={isQuickPractice ? `${quickPracticeSubject}快速练习答题页` : "题库练习答题页"}
-        desc={isQuickPractice ? "系统按当前科目从学生可用题库中随机组卷，学生直接作答，提交后查看解析。" : "从学习中心题库练习进入，偏练习场景；当前班级学生可进入作答界面，提交后系统判卷客观题并展示解析。"}
+        title={isQuickPractice ? `${quickPracticeSubject}快速练习答题页` : "试卷练习答题页"}
+        desc={isQuickPractice ? "系统从当前科目的可用题库中随机组卷，提交后可查看答题结果和解析。" : "练习过程中可以保存退出；完成后系统批改客观题并展示答案和解析。"}
         action={<Tag tone="blue">{isQuickPractice ? "快速练习" : "练习模式"}</Tag>}
       />
       <div className="grid gap-5 md:grid-cols-[1fr_280px]">
@@ -603,7 +608,7 @@ export function PaperAnswerPage() {
             </div>
             <p className="m-0 text-sm leading-6 text-muted">已答 {answeredCount} 题，未答 {unansweredCount} 题，已标记 {markedQuestions.length} 题。</p>
           </div>
-          <PrototypeNote className="mt-3">完成练习后进入试卷解析页，按题目逐条查看答案和解析；中途离开使用保存退出。</PrototypeNote>
+          <PrototypeNote className="mt-3">未完成时可保存退出，下次从原进度继续；完成练习后可逐题查看答案和解析。</PrototypeNote>
           <PaperQuestionNavigator activeKey={activeKey} groups={answerGroups} onSelect={(question) => setActiveKey(question.key)} />
           <QuestionStatusLegend mode="answer" />
           <Meta><Button href="#/papers" tone="secondary">保存退出</Button><Button href="#/paper-analysis" tone="warning">完成练习</Button></Meta>
@@ -636,8 +641,8 @@ export function PaperAnalysisPage() {
     <>
       <PageHeader
         title="试卷解析"
-        desc="练习提交后按题目逐条展示答案和解析；解析页只承接本次题库练习结果。"
-        action={<Button href="#/papers" tone="ghost">返回题库练习</Button>}
+        desc="提交练习后，可逐题查看本次作答、参考答案和解析。"
+        action={<Button href="#/papers" tone="ghost">返回试卷练习</Button>}
       />
 
       <div className="grid gap-4 md:grid-cols-4">
@@ -675,10 +680,10 @@ export function PaperAnalysisPage() {
               <p className="mt-4 leading-8 text-slate-700">{currentQuestion.analysis}</p>
               <div className="mt-4 grid gap-4 md:grid-cols-2">
                 <div className="grid min-h-[150px] place-items-center rounded-ui border border-dashed border-line bg-slate-50 text-sm text-muted">
-                  解析图片占位符
+                  题目解析配图
                 </div>
                 <div className="grid min-h-[150px] place-items-center rounded-ui bg-slate-900 text-sm text-white/70">
-                  解析视频占位符
+                  题目讲解视频
                 </div>
               </div>
               <PrototypeNote className="mt-4">
@@ -699,7 +704,7 @@ export function PaperAnalysisPage() {
         </div>
       </section>
 
-      <Meta><Button href="#/paper-answer" tone="secondary">重新练习</Button><Button href="#/papers">返回题库练习</Button></Meta>
+      <Meta><Button href="#/paper-answer" tone="secondary">重新练习</Button><Button href="#/papers">返回试卷练习</Button></Meta>
     </>
   );
 }

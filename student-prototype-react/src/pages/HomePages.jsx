@@ -17,8 +17,10 @@ export function HomePage() {
   const [activeNews, setActiveNews] = useState(null);
   const banner = homeBanners[activeBanner] || homeBanners[0];
   const entryCards = [
-    { title: "学习中心", desc: "进入课程、试卷题库、班级测试、学习记录和错题本。", href: "#/learning", tone: "from-blue-600 to-cyan-600" },
-    { title: "考试中心", desc: "查看当前可以参加的考试，以及已经参加过的考试记录。", href: "#/exams", tone: "from-rose-600 to-orange-500" },
+    { title: "学习中心", desc: "进入班级课程、作业、学习记录和课程答疑。", href: "#/learning", tone: "from-blue-600 to-cyan-600", requiresStudent: true },
+    { title: "考试中心", desc: "查看考试、考试记录、试卷练习和错题本。", href: "#/exams", tone: "from-rose-600 to-orange-500", requiresStudent: true },
+    { title: "报考指南", desc: "查看职教高考报考政策、报名流程和备考信息。", href: "#/application-guide", tone: "from-teal-600 to-emerald-500", requiresStudent: false },
+    { title: "虚拟实训", desc: "进入专业虚拟实训场景，开展技能学习与训练。", href: "#/virtual-training", tone: "from-violet-600 to-fuchsia-500", requiresStudent: true },
   ];
 
   function showPrevBanner() {
@@ -69,6 +71,7 @@ export function HomePage() {
           </>
         ) : null}
       </section>
+      <PrototypeNote>轮播图来自首页轮播配置，字段包括图片地址、排序和跳转链接；当前学生端只展示图片，不响应跳转链接。</PrototypeNote>
 
       <section className="mt-5 grid gap-4 md:grid-cols-2">
         {entryCards.map((item) => (
@@ -77,7 +80,7 @@ export function HomePage() {
             href={item.href}
             key={item.title}
             onClick={(event) => {
-              if (!requestStudentAreaAccess()) event.preventDefault();
+              if (item.requiresStudent && !requestStudentAreaAccess()) event.preventDefault();
             }}
           >
             <span className={`mb-4 block h-1.5 rounded-full bg-gradient-to-r ${item.tone}`} />
@@ -85,11 +88,12 @@ export function HomePage() {
             <p className="mb-0 mt-3 min-h-[52px] leading-7 text-muted">{item.desc}</p>
           </a>
         ))}
-        <PrototypeNote className="md:col-span-2">首页轮播只作为学生端展示入口；快捷入口复用现有登录与入校认证校验。</PrototypeNote>
+        <PrototypeNote className="md:col-span-2">报考指南无需登录即可查看；学习中心、考试中心和虚拟实训仅对已加入学校的学生开放。</PrototypeNote>
       </section>
 
       <section className="mt-9">
-        <PageHeader title="推荐课程" desc="首页推荐课程面向学生试看，当前按视频试看课程处理；试看课程不等同于班级课程。" />
+        <PageHeader title="推荐课程" desc="学生可以试看推荐课程；正式学习内容由学校加入学生的班级课程。" />
+        <PrototypeNote>推荐课程来自运营后台推荐位配置；卡片字段为课程名称、科目、课时数和发布人，最多展示 12 门。</PrototypeNote>
         <div className="grid grid-cols-4 gap-4">
           {recommendedCourses.slice(0, 12).map((course) => (
             <a
@@ -118,7 +122,8 @@ export function HomePage() {
       </section>
 
       <section className="mt-9">
-        <PageHeader title="资讯中心" desc="首页展示最新资讯摘要，点击查看后以富文本弹窗方式模拟资讯详情；完整列表进入资讯中心。" action={<Button href="#/news" tone="ghost">查看更多资讯</Button>} />
+        <PageHeader title="资讯中心" desc="首页展示最新政策、考试通知和备考信息，学生可直接查看全文。" action={<Button href="#/news" tone="ghost">查看更多资讯</Button>} />
+        <PrototypeNote>首页资讯只读取已发布数据，按发布时间倒序取最近 3 条；字段包括类型、标题、摘要、正文和发布时间。</PrototypeNote>
         <Card>
           {news.slice(0, 3).map((item) => (
             <div key={item.id} className="flex flex-col justify-between gap-4 border-b border-line py-4 last:border-0 md:flex-row md:items-center">
@@ -155,7 +160,8 @@ export function NewsPage() {
 
   return (
     <>
-      <PageHeader title="资讯中心" desc="资讯中心用于查看政策解读、考试通知、平台公告和备考指南；考试通知只作为信息提醒，不替代考试中心流程。" />
+      <PageHeader title="资讯中心" desc="学生可按栏目查看政策解读、考试通知、平台公告和备考指南；参加考试请前往考试中心。" />
+      <PrototypeNote>资讯列表来自平台资讯管理；类型为固定枚举，搜索范围为标题和摘要。分页规则待开发确认。</PrototypeNote>
       <div className="mb-5 grid gap-3 rounded-ui border border-line bg-white p-4 md:grid-cols-[1fr_260px] md:items-center">
         <div className="flex flex-wrap gap-2">
           {newsCategories.map((type) => (
@@ -191,7 +197,7 @@ export function NewsPage() {
         ))}
         {filteredNews.length === 0 ? <Card><p className="m-0 text-muted">暂无符合条件的资讯。</p></Card> : null}
       </div>
-      <PrototypeNote className="mt-5">资讯详情在当前原型中使用弹窗模拟富文本展示；如果后续资讯内容较长或需要分享链接，再扩展独立详情页。</PrototypeNote>
+      <PrototypeNote className="mt-5">资讯在列表内打开全文，学生查看后仍保留当前筛选结果和浏览位置。</PrototypeNote>
       <Modal open={!!activeNews} title={activeNews?.title} onClose={() => setActiveNews(null)}>
         <NewsRichText item={activeNews} />
       </Modal>
@@ -233,13 +239,14 @@ export function CoursePreviewPage() {
   const lesson = previewLessons[activeLesson];
   function renderPreviewAction() {
     if (roleKey === "student") return <Button href="#/learning">进入学习中心</Button>;
+    if (roleKey === "teacher") return <Button href="#/teacher">进入教师端</Button>;
     if (roleKey === "visitor") return <Button href="#/login">登录/注册</Button>;
     return <Button href="#/profile" tone="ghost">查看认证状态</Button>;
   }
 
   return (
     <>
-      <PageHeader title="数学基础冲刺课" desc="首页推荐课程试看页，当前按视频试看课程处理；不等同于学习中心的班级课程详情页。" action={renderPreviewAction()} />
+      <PageHeader title="数学基础冲刺课" desc="推荐课程提供部分视频课时试看；加入学校后可在学习中心查看班级课程。" action={renderPreviewAction()} />
       <Card className="mb-5">
         <div className="grid gap-5 md:grid-cols-[260px_1fr_160px] md:items-center">
           <div className="grid min-h-[150px] place-items-center rounded-ui bg-[linear-gradient(135deg,#2563eb,#0891b2)] p-5 text-center text-white">
@@ -252,7 +259,7 @@ export function CoursePreviewPage() {
               <Tag>平台精选</Tag>
               <Tag tone="amber">可试看 3 课时</Tag>
             </div>
-            <PrototypeNote className="mt-3">推荐课程没有价格；当前试看课时默认按视频课处理，试看时长只对视频生效。完整多类型课时学习放在学习中心课程详情页处理。</PrototypeNote>
+            <PrototypeNote className="mt-3">推荐课程不展示价格，试看时长仅适用于已开放的视频课时。</PrototypeNote>
           </div>
           <Button href="#/course-preview">开始试看</Button>
         </div>
@@ -305,7 +312,7 @@ export function CoursePreviewPage() {
       {activeTab === "detail" ? (
         <Card>
           <h3 className="m-0 text-lg">课程介绍</h3>
-          <p className="mt-4 leading-8 text-slate-700">本课程面向需要快速补齐数学基础的学生，按高频知识点组织视频讲解、课件和练习，帮助学生先体验平台课程学习方式。</p>
+          <p className="mt-4 leading-8 text-slate-700">本课程面向需要巩固数学基础的学生，围绕高频知识点安排视频讲解、课件和练习，帮助学生掌握函数、数列与几何基础。</p>
         </Card>
       ) : null}
       {activeTab === "papers" ? (
@@ -316,7 +323,7 @@ export function CoursePreviewPage() {
               <Meta><Tag>{paper.meta}</Tag><Tag tone="gray">需开通</Tag></Meta>
             </Card>
           ))}
-          <PrototypeNote>推荐课程中的试卷用于展示课程绑定练习结构，不等同于考试中心，也不等同于班级测试。</PrototypeNote>
+          <PrototypeNote>此处只显示课程配套练习；正式考试和老师安排的作业在对应入口查看。</PrototypeNote>
         </div>
       ) : null}
       {activeTab === "materials" ? (

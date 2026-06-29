@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Button, Card, Meta, Modal, PageHeader, Tag, usePrototypeRole } from "../components/ui";
+import { Button, Card, Meta, Modal, PageHeader, PrototypeNote, Tag, usePrototypeRole } from "../components/ui";
 import { platformSchools, professionalCategories } from "../data/mockData";
 
 const schoolApplications = {
@@ -36,19 +36,21 @@ const schoolApplications = {
 export function ProfilePage() {
   const { openSchoolApply, roleKey } = usePrototypeRole();
   const [reviewOpen, setReviewOpen] = useState(false);
-  const profileName = roleKey === "visitor" ? "" : "刘同学";
+  const isTeacher = roleKey === "teacher";
+  const profileName = roleKey === "visitor" ? "" : isTeacher ? "王老师" : "刘同学";
   const schoolReviewState = roleKey === "student" ? "approved" : roleKey === "registered" ? "pending" : roleKey === "rejected" ? "rejected" : "none";
   const schoolReview = getSchoolReview(schoolReviewState);
 
   return (
     <>
       <PageHeader title="个人中心" />
+      <PrototypeNote>基本信息来自当前登录账号；教师身份不使用学生入校认证和班级字段，教师组织归属字段待开发确认。</PrototypeNote>
       <Card className="p-0">
         <SectionTitle action={<button className="rounded-ui bg-blue-600 px-5 py-2 text-sm text-white hover:bg-blue-700" type="button">保存</button>} title="基本信息" />
         <div className="grid gap-6 p-5 lg:grid-cols-[120px_1fr]">
           <div className="flex justify-center lg:justify-start">
             <div className="grid h-24 w-24 place-items-center overflow-hidden rounded-full bg-gradient-to-br from-blue-100 to-cyan-100 text-3xl font-semibold text-blue-700">
-              刘
+              {isTeacher ? "王" : "刘"}
             </div>
           </div>
           <div className="grid gap-4">
@@ -77,19 +79,19 @@ export function ProfilePage() {
                 </span>
               </label>
               <label className="grid min-w-[240px] gap-2 text-sm">
-                目标专业：
+                {isTeacher ? "身份：" : "目标专业："}
                 <span className="inline-flex min-h-10 items-center rounded-ui border border-line bg-slate-50 px-3 text-slate-700">
-                  {schoolReview.targetMajor}
+                  {isTeacher ? "教师" : schoolReview.targetMajor}
                 </span>
               </label>
               <div className="mt-6 flex flex-wrap items-center gap-3">
                 {schoolReview.tag ? <Tag tone={schoolReview.tagTone}>{schoolReview.tag}</Tag> : null}
-                {schoolReview.canView ? (
+                {!isTeacher && schoolReview.canView ? (
                   <button className="text-sm text-blue-600 hover:text-blue-700" onClick={() => setReviewOpen(true)} type="button">
                     查看审核
                   </button>
                 ) : null}
-                {schoolReview.canApply ? (
+                {!isTeacher && schoolReview.canApply ? (
                   <button className="text-sm text-blue-600 hover:text-blue-700" onClick={openSchoolApply} type="button">
                     再次申请入校
                   </button>
@@ -188,9 +190,9 @@ function SecurityRow({ label, text, action, tone = "primary" }) {
 export function SchoolApplyPage() {
   return (
     <>
-      <PageHeader title="入校申请已并入注册" desc="独立入校申请入口已取消；首次申请在注册时提交，被拒后从个人中心再次申请。" />
+      <PageHeader title="入校认证" desc="新用户注册时提交学校和专业信息；审核未通过时可在个人中心重新申请。" />
       <Card>
-        <h2 className="m-0 text-xl">请从注册或个人中心处理入校认证</h2>
+        <h2 className="m-0 text-xl">完成入校认证后使用学生功能</h2>
         <p className="mb-0 mt-3 leading-7 text-muted">新用户在注册时选择学校和目标专业；认证未通过的用户可在个人中心再次申请入校。</p>
         <Meta><Button href="#/login">登录/注册</Button><Button href="#/profile" tone="secondary">个人中心</Button></Meta>
       </Card>

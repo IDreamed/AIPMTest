@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>职教高考学生端原型</title>
+    <title>职教高考学习平台</title>
     <style>
       :root {
         --ink: #0f172a;
@@ -660,12 +660,12 @@
           <span class="brand-mark">职</span>
           <span>
             <span class="brand-title">职教高考学习平台</span>
-            <span class="brand-subtitle">学生端组件化原型</span>
+            <span class="brand-subtitle">学生端学习平台</span>
           </span>
         </a>
         <nav id="nav" class="nav"></nav>
         <div class="top-actions">
-          <select id="roleSelect" aria-label="切换原型身份">
+          <select id="roleSelect" aria-label="切换预览身份">
             <option value="visitor">游客</option>
             <option value="registered">注册用户</option>
             <option value="student">班级学生</option>
@@ -780,7 +780,7 @@
 
       const currentRole = () => roles[state.role] || roles.visitor;
       const escapeHtml = (value) => String(value).replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[char]));
-      const note = (text) => `<div class="note"><strong>原型标注：</strong>${escapeHtml(text)}</div>`;
+      const note = (text) => `<div class="note"><strong>需求标注：</strong>${escapeHtml(text)}</div>`;
       const tag = (text, tone = "") => `<span class="tag ${tone}">${escapeHtml(text)}</span>`;
       const meta = (html) => `<div class="meta">${html}</div>`;
       const card = (html, extra = "") => `<section class="card ${extra}">${html}</section>`;

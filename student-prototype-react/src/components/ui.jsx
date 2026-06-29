@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useId, useRef, useState } from "react";
 import { navItems, platformSchools, professionalCategories, prototypeRoles } from "../data/mockData";
 
 const PrototypeRoleContext = createContext(null);
@@ -17,6 +17,7 @@ export function AppShell({ children }) {
   const [prototypeControlsOpen, setPrototypeControlsOpen] = useState(false);
   const [schoolApplyOpen, setSchoolApplyOpen] = useState(false);
   const [accessPrompt, setAccessPrompt] = useState(null);
+  const [annotations, setAnnotations] = useState([]);
   const [roleKey, setRoleKey] = useState(() => window.localStorage.getItem("prototype-role") || "visitor");
   const [showNotes, setShowNotes] = useState(() => window.localStorage.getItem("prototype-notes") === "true");
   const hash = window.location.hash || "#/";
@@ -45,6 +46,14 @@ export function AppShell({ children }) {
     return false;
   }
 
+  const registerAnnotation = useCallback((annotation) => {
+    setAnnotations((current) => [...current.filter((item) => item.id !== annotation.id), annotation]);
+  }, []);
+
+  const unregisterAnnotation = useCallback((id) => {
+    setAnnotations((current) => current.filter((item) => item.id !== id));
+  }, []);
+
   function handleShellClickCapture(event) {
     const link = event.target.closest?.("a[href]");
     if (!link) return;
@@ -57,7 +66,18 @@ export function AppShell({ children }) {
   }
 
   return (
-    <PrototypeRoleContext.Provider value={{ role, roleKey: role.key, setRoleKey, roles: prototypeRoles, showNotes, setShowNotes, openSchoolApply, requestStudentAreaAccess }}>
+    <PrototypeRoleContext.Provider value={{
+      role,
+      roleKey: role.key,
+      setRoleKey,
+      roles: prototypeRoles,
+      showNotes,
+      setShowNotes,
+      openSchoolApply,
+      requestStudentAreaAccess,
+      registerAnnotation,
+      unregisterAnnotation,
+    }}>
       <div className="min-h-screen bg-wash" onClickCapture={handleShellClickCapture}>
         <header className="sticky top-0 z-20 border-b border-line bg-white/95 backdrop-blur">
           <div className="mx-auto flex min-h-[68px] w-[calc(100%_-_40px)] max-w-[1180px] flex-wrap items-center justify-between gap-4">
@@ -69,7 +89,7 @@ export function AppShell({ children }) {
               </span>
             </a>
             <nav className={`${open ? "flex" : "hidden"} order-3 w-full gap-1 overflow-x-auto md:order-none md:flex md:w-auto`}>
-              {navItems.map((item) => (
+              {[...navItems, ...(role.key === "teacher" ? [{ label: "教师端", path: "#/teacher" }] : [])].map((item) => (
                 <a
                   key={item.path}
                   href={item.path}
@@ -130,7 +150,7 @@ export function AppShell({ children }) {
           {prototypeControlsOpen ? (
             <div className="w-[min(280px,calc(100vw_-_32px))] rounded-ui border border-line bg-white p-3 shadow-lift">
               <div className="mb-3 flex items-center justify-between gap-3">
-                <strong className="text-sm">演示控制</strong>
+                <strong className="text-sm">场景预览</strong>
                 <button
                   className="rounded-ui border border-line bg-white px-2 py-1 text-xs text-slate-700 hover:bg-slate-50"
                   onClick={() => setPrototypeControlsOpen(false)}
@@ -143,7 +163,7 @@ export function AppShell({ children }) {
                 <label className="grid gap-1 text-xs text-muted">
                   当前身份
                   <select
-                    aria-label="原型登录状态"
+                    aria-label="预览身份"
                     className="min-h-10 rounded-ui border border-line bg-white px-3 text-sm text-slate-700"
                     value={role.key}
                     onChange={(event) => setRoleKey(event.target.value)}
@@ -152,13 +172,16 @@ export function AppShell({ children }) {
                       <option key={item.key} value={item.key}>{item.label}</option>
                     ))}
                   </select>
+                  <PrototypeNote>
+                    身份用于预览不同权限场景；教师账号默认不关联学生班级，顶部菜单额外显示“教师端”。
+                  </PrototypeNote>
                 </label>
                 <button
                   className={`min-h-10 rounded-ui border px-3 py-2 text-sm ${showNotes ? "border-amber-500 bg-amber-50 text-amber-700" : "border-line bg-white text-slate-700"}`}
                   onClick={() => setShowNotes((value) => !value)}
                   type="button"
                 >
-                  {showNotes ? "隐藏标注" : "显示标注"}
+                  {showNotes ? "隐藏标注" : `显示标注${annotations.length ? ` (${annotations.length})` : ""}`}
                 </button>
                 <a
                   className="inline-flex min-h-10 items-center justify-center rounded-ui border border-line bg-white px-3 py-2 text-sm text-slate-700 hover:bg-slate-50"
@@ -175,12 +198,13 @@ export function AppShell({ children }) {
               onClick={() => setPrototypeControlsOpen(true)}
               type="button"
             >
-              演示控制
+              场景预览
             </button>
           )}
         </div>
         <SchoolApplyModal open={schoolApplyOpen} onClose={() => setSchoolApplyOpen(false)} />
         <AccessPromptModal prompt={accessPrompt} onClose={() => setAccessPrompt(null)} />
+        <AnnotationLayer annotations={annotations} visible={showNotes} />
       </div>
     </PrototypeRoleContext.Provider>
   );
@@ -198,14 +222,17 @@ function Avatar({ text, muted = false }) {
 
 function activeNav(hash, path) {
   if (path === "#/") return hash === "#/" || hash.startsWith("#/news") || hash.startsWith("#/course-preview");
-  if (path === "#/exams") return hash.startsWith("#/exams") || hash.startsWith("#/exam-") || hash.startsWith("#/my-exams");
-  if (path === "#/learning") return hash.startsWith("#/learning") || hash.startsWith("#/papers") || hash.startsWith("#/paper-") || hash.startsWith("#/class") || hash.startsWith("#/course-study") || hash.startsWith("#/course-lesson") || hash.startsWith("#/course-material") || hash.startsWith("#/paper-practice") || hash.startsWith("#/qa") || hash.startsWith("#/learning-record") || hash.startsWith("#/wrong");
+  if (path === "#/exams") return hash.startsWith("#/exams") || hash.startsWith("#/exam-") || hash.startsWith("#/my-exams") || hash.startsWith("#/papers") || hash.startsWith("#/paper-") || hash.startsWith("#/wrong");
+  if (path === "#/learning") return hash.startsWith("#/learning") || hash.startsWith("#/class") || hash.startsWith("#/course-study") || hash.startsWith("#/course-lesson") || hash.startsWith("#/course-material") || hash.startsWith("#/qa") || hash.startsWith("#/learning-record");
   if (path === "#/profile") return hash.startsWith("#/profile");
+  if (path === "#/teacher") return hash.startsWith("#/teacher");
+  if (path === "#/admin") return hash.startsWith("#/admin");
   return hash.startsWith(path);
 }
 
 function isProtectedStudentRoute(href = "") {
   const path = href.split("?")[0];
+  if (path === "#/virtual-training") return true;
   if (path === "#/papers" || path.startsWith("#/paper-")) return true;
   if (path === "#/exams" || path.startsWith("#/exam-") || path === "#/my-exams") return true;
   return path === "#/learning"
@@ -223,8 +250,16 @@ function getAccessPromptCopy(roleKey) {
   if (roleKey === "visitor") {
     return {
       title: "请先登录/注册",
-      desc: "登录并完成入校认证后，可使用考试中心、学习中心和个人中心。",
+      desc: "登录并完成入校认证后，可使用学习中心、考试中心和虚拟实训。",
       action: <Button href="#/login">登录/注册</Button>,
+    };
+  }
+
+  if (roleKey === "teacher") {
+    return {
+      title: "教师账号未加入学生班级",
+      desc: "教师不能使用学生课程、考试和虚拟实训功能，请进入教师端处理教学内容。",
+      action: <Button href="#/teacher">进入教师端</Button>,
     };
   }
 
@@ -232,7 +267,7 @@ function getAccessPromptCopy(roleKey) {
     title: "当前账号尚未加入学校",
     desc: roleKey === "rejected"
       ? "入校认证未通过，可在个人中心查看原因并再次申请入校。"
-      : "入校认证审核中，认证通过后可使用考试中心和学习中心。",
+      : "入校认证审核中，认证通过后可使用学习中心、考试中心和虚拟实训。",
     action: <Button href="#/profile">进入个人中心</Button>,
   };
 }
@@ -252,9 +287,12 @@ function AccessPromptModal({ prompt, onClose }) {
 
 function AccessBlockedPanel({ roleKey }) {
   const copy = getAccessPromptCopy(roleKey);
+  const isTeacher = roleKey === "teacher";
   return (
     <Card className="mx-auto max-w-2xl">
-      <Tag tone={roleKey === "visitor" ? "blue" : "amber"}>{roleKey === "visitor" ? "未登录" : "未加入学校"}</Tag>
+      <Tag tone={roleKey === "visitor" ? "blue" : "amber"}>
+        {roleKey === "visitor" ? "未登录" : isTeacher ? "教师身份" : "未加入学校"}
+      </Tag>
       <h1 className="mb-0 mt-4 text-2xl">{copy.title}</h1>
       <p className="mb-0 mt-3 leading-7 text-muted">{copy.desc}</p>
       <Meta>{copy.action}<Button href="#/" tone="secondary">返回首页</Button></Meta>
@@ -263,31 +301,112 @@ function AccessBlockedPanel({ roleKey }) {
 }
 
 export function PageHeader({ title, desc, action }) {
-  const context = useContext(PrototypeRoleContext);
-  const showNotes = context?.showNotes;
-
   return (
     <div className="mb-6 flex flex-col justify-between gap-4 md:flex-row md:items-end">
       <div>
         <h1 className="m-0 text-2xl font-semibold tracking-normal">{title}</h1>
-        {desc && showNotes ? (
-          <div className="mt-3 max-w-3xl rounded-ui border border-dashed border-amber-300 bg-amber-50 px-3 py-2 text-sm leading-6 text-amber-900">
-            <strong>原型标注：</strong>{desc}
-          </div>
-        ) : null}
+        {desc ? <PrototypeNote>{desc}</PrototypeNote> : null}
       </div>
       {action}
     </div>
   );
 }
 
-export function PrototypeNote({ children, className = "" }) {
+export function PrototypeNote({ children }) {
   const context = useContext(PrototypeRoleContext);
-  if (!context?.showNotes || !children) return null;
+  const anchorRef = useRef(null);
+  const id = useId();
+
+  useEffect(() => {
+    if (!context?.registerAnnotation || !children) return undefined;
+    context.registerAnnotation({ id, anchorRef, content: children });
+    return () => context.unregisterAnnotation(id);
+  }, [children, context?.registerAnnotation, context?.unregisterAnnotation, id]);
+
+  if (!children) return null;
+  return <span aria-hidden="true" className="pointer-events-none relative block h-0 w-full" ref={anchorRef} />;
+}
+
+function AnnotationLayer({ annotations, visible }) {
+  const [activeId, setActiveId] = useState(null);
+  const [positions, setPositions] = useState([]);
+
+  useEffect(() => {
+    if (!visible) {
+      setActiveId(null);
+      setPositions([]);
+      return undefined;
+    }
+
+    let frame = 0;
+    const updatePositions = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
+        setPositions(annotations.flatMap((annotation, index) => {
+          const anchor = annotation.anchorRef.current;
+          if (!anchor?.isConnected) return [];
+          const rect = anchor.getBoundingClientRect();
+          if (rect.top < 68 || rect.top > viewportHeight - 16) return [];
+          return [{
+            ...annotation,
+            index: index + 1,
+            x: Math.min(Math.max(rect.right, 20), viewportWidth - 20),
+            y: Math.min(Math.max(rect.top, 84), viewportHeight - 24),
+          }];
+        }));
+      });
+    };
+
+    updatePositions();
+    window.addEventListener("resize", updatePositions);
+    window.addEventListener("scroll", updatePositions, true);
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener("resize", updatePositions);
+      window.removeEventListener("scroll", updatePositions, true);
+    };
+  }, [annotations, visible]);
+
+  if (!visible) return null;
 
   return (
-    <div className={`rounded-ui border border-dashed border-amber-300 bg-amber-50 px-3 py-2 text-sm leading-6 text-amber-900 ${className}`}>
-      <strong>原型标注：</strong>{children}
+    <div className="pointer-events-none fixed inset-0 z-50" aria-label="需求标注层">
+      {positions.map((annotation) => {
+        const open = activeId === annotation.id;
+        const placeLeft = annotation.x > window.innerWidth / 2;
+        return (
+          <div
+            className="pointer-events-auto fixed"
+            key={annotation.id}
+            style={{ left: annotation.x, top: annotation.y, transform: "translate(-50%, -50%)" }}
+            onMouseEnter={() => setActiveId(annotation.id)}
+            onMouseLeave={() => setActiveId(null)}
+          >
+            <button
+              aria-expanded={open}
+              aria-label={`查看需求标注 ${annotation.index}`}
+              className="grid h-7 w-7 place-items-center rounded-full border-2 border-white bg-amber-500 text-xs font-bold text-white shadow-lift ring-2 ring-amber-200"
+              onClick={() => setActiveId((current) => current === annotation.id ? null : annotation.id)}
+              type="button"
+            >
+              {annotation.index}
+            </button>
+            {open ? (
+              <div
+                className={`absolute top-1/2 w-[min(340px,calc(100vw_-_56px))] -translate-y-1/2 rounded-ui border border-amber-300 bg-amber-50 p-4 text-sm leading-6 text-amber-950 shadow-lift ${
+                  placeLeft ? "right-10" : "left-10"
+                }`}
+                role="note"
+              >
+                <div className="mb-1 text-xs font-semibold text-amber-700">需求标注 {annotation.index}</div>
+                <div>{annotation.content}</div>
+              </div>
+            ) : null}
+          </div>
+        );
+      })}
     </div>
   );
 }

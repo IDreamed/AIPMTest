@@ -26,12 +26,15 @@ export function ExamCenterPage() {
     <>
       <PageHeader
         title="我的考试"
-        desc="当前考试展示未开始和进行中的考试；考试记录用于查看已完成、缺考和成绩。"
+        desc="查看正在进行和即将开始的考试；已结束的考试可在考试记录中查询。"
       />
       <ExamTabs active="current" />
+      <PrototypeNote>
+        当前考试来自考试发布数据，并按学生班级权限过滤；仅显示未开始、进行中且学生尚未交卷的考试。参加状态由考试状态、权限和交卷记录共同计算。
+      </PrototypeNote>
       <CurrentExamList exams={currentExams} roleKey={roleKey} />
       <PrototypeNote className="mt-5">
-        当前考试只放学生现在或接下来需要处理的考试；已结束、已交卷、缺考和成绩查询进入考试记录。
+        当前考试按开始时间排列，正在进行的考试优先显示；已交卷和已结束的考试进入考试记录。
       </PrototypeNote>
     </>
   );
@@ -55,6 +58,18 @@ function ExamTabs({ active }) {
         href="#/my-exams"
       >
         考试记录
+      </a>
+      <a
+        className="-mb-px inline-flex min-h-11 items-center border-b-2 border-transparent px-4 text-sm font-semibold text-muted hover:text-slate-900"
+        href="#/papers"
+      >
+        试卷练习
+      </a>
+      <a
+        className="-mb-px inline-flex min-h-11 items-center border-b-2 border-transparent px-4 text-sm font-semibold text-muted hover:text-slate-900"
+        href="#/wrong-book"
+      >
+        错题本
       </a>
     </nav>
   );
@@ -218,7 +233,7 @@ function getExamResultSummary(exam, participation, canSeeResult) {
   if (canSeeResult) {
     return {
       title: "已生成成绩与排行摘要",
-      desc: "已生成本场考试成绩、答题记录和排行摘要；完整排行进入独立排行页面查看。",
+      desc: "本场成绩和答题记录已公布，可查看题目解析和完整排行。",
       analysisAction: <Button href={`#/exam-analysis?id=${exam.id}`} tone="ghost">查看成绩与解析</Button>,
       rankAction: exam.rankEnabled ? <Button href={`#/exam-rank?id=${exam.id}`} tone="secondary">查看完整排行</Button> : <Tag tone="gray">暂无排行</Tag>,
     };
@@ -262,7 +277,7 @@ function getExamResultSummary(exam, participation, canSeeResult) {
 
   return {
     title: "暂无成绩",
-    desc: "当前状态下暂不展示成绩、答题记录或排行。",
+    desc: "本场考试尚未生成可查看的成绩或答题记录。",
     analysisAction: <Tag tone="gray">暂无解析</Tag>,
     rankAction: <Tag tone="gray">暂无排行</Tag>,
   };
@@ -396,6 +411,9 @@ export function MyExamsPage() {
           onChange={setStatusFilter}
         />
       </Card>
+      <PrototypeNote>
+        考试记录来自学生可参加的历史考试及交卷记录；“缺考”表示考试已结束但没有有效交卷记录，“评阅中”表示已交卷但成绩尚未公示。
+      </PrototypeNote>
       <div className="mt-6">
         {filteredRecords.length ? (
           <div className="grid gap-4">
@@ -497,7 +515,7 @@ export function ExamDetailPage() {
     <>
       <PageHeader
         title={exam.title}
-        desc="展示考试基础信息、参加状态、成绩摘要、排行入口和考试规则。"
+        desc="查看考试时间、参加要求、考试说明和个人成绩。"
         action={canEnter ? <Button href="#/exam-answer">开始考试</Button> : null}
       />
       <div className="grid gap-4 md:grid-cols-4">
@@ -506,9 +524,12 @@ export function ExamDetailPage() {
         <Stat label="状态" value={exam.status} />
         <Stat label="参加状态" value={participation.label} />
       </div>
+      <PrototypeNote>
+        考试详情字段来自单场考试配置；参加状态建议由后端根据考试权限、时间状态和学生交卷记录统一返回。
+      </PrototypeNote>
 
       <section className="mt-8">
-        <PageHeader title="考试介绍" desc="学生进入详情后优先了解考试内容、范围和说明。" />
+        <PageHeader title="考试介绍" desc="参加考试前请确认考试范围、作答要求和注意事项。" />
         <Card className="leading-8 text-slate-700">
           <article className="min-h-[260px] max-h-[520px] overflow-y-auto pr-2">
             {examIntro.map((paragraph) => (
@@ -516,14 +537,14 @@ export function ExamDetailPage() {
             ))}
             <div className="mt-5 grid gap-4 md:grid-cols-2">
               <div className="grid min-h-[180px] place-items-center rounded-ui border border-dashed border-line bg-slate-50 text-sm text-muted">
-                富文本图片占位符
+                考试说明配图
               </div>
               <div className="grid min-h-[180px] place-items-center rounded-ui bg-slate-900 text-sm text-white/70">
-                富文本视频占位符
+                考前说明视频
               </div>
             </div>
           </article>
-          <PrototypeNote className="mt-4">如果考试介绍内容较长，当前区域内部滚动，避免把详情页其它核心信息挤到过深位置。</PrototypeNote>
+          <PrototypeNote className="mt-4">考试说明较长时可在区域内滚动查看，时间安排和参加入口始终保留在下方。</PrototypeNote>
         </Card>
       </section>
 
@@ -555,7 +576,7 @@ export function ExamDetailPage() {
       </div>
 
       <section className="mt-8">
-        <PageHeader title="我的成绩" desc="成绩归属于单场考试，已交卷并出分后在详情页首屏展示。" />
+        <PageHeader title="我的成绩" desc="成绩公布后可查看得分、正确率、答题用时和个人排名。" />
         <div className="grid gap-4 md:grid-cols-4">
           <Stat label="得分/总分" value={canSeeResult ? `${exam.score} / 300` : "-"} />
           <Stat label="正确率" value={canSeeResult ? "82%" : "-"} />
@@ -593,7 +614,7 @@ export function ExamRankPage() {
 
   return (
     <>
-      <PageHeader title="考试排行" desc={`${exam.title} 的单场排行页面；后续可扩展学校排行、班级排行、分页和导出。`} action={<Button href={`#/exam-detail?id=${exam.id}`} tone="ghost">返回考试详情</Button>} />
+      <PageHeader title="考试排行" desc={`查看 ${exam.title} 的考生排行和学校排行。`} action={<Button href={`#/exam-detail?id=${exam.id}`} tone="ghost">返回考试详情</Button>} />
       <div className="grid gap-4 md:grid-cols-4">
         <Stat label="考试类型" value={exam.type} />
         <Stat label="科目/大类" value={exam.subject === "专业课" ? exam.category : exam.subject} />
@@ -675,7 +696,7 @@ export function ExamRankPage() {
           </div>
         </div>
       </Card>
-      <PrototypeNote className="mt-5">排行独立成页，避免考试详情承载大量考生数据；后续可以在这里增加分页、学校筛选、班级筛选和排行维度切换。</PrototypeNote>
+      <PrototypeNote className="mt-5">排行仅在成绩公示后开放，学生可以切换查看考生排行和学校排行。</PrototypeNote>
     </>
   );
 }
@@ -741,10 +762,10 @@ export function ExamAnalysisPage() {
               <p className="mt-4 leading-8 text-slate-700">{analysis.analysis}</p>
               <div className="mt-4 grid gap-4 md:grid-cols-2">
                 <div className="grid min-h-[150px] place-items-center rounded-ui border border-dashed border-line bg-slate-50 text-sm text-muted">
-                  解析图片占位符
+                  题目解析配图
                 </div>
                 <div className="grid min-h-[150px] place-items-center rounded-ui bg-slate-900 text-sm text-white/70">
-                  解析视频占位符
+                  题目讲解视频
                 </div>
               </div>
             </section>

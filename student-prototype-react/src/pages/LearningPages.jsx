@@ -100,6 +100,9 @@ export function LearningCenterPage() {
               );
             })}
           </div>
+          <PrototypeNote>
+            我的课程来自当前学生所在班级的课程分配；发布人和课时数来自课程信息，已学课时与学习进度来自学生课时学习记录。
+          </PrototypeNote>
         </section>
       </LearningSectionShell>
     </>
@@ -120,9 +123,7 @@ function LearningSectionShell({ active, children }) {
 
 function LearningCenterNav({ active }) {
   const currentIdentity = classes[0];
-  const paperBankCount = papers.filter((paper) => paper.unlocked).length;
   const activeClassExamCount = classExams.filter((exam) => exam.status === "进行中").length;
-  const unmasteredWrongCount = wrongQuestions.filter((question) => question.status !== "已掌握").length;
 
   return (
     <aside>
@@ -137,13 +138,36 @@ function LearningCenterNav({ active }) {
         </div>
         <nav className="mt-5 grid gap-2">
           <LearningNavItem active={active === "courses"} count={classCourses.length} href="#/learning" label="我的课程" />
-          <LearningNavItem active={active === "papers"} count={paperBankCount} href="#/papers" label="题库练习" />
-          <LearningNavItem active={active === "tests"} count={activeClassExamCount} href="#/class-exam" label="班级测试" />
+          <LearningNavItem active={active === "tests"} count={activeClassExamCount} href="#/class-exam" label="作业" />
           <LearningNavItem active={active === "records"} count={learningRecords.length} href="#/learning-record" label="学习记录" />
-          <LearningNavItem active={active === "wrong"} count={unmasteredWrongCount} href="#/wrong-book" label="错题本" />
         </nav>
       </Card>
     </aside>
+  );
+}
+
+function ExamCenterSubNav({ active }) {
+  const tabs = [
+    { key: "current", label: "当前考试", href: "#/exams" },
+    { key: "records", label: "考试记录", href: "#/my-exams" },
+    { key: "papers", label: "试卷练习", href: "#/papers" },
+    { key: "wrong", label: "错题本", href: "#/wrong-book" },
+  ];
+
+  return (
+    <nav className="mb-5 flex flex-wrap gap-2 border-b border-line">
+      {tabs.map((tab) => (
+        <a
+          className={`-mb-px inline-flex min-h-11 items-center border-b-2 px-4 text-sm font-semibold ${
+            active === tab.key ? "border-blue-600 text-blue-700" : "border-transparent text-muted hover:text-slate-900"
+          }`}
+          href={tab.href}
+          key={tab.key}
+        >
+          {tab.label}
+        </a>
+      ))}
+    </nav>
   );
 }
 
@@ -168,7 +192,7 @@ function InfoLine({ label, value }) {
 function LearningRecordSummary({ note }) {
   return (
     <section className="mt-8">
-      <PageHeader title="学习记录" desc="当前阶段只记录视频和音频课时学习。" action={<Button href="#/learning-record" tone="secondary">查看全部记录</Button>} />
+      <PageHeader title="学习记录" desc="记录视频和音频课时的最近学习时间与完成进度。" action={<Button href="#/learning-record" tone="secondary">查看全部记录</Button>} />
       <div className="grid gap-3">
         {learningRecords.slice(0, 2).map((item) => (
           <Card key={`${item.title}-${item.time}`} className="grid gap-4 md:grid-cols-[120px_1fr] md:items-center">
@@ -207,7 +231,7 @@ function TaskSummaryCard({ title, desc, tasks, href, listAction }) {
             {latestTask.detail ? <p className="mb-0 mt-1 text-sm leading-6 text-muted">{latestTask.detail}</p> : null}
           </div>
         ) : (
-          <p className="mb-0 mt-4 text-sm text-muted">暂无待处理内容</p>
+          <p className="mb-0 mt-4 text-sm text-muted">今天没有待完成的学习任务</p>
         )}
       </div>
       <div className="flex flex-wrap gap-2">
@@ -310,7 +334,7 @@ function getQaMessages(item) {
 export function ClassDetailPage() {
   return (
     <>
-      <PageHeader title="班级档案" desc="班级详情弱化为档案页，主要学习内容已经前置到学习中心。" action={<Button href="#/learning" tone="secondary">返回学习中心</Button>} />
+      <PageHeader title="班级档案" desc="查看所在学校、班级、专业和整体学习进度。" action={<Button href="#/learning" tone="secondary">返回学习中心</Button>} />
       <Card className="mb-6">
         <div className="flex flex-col justify-between gap-4 md:flex-row md:items-start">
           <div>
@@ -322,7 +346,7 @@ export function ClassDetailPage() {
         </div>
       </Card>
       <div className="grid gap-4 md:grid-cols-4">
-        <Stat label="班级课程" value="4" /><Stat label="班级测试" value="3" /><Stat label="答疑待回复" value="1" /><Stat label="学习进度" value="62%" />
+        <Stat label="班级课程" value="4" /><Stat label="作业" value="3" /><Stat label="答疑待回复" value="1" /><Stat label="学习进度" value="62%" />
       </div>
     </>
   );
@@ -340,7 +364,7 @@ export function ClassCoursesPage() {
     <>
       <PageHeader
         title="班级课程"
-        desc="展示当前班级的课程列表；点击课程进入课程学习详情。"
+        desc="查看老师为本班安排的课程和个人学习进度。"
         action={<Button href="#/learning" tone="secondary">返回学习中心</Button>}
       />
       <div className="grid gap-4 md:grid-cols-3">
@@ -387,6 +411,9 @@ export function ClassCoursesPage() {
           );
         })}
       </div>
+      <PrototypeNote>
+        班级课程来自班级与课程的关联关系；进度按学生已完成课时数除以课程总课时数计算，具体完成规则见课时学习页。
+      </PrototypeNote>
       <Pagination
         label="班级课程"
         onPageChange={setPage}
@@ -400,7 +427,7 @@ export function ClassCoursesPage() {
         total={classCourses.length}
       />
       <PrototypeNote className="mt-5">
-        班级课程只展示当前学校班级分配的课程，不展示学生在公开入口单独试看或购买的课程；课程详情仍复用当前的课程学习详情页。
+        班级课程只显示学校为当前班级安排的正式课程，不包含首页推荐的试看课程。
       </PrototypeNote>
     </>
   );
@@ -417,8 +444,8 @@ export function ClassExamPage() {
   return (
     <LearningSectionShell active="tests">
       <PageHeader
-        title="班级测试"
-        desc="班级测试归入学习中心，只展示老师为当前班级安排的测试。"
+        title="作业"
+        desc="查看老师为本班安排的作业、完成状态和成绩。"
       />
       <div className="grid gap-4 md:grid-cols-3">
         <Stat label="进行中" value={activeCount} />
@@ -450,8 +477,11 @@ export function ClassExamPage() {
           </Card>
         ))}
       </div>
+      <PrototypeNote>
+        作业来自老师对当前班级发布的安排；学生状态由提交记录返回，作业状态由开始时间和结束时间计算。
+      </PrototypeNote>
       <Pagination
-        label="班级测试"
+        label="作业"
         onPageChange={setPage}
         onPageSizeChange={(size) => {
           setPageSize(size);
@@ -463,7 +493,7 @@ export function ClassExamPage() {
         total={classExams.length}
       />
       <PrototypeNote className="mt-5">
-        班级测试采用统一答题和解析界面，列表只展示学生参加测试前需要了解的关键信息。
+        作业采用统一答题和解析界面，列表只展示学生作答前需要了解的关键信息。
       </PrototypeNote>
     </LearningSectionShell>
   );
@@ -478,7 +508,7 @@ function ClassExamAction({ exam }) {
 
 function getClassExamActionConfig(exam) {
   if (exam.status === "进行中" && exam.studentStatus !== "已交卷") {
-    return { label: "开始测试", href: "#/class-exam-answer", tone: "primary" };
+    return { label: "开始作业", href: "#/class-exam-answer", tone: "primary" };
   }
 
   if (exam.status === "进行中" && exam.studentStatus === "已交卷") {
@@ -506,9 +536,9 @@ export function ClassExamDetailPage() {
   return (
     <>
       <PageHeader
-        title="班级测试安排"
-        desc="展示单场班级测试的基本信息和参加入口，不展示分类筛选、课程归属或跨校排行。"
-        action={<Button href="#/class-exam" tone="secondary">返回班级测试</Button>}
+        title="作业安排"
+        desc="查看作业时间、题量、分值和完成状态。"
+        action={<Button href="#/class-exam" tone="secondary">返回作业</Button>}
       />
       <Card>
         <div className="grid gap-6 md:grid-cols-[1fr_220px] md:items-start">
@@ -536,7 +566,7 @@ export function ClassExamDetailPage() {
         </div>
       </Card>
       <PrototypeNote className="mt-5">
-        这个页面用于承接“查看安排”，信息与班级测试列表保持一致：名称、时长、总题数、试卷总分、开始时间、剩余时间和状态。
+        学生可在作业开始前确认时间和要求；作业开放后从本页进入答题。
       </PrototypeNote>
     </>
   );
@@ -619,16 +649,18 @@ export function PaperPracticePage() {
   }
 
   return (
-    <LearningSectionShell active="papers">
+    <>
+      <PageHeader title="考试中心" />
+      <ExamCenterSubNav active="papers" />
       <PageHeader
-        title="题库练习"
-        desc="题库练习归入学习中心，只保留语文、数学、英语、专业课四个入口。"
+        title="试卷练习"
+        desc="按语文、数学、英语和专业课选择试卷进行练习。"
       />
       <Card className="mb-5 p-4">
         <LearningFilterButtons label="科目" options={subjectOptions} value={selectedSubject} onChange={changeSubject} />
       </Card>
       <div className="grid gap-4 md:grid-cols-3">
-        <Stat label="题库试卷" value={filteredPapers.length} />
+        <Stat label="练习试卷" value={filteredPapers.length} />
         <Stat label="进行中" value={unfinishedCount} />
         <Stat label="已完成" value={finishedCount} />
       </div>
@@ -640,7 +672,7 @@ export function PaperPracticePage() {
           renderRow={(paper) => <PaperPracticeRow paper={paper} />}
         />
         <Pagination
-          label="题库练习"
+          label="试卷练习"
           onPageChange={setPage}
           onPageSizeChange={(size) => {
             setPageSize(size);
@@ -652,7 +684,10 @@ export function PaperPracticePage() {
           total={filteredPapers.length}
         />
       </div>
-    </LearningSectionShell>
+      <PrototypeNote className="mt-5">
+        试卷练习归入考试中心，用于学生自主刷题和查看练习解析；正式考试仍从“当前考试”进入。
+      </PrototypeNote>
+    </>
   );
 }
 
@@ -677,14 +712,14 @@ export function ClassExamAnswerPage() {
   return (
     <>
       <PageHeader
-        title="函数与数列阶段测试"
-        desc="班级测试采用考试型答题界面，支持题号导航、标记和提交，但不展示跨校排行。"
-        action={<Button tone="warning" onClick={() => setConfirmSubmit(true)}>提交测试</Button>}
+        title="函数与数列阶段作业"
+        desc="请在规定时间内完成作答；可通过题号导航切换题目并标记待检查题目。"
+        action={<Button tone="warning" onClick={() => setConfirmSubmit(true)}>提交作业</Button>}
       />
       <div className="grid gap-5 md:grid-cols-[1fr_280px]">
         <Card className="min-h-[500px]">
           <Meta>
-            <Tag>阶段测试</Tag>
+            <Tag>阶段作业</Tag>
             <Tag>{activeQuestion.groupTitle}</Tag>
             <Tag>{activeQuestionType}</Tag>
             <Tag>第 {activeQuestion.label} 题</Tag>
@@ -711,7 +746,7 @@ export function ClassExamAnswerPage() {
             >
               {isCurrentMarked ? "取消标记" : "标记本题"}
             </Button>
-            <Button tone="warning" onClick={() => setConfirmSubmit(true)}>提交测试</Button>
+            <Button tone="warning" onClick={() => setConfirmSubmit(true)}>提交作业</Button>
           </Meta>
         </Card>
         <Card>
@@ -719,11 +754,11 @@ export function ClassExamAnswerPage() {
           <p className="leading-7 text-muted">按大题分组展示题号，覆盖单选、多选、判断、填空、简答和综合题。</p>
           <ExamQuestionNavigator activeKey={activeKey} groups={answerGroups} onSelect={(question) => setActiveKey(question.key)} />
           <ExamQuestionStatusLegend mode="answer" />
-          <PrototypeNote className="mt-4">班级测试答题页不强调正式考试氛围，不展示赛事型考试介绍、正式考试排行或跨校信息。</PrototypeNote>
+          <PrototypeNote className="mt-4">作业由任课老师安排，提交后生成个人作业记录，不参与跨校排行。</PrototypeNote>
         </Card>
       </div>
-      <Modal open={confirmSubmit} title="确认提交测试" onClose={() => setConfirmSubmit(false)}>
-        <p className="m-0 leading-7 text-muted">提交后会生成本次班级测试记录，已完成题目进入解析和错题沉淀。</p>
+      <Modal open={confirmSubmit} title="确认提交作业" onClose={() => setConfirmSubmit(false)}>
+        <p className="m-0 leading-7 text-muted">提交后会生成本次作业记录，已完成题目进入解析和错题沉淀。</p>
         <Meta><Button tone="secondary" onClick={() => setConfirmSubmit(false)}>继续检查</Button><Button href="#/class-exam-analysis" tone="warning">确认提交</Button></Meta>
       </Modal>
     </>
@@ -749,15 +784,15 @@ export function ClassExamAnalysisPage() {
   return (
     <>
       <PageHeader
-        title="班级测试解析"
-        desc="展示班级测试成绩、作答结果和题目解析；不展示跨校排行。"
-        action={<Button href="#/class-exam" tone="secondary">返回班级测试</Button>}
+        title="作业解析"
+        desc="查看本次作业成绩、作答结果和题目解析。"
+        action={<Button href="#/class-exam" tone="secondary">返回作业</Button>}
       />
       <div className="grid gap-4 md:grid-cols-4">
         <Stat label="得分/总分" value="86 / 100" />
         <Stat label="正确率" value="86%" />
         <Stat label="答题用时" value="24 分钟" />
-        <Stat label="测试状态" value="已出分" />
+        <Stat label="作业状态" value="已出分" />
       </div>
 
       <section className="mt-8">
@@ -788,7 +823,7 @@ export function ClassExamAnalysisPage() {
               <h3 className="m-0 text-base">题目解析</h3>
               <p className="mt-4 leading-8 text-slate-700">一次函数与 y 轴交点需要令 x=0，此时 y=2×0+1=1，所以交点坐标为 (0, 1)。</p>
               <div className="mt-4 grid min-h-[140px] place-items-center rounded-ui border border-dashed border-line bg-slate-50 text-sm text-muted">
-                解析富文本图片 / 视频占位
+                题目解析配图或讲解视频
               </div>
             </section>
             <Meta>
@@ -822,6 +857,9 @@ export function CourseStudyPage() {
   return (
     <>
       <PageHeader title={classCourse.title} />
+      <PrototypeNote>
+        课程详情来自课程基础信息及其目录、试卷、课件、答疑关联数据；各页签按课程 ID 查询对应子模块。
+      </PrototypeNote>
       <Card className="mb-5">
         <div className="grid gap-5 md:grid-cols-[260px_1fr_160px] md:items-center">
           <div className="grid min-h-[150px] place-items-center rounded-ui bg-[linear-gradient(135deg,#1d4ed8,#0f766e)] p-5 text-center text-white">
@@ -834,7 +872,7 @@ export function CourseStudyPage() {
               <Tag tone="green">进度 {classCourse.progress}</Tag>
             </div>
             <h2 className="mb-2 mt-5 text-xl">{classCourse.currentLesson}</h2>
-            <PrototypeNote className="mt-3">课程没有价格；详情展示课程介绍，目录展示课程内容，试卷展示绑定的测试题库，考试仍归考试中心或班级测试处理。</PrototypeNote>
+            <PrototypeNote className="mt-3">班级课程不展示价格；课程练习在“试卷”中查看，考试和作业从各自入口参加。</PrototypeNote>
           </div>
           <Button href="#/course-lesson">继续学习</Button>
         </div>
@@ -908,7 +946,7 @@ function CoursePapers() {
         rows={coursePaperRows}
         renderRow={(paper) => <PaperPracticeRow paper={paper} />}
       />
-      <PrototypeNote className="mt-5">课程试卷与学习中心题库练习保持相同状态和操作；这里只展示当前课程关联的练习记录。</PrototypeNote>
+      <PrototypeNote className="mt-5">此处只显示与本课程关联的练习，并保留学生的练习进度和结果。</PrototypeNote>
     </div>
   );
 }
@@ -984,7 +1022,7 @@ const lessonFormats = [
     duration: "12 分钟",
     totalSeconds: 12 * 60,
     reportedSeconds: 5 * 60 + 46,
-    summary: "用于通勤或课后复听，重点回顾函数概念、表示方法和易错点。",
+    summary: "适合通勤或课后复听，重点回顾函数概念、表示方法和易错点。",
     hasPractice: true,
   },
   {
@@ -1073,9 +1111,12 @@ export function CourseLessonPage() {
     <>
       <PageHeader
         title={currentLesson.title}
-        desc="课时学习页承接班级课程、学习记录、课时练习和课程答疑。进度规则：PDF、PPT、富文本等非音视频课时，打开查看详情即视为完成；微课、慕课、音频在打开、切换课时、关闭浏览器或播放完成时上报当前播放时间节点；音视频进度按上报时间 / 总时长计算，上报时间达到或超过总时长后，课时状态为已完成。"
+        desc="视频和音频按实际播放时间记录进度；PDF、PPT和图文课时打开后记为已完成。"
         action={<Button href="#/course-study" tone="secondary">返回课程详情</Button>}
       />
+      <PrototypeNote>
+        音视频进度建议返回已学习秒数和总时长；非音视频课时的完成条件由课时类型配置决定。具体上报时机待开发确认。
+      </PrototypeNote>
       <div className="grid gap-5 md:grid-cols-[1fr_300px]">
         <Card className="p-0">
           <LessonContent lesson={currentLesson} />
@@ -1217,7 +1258,7 @@ function LessonContent({ lesson }) {
           <p>一、函数是描述两个变量之间对应关系的重要工具。每一个自变量取值，都对应唯一的函数值。</p>
           <p>二、复习时重点关注定义域、值域、解析式、图像表示和实际应用题中的变量关系。</p>
           <p>三、常见题型包括求函数值、判断函数关系、识别图像变化趋势和结合实际情境建立函数模型。</p>
-          <p>四、阅读讲义后，建议回到课时练习或题库练习中完成同类型题目巩固。</p>
+          <p>四、阅读讲义后，建议回到课时练习或试卷练习中完成同类型题目巩固。</p>
         </article>
       </div>
     );
@@ -1300,7 +1341,7 @@ export function CourseMaterialPage() {
     <>
       <PageHeader
         title="课件预览"
-        desc="承接课程资料中的查看动作，第一阶段用预览占位表达 PDF、PPT 等资料的打开体验。"
+        desc="在线查看课程中的 PDF、PPT 和图片课件。"
         action={<Button href="#/course-study" tone="secondary">返回课程详情</Button>}
       />
       <div className="grid gap-5 md:grid-cols-[1fr_280px]">
@@ -1309,8 +1350,8 @@ export function CourseMaterialPage() {
           <h2 className="mb-4 mt-5 text-xl">{material.title}</h2>
           <div className="grid min-h-[380px] place-items-center rounded-ui border border-dashed border-line bg-slate-50 text-center text-muted">
             <div>
-              <strong className="block text-lg text-slate-700">资料预览区域</strong>
-              <span className="mt-2 block">这里展示 PDF / PPT / 图片课件内容</span>
+              <strong className="block text-lg text-slate-700">{material.title}</strong>
+              <span className="mt-2 block">课件内容加载完成后可在线翻页查看</span>
             </div>
           </div>
         </Card>
@@ -1335,7 +1376,7 @@ function AskTeacherCard({ course, lesson, compact = false, className = "" }) {
     <Card className={className}>
       <h3 className="m-0 text-lg">发起提问</h3>
       <p className="mb-0 mt-2 text-sm leading-6 text-muted">
-        {compact ? "当前问题会关联到正在学习的课时。" : "从课程上下文发起提问。"}
+        {compact ? "问题将自动关联当前课时，方便老师了解学习内容。" : "选择相关课时并描述遇到的问题。"}
       </p>
       <div className="mt-4 grid gap-4">
         <label className="grid gap-2 text-sm">
@@ -1428,7 +1469,7 @@ export function QADetailPage() {
     <>
       <PageHeader
         title="答疑记录"
-        desc="答疑详情展示同一问题下的学生提问、老师回复和继续追问，仍保持轻量留言形态。"
+        desc="查看老师回复，并可继续补充问题。"
         action={<Button href="#/qa" tone="secondary">返回班级答疑</Button>}
       />
       <div className="grid gap-5 md:grid-cols-[1fr_280px]">
@@ -1513,7 +1554,9 @@ export function WrongBookPage() {
   }
 
   return (
-    <LearningSectionShell active="wrong">
+    <>
+      <PageHeader title="考试中心" />
+      <ExamCenterSubNav active="wrong" />
       <PageHeader title="错题本" />
       <Card className="mb-5">
         <div className="grid gap-4">
@@ -1604,14 +1647,14 @@ export function WrongBookPage() {
               <section className="rounded-ui border border-line bg-slate-50 p-4 leading-7">
                 <div><strong>参考答案：</strong>{practiceItem.answer}</div>
                 <div className="mt-2"><strong>题目解析：</strong>{practiceItem.analysis}</div>
-                <div className="mt-2 text-sm text-muted">本次练习只用于巩固，答错不会重复加入错题本。</div>
+                <div className="mt-2 text-sm text-muted">本次练习用于巩固错题，答错后不会重复添加记录。</div>
               </section>
             ) : null}
             <Meta><Button tone="secondary" onClick={() => setPracticeItem(null)}>关闭</Button><Button onClick={() => setPracticeItem(null)}>完成本题</Button></Meta>
           </div>
         ) : null}
       </Modal>
-    </LearningSectionShell>
+    </>
   );
 }
 
@@ -1622,7 +1665,7 @@ export function WrongQuestionPage() {
     <>
       <PageHeader
         title="错题解析"
-        desc="承接错题本中的查看解析动作，展示原题、我的答案、正确答案和解析。"
+        desc="查看原题、我的答案、参考答案和题目解析。"
         action={<Button href="#/wrong-book" tone="secondary">返回错题本</Button>}
       />
       <Card>
@@ -1646,7 +1689,7 @@ export function WrongPracticePage() {
     <>
       <PageHeader
         title="错题练习"
-        desc="错题练习用于对错题本中的题目做轻量巩固，不复刻完整试卷流程。"
+        desc="重新作答这道错题，提交后立即查看答案和解析。"
         action={<Button href="#/wrong-book" tone="secondary">返回错题本</Button>}
       />
       <Card>
@@ -1683,7 +1726,7 @@ export function LearningRecordPage() {
               className="grid min-h-[84px] place-items-center rounded-ui p-3 text-center text-sm font-semibold text-white"
               style={{ background: item.coverTone }}
             >
-              <span>图片占位</span>
+              <span>{item.title}</span>
             </div>
             <time className="text-sm text-muted">{item.time}</time>
             <div><strong>{item.title}</strong><p className="mt-2 leading-7 text-muted">{item.detail}</p><Meta><Tag tone={item.status === "已完成" ? "green" : "amber"}>{item.status}</Tag><Button href="#/course-lesson" tone="ghost">继续学习</Button></Meta></div>

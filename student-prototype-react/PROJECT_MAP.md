@@ -8,9 +8,9 @@
 ## 1. 项目概况
 
 - 项目名称：职教高考轻量化教考系统学生端前端交互原型
-- 项目路径：`D:\Document\projects\student-prototype-react`
-- 工作区路径：`D:\Document\projects`
-- Git 位置：`D:\Document\projects\student-prototype-react\.git`
+- 项目路径：`H:\Document\projects\student-prototype-react`
+- 工作区路径：`H:\Document\projects`
+- Git 位置：`H:\Document\projects\student-prototype-react\.git`
 - 技术栈：React + Tailwind + Vite
 - 路由方式：Hash 路由，不使用 `react-router`
 - 原型目标：用于客户演示的可交互学生端原型，不追求上线代码，但需要多轮可控修改。
@@ -23,8 +23,11 @@
 - 前端改动完成后优先执行 `npm.cmd run build` 验证。
 - 改完说明修改结果、关键影响和验证结果。
 - 页面以真实业务场景构建，不把开发说明或产品解释当作页面正文。
-- 与界面无关的业务说明放到 `PrototypeNote`。
-- 身份切换和标注按钮是原型展示控件，当前收纳在右上角 `演示控制` 浮层，不进入顶部主导航。
+- 与界面无关的业务说明放到 `PrototypeNote`；标注由全局独立覆盖层展示，不参与页面布局。
+- 学生可见提示按真实使用场景表达，说明当前结果和下一步操作，不出现原型、验证、样例、占位符或后续扩展等研发文案。
+- 身份切换和标注按钮是原型展示控件，当前收纳在右上角 `场景预览` 浮层，不进入顶部主导航。
+- 预览身份包含游客、认证审核中、认证未通过、班级学生和教师。
+- 教师身份默认不加入学生班级，不能进入学生学习和考试功能；顶部主菜单额外显示“教师端”，跳转 `#/teacher`。
 - 指定页面修改时，优先按本文定位目标文件；只有全局一致性调整时才做全局搜索。
 
 ---
@@ -46,7 +49,9 @@ student-prototype-react/
 │     ├─ ExamPages.jsx
 │     ├─ AdminPages.jsx
 │     ├─ LearningPages.jsx
-│     └─ ProfilePages.jsx
+│     ├─ ProfilePages.jsx
+│     ├─ TeacherPages.jsx
+│     └─ ServicePages.jsx
 ├─ DESIGN_SYSTEM.md
 ├─ 交接.md
 ```
@@ -65,24 +70,26 @@ student-prototype-react/
   - 顶部右侧账号入口：游客显示头像占位和登录/注册；登录后显示头像、用户名和下拉菜单。
   - 登录后账号下拉包含：个人中心、退出登录。
   - 顶部主导航不展示个人中心；个人中心入口只通过账号下拉进入。
-  - `演示控制` 浮层在右上角，包含身份切换和标注开关。
-  - 全局拦截未登录/未入校用户进入学习中心、题库练习、考试中心等学生功能区，按身份提示登录/注册或进入个人中心。
+  - `场景预览` 浮层在右上角，包含身份切换和标注开关。
+  - 标注开启后，页面中的 `PrototypeNote` 以编号浮点锚定对应元素，点击或悬停展开说明；标注层独立于业务界面，不撑开页面间距。
+  - 需求标注优先说明数据来源、权限、字段含义和计算方式；接口不明确时使用“待开发确认”。
+  - 全局拦截未登录/未入校用户进入学习中心、试卷练习、考试中心等学生功能区，按身份提示登录/注册或进入个人中心。
   - `SchoolApplyModal` 仅用于个人中心中再次申请入校，不再作为独立申请加入学校入口。
 
 - `src/components/examWorkflows.jsx`
   - 共享考试/测试答题与解析组件。
   - 包含：考试题组 mock、题目状态样式、题号导航、题号状态图例、题型输入组件、题组标准化工具。
-  - 正式考试、班级测试答题和班级测试解析复用该文件的题号导航与答题组件。
+  - 正式考试、作业答题和作业解析复用该文件的题号导航与答题组件。
 
 - `src/data/mockData.js`
   - 全部 mock 数据。
-  - 包含导航、资讯、推荐课程、文化课科目、专业大类、试卷、考试、当前班级、班级测试、课程、课时目录、课程试卷、课件、题库练习记录、答疑记录、学习记录、错题等。
+  - 包含导航、资讯、推荐课程、文化课科目、专业大类、试卷、考试、当前班级、作业、课程、课时目录、课程试卷、课件、试卷练习记录、答疑记录、学习记录、错题等。
 
 - `src/pages/HomePages.jsx`
   - 首页、资讯中心、推荐课程试看页。
 
 - `src/pages/PaperPages.jsx`
-  - 题库练习、试卷答题页、试卷解析页。
+  - 试卷练习、试卷答题页、试卷解析页。
 
 - `src/pages/ExamPages.jsx`
   - 考试中心、考试记录、考试详情、正式考试答题页、考试成绩与解析页、考试排行页。
@@ -92,10 +99,16 @@ student-prototype-react/
   - 包含：后台首页、平台资讯管理、资讯新建、资讯编辑、资讯预览、首页推荐课程管理。
 
 - `src/pages/LearningPages.jsx`
-  - 学习中心、班级档案、班级课程、班级测试、班级测试安排、班级测试答题、班级测试解析、课程学习详情、课时播放、课件预览、题库练习记录、班级答疑、答疑详情、错题本、错题解析、错题练习、学习记录。
+  - 学习中心、班级档案、班级课程、作业、作业安排、作业答题、作业解析、课程学习详情、课时播放、课件预览、试卷练习记录、班级答疑、答疑详情、错题本、错题解析、错题练习、学习记录。
 
 - `src/pages/ProfilePages.jsx`
   - 个人中心、登录/注册。
+- `src/pages/TeacherPages.jsx`
+  - 教师端前台功能页。
+  - 一级功能包含：教学资源、课程管理、试卷管理、班级管理。
+  - 班级管理下包含：我的班级、作业、学生学情、答疑。
+- `src/pages/ServicePages.jsx`
+  - 报考指南、虚拟实训占位页面。
 
 - `交接.md`
   - 离职交接文档。
@@ -115,6 +128,8 @@ student-prototype-react/
 #/                  HomePages.jsx / HomePage
 #/news              HomePages.jsx / NewsPage
 #/course-preview    HomePages.jsx / CoursePreviewPage
+#/application-guide ServicePages.jsx / ApplicationGuidePage
+#/virtual-training  ServicePages.jsx / VirtualTrainingPage
 
 考试区
 #/exams             ExamPages.jsx / ExamCenterPage
@@ -123,12 +138,15 @@ student-prototype-react/
 #/exam-answer       ExamPages.jsx / ExamAnswerPage
 #/exam-analysis     ExamPages.jsx / ExamAnalysisPage
 #/exam-rank         ExamPages.jsx / ExamRankPage
-
-学习中心区
-#/learning          LearningPages.jsx / LearningCenterPage
 #/papers            LearningPages.jsx / PaperPracticePage
 #/paper-answer      PaperPages.jsx / PaperAnswerPage
 #/paper-analysis    PaperPages.jsx / PaperAnalysisPage
+#/wrong-book        LearningPages.jsx / WrongBookPage
+#/wrong-question    LearningPages.jsx / WrongQuestionPage
+#/wrong-practice    LearningPages.jsx / WrongPracticePage
+
+学习中心区
+#/learning          LearningPages.jsx / LearningCenterPage
 #/class-detail      LearningPages.jsx / ClassDetailPage
 #/class-courses     LearningPages.jsx / ClassCoursesPage
 #/course-study      LearningPages.jsx / CourseStudyPage
@@ -148,6 +166,7 @@ student-prototype-react/
 账号与权限区
 #/profile           ProfilePages.jsx / ProfilePage
 #/login             ProfilePages.jsx / LoginPage
+#/teacher           TeacherPages.jsx / TeacherDashboardPage
 
 运营后台区
 #/admin                       AdminPages.jsx / AdminDashboardPage
@@ -167,13 +186,15 @@ student-prototype-react/
 ### 首页与公开访问
 
 - 首页 `#/` 是公开访问页。
-- 首页包含后台轮播图、学习中心/考试中心快捷入口、推荐课程、资讯摘要。
+- 首页包含后台轮播图、学习中心/考试中心/报考指南/虚拟实训快捷入口、推荐课程、资讯摘要。
 - 首页轮播由后台配置，当前 mock 数据保留图片和跳转链接字段；前端轮播只做图片展示，不触发跳转。
-- 首页入口卡片为：学习中心、考试中心。
-- 两个入口卡片统一校验学生身份：
+- 首页入口卡片为：学习中心、考试中心、报考指南、虚拟实训。
+- 学习中心、考试中心和虚拟实训入口统一校验学生身份：
   - 游客点击提示登录/注册。
   - 已注册但未认证通过或认证未通过用户提示未加入学校，并引导进入个人中心。
   - 已入校学生进入对应中心。
+- 报考指南为公开访问模块，不要求登录或入校认证。
+- 报考指南和虚拟实训当前使用占位页面，后续根据业务内容继续完善。
 - 推荐课程为后台运营配置，当前按视频试看处理。
 - 推荐课程在首页展示为 4 列 x 3 行平铺卡片，当前 mock 共 12 条。
 - 推荐课程卡片为上图下信息结构：
@@ -188,13 +209,13 @@ student-prototype-react/
 - 资讯类型固定枚举：政策解读、考试通知、平台公告、备考指南。
 - 考试通知只作为资讯发布，不替代考试中心参加考试流程。
 
-### 题库练习
+### 试卷练习
 
-- 题库练习 `#/papers` 归入学习中心，不再作为顶部独立模块。
+- 试卷练习 `#/papers` 归入考试中心，不再作为学习中心子模块。
 - 筛选只保留四项：语文、数学、英语、专业课。
 - 专业课默认展示当前学生所在班级/专业已授权的题库资源，不再让学生选择 19 个专业大类。
-- 游客和注册用户由全局权限拦截，不能进入题库练习。
-- 班级学生可进入题库练习并作答有权限的试卷。
+- 游客和注册用户由全局权限拦截，不能进入试卷练习。
+- 班级学生可进入试卷练习并作答有权限的试卷。
 - 试卷列表字段：
   - 试卷名称，标题旁展示官方/本校标签。
   - 分类。
@@ -214,9 +235,9 @@ student-prototype-react/
 ### 试卷答题与解析
 
 - 试卷答题页 `#/paper-answer` 支持开始练习、继续练习、重新开始。
-- 题库练习支持中途退出，按钮文案为“保存退出”。
+- 试卷练习支持中途退出，按钮文案为“保存退出”。
 - 试卷答题页展示本次已用时间统计。
-- 题库练习完成后进入 `#/paper-analysis`。
+- 试卷练习完成后进入 `#/paper-analysis`。
 - 试卷结构按真实试卷组织：
   - 一、单选题
   - 二、多选题
@@ -306,16 +327,14 @@ student-prototype-react/
 - 学习中心默认页是“我的课程”，不是学习任务摘要或综合工作台。
 - 学习中心首页采用左侧菜单 + 右侧课程卡片平铺：
   - 左侧展示学生头像占位、姓名、学校、班级。
-  - 左侧菜单：我的课程、题库练习、班级测试、学习记录、错题本。
+  - 左侧菜单：我的课程、作业、学习记录。
   - 左侧菜单均展示对应数量统计。
   - 右侧默认展示当前学生被学校/老师安排的课程卡片。
 - 学习中心总标题由统一布局展示，所有一级子页保持同一顶部占位，切换时左侧菜单不漂移。
 - 学习中心一级子页保持统一布局，均展示同一套左侧学生信息和导航：
   - `#/learning`
-  - `#/papers`
   - `#/class-exam`
   - `#/learning-record`
-  - `#/wrong-book`
 - 我的课程卡片展示：
   - 本校 / 官方标签。
   - 课程名称。
@@ -328,16 +347,16 @@ student-prototype-react/
   - 开始学习 / 继续学习 / 复习课程。
 - 我的课程卡片不展示课程简介；简介类内容只进入课程学习详情的“介绍”页签。
 - 学习中心首页不再展示“学习任务摘要”“老师安排的学习”等摘要模块。
-- 课程试卷、班级测试、课程资料不作为学习中心一级入口，统一放回课程详情。
-- 考试相关功能不进入学习中心；考试记录归考试中心。
+- 课程试卷、作业、课程资料不作为学习中心首页一级入口，统一放回课程详情或对应模块。
+- 考试相关功能不进入学习中心；考试记录、试卷练习和错题本归考试中心。
 - 班级课程 `#/class-courses` 仍保留为完整课程列表页，点击进入课程学习详情；列表包含分页控件。
-- 题库练习 `#/papers` 是学习中心下的题库练习页，承接题库筛选、答题和解析能力。
-- 题库练习筛选只保留：
+- 试卷练习 `#/papers` 是考试中心下的试卷练习页，承接试卷筛选、答题和解析能力。
+- 试卷练习筛选只保留：
   - 语文。
   - 数学。
   - 英语。
   - 专业课。
-- 题库练习列表字段：
+- 试卷练习列表字段：
   - 试卷名称。
   - 科目。
   - 题目数量。
@@ -345,11 +364,11 @@ student-prototype-react/
   - 总分。
   - 状态。
   - 操作。
-- 题库练习列表上方展示题库试卷、进行中、已完成，不重复展示当前科目。
-- 快速练习/随机组卷需求暂不明确，当前题库练习页不展示快速练习入口。
-- 题库练习列表点击试卷名称进入继续练习或解析。
-- 题库练习列表包含分页控件，当前每页条数可选 10、20、30。
-- 题库练习答题与解析复用已有页面：
+- 试卷练习列表上方展示练习试卷、进行中、已完成，不重复展示当前科目。
+- 快速练习/随机组卷需求暂不明确，当前试卷练习页不展示快速练习入口。
+- 试卷练习列表点击试卷名称进入继续练习或解析。
+- 试卷练习列表包含分页控件，当前每页条数可选 10、20、30。
+- 试卷练习答题与解析复用已有页面：
   - 未完成/继续练习：`#/paper-answer`
   - 已完成/查看解析：`#/paper-analysis`
 - 学习记录是个人学习数据，高于班级，但当前阶段不提供学校/班级筛选。
@@ -381,7 +400,7 @@ student-prototype-react/
 - 非音视频课时（PDF、PPT、富文本）打开查看详情即视为已完成。
 - 音视频课时在打开、切换课时、关闭浏览器或播放完成时上报当前播放时间节点。
 - 音视频课时进度按上报时间 / 总时长计算；上报时间大于等于课时时长时，课时状态为已完成。
-- 课时进度规则属于原型标注，不作为学生可见正文展示。
+- 课时进度规则属于需求标注，不作为学生可见正文展示。
 - 音视频课时可通过“课时练习”打开课堂练习弹窗。
 - 课堂练习弹窗一次展示一道题。
 - 每题作答后展示参考答案和题目解析。
@@ -389,47 +408,48 @@ student-prototype-react/
 - 课时播放页不展示“保存进度”按钮。
 - 课件预览页 `#/course-material` 承接课程资料中的“查看”动作，当前用 PDF/PPT/图片资料预览占位表达。
 
-### 班级测试
+### 作业
 
-- 班级测试 `#/class-exam` 是课程/班级内部测试的现有承接页。
-- 班级测试不作为学习中心首页一级入口；学生主要从课程详情中的课程测试进入。
-- 班级测试不属于考试中心，不进入考试中心筛选、详情、排行体系。
-- 班级测试没有课程分类、专业分类或题型分类。
-- 班级测试列表包含分页控件。
-- 班级测试列表采用卡片式测试安排结构，字段为：
-  - 测试名称。
+- 作业 `#/class-exam` 是教师面向班级布置的非正式测评任务。
+- 作业不作为学习中心首页一级入口；学生主要从学习中心侧栏或课程上下文进入。
+- 作业不属于正式考试中心，不进入正式考试筛选、详情、排行体系。
+- 作业没有课程分类、专业分类或题型分类。
+- 作业列表包含分页控件。
+- 作业列表采用卡片式安排结构，字段为：
+  - 作业名称。
   - 时长。
   - 总题数。
   - 试卷总分。
   - 开始时间。
   - 剩余时间。
-  - 测试状态。
+  - 作业状态。
   - 学生状态。
   - 操作。
-- 班级测试的考试状态固定为：
+- 作业状态固定为：
   - 未开始。
   - 进行中。
   - 已结束。
-- 班级测试的学生状态包括：
+- 作业的学生状态包括：
   - 未开始，默认可不显示。
   - 缺考。
   - 已交卷。
   - 已出分。
-- 班级测试按钮由“测试状态 + 学生状态”共同决定：
-  - 进行中 + 未交卷：开始测试。
+- 作业按钮由“作业状态 + 学生状态”共同决定：
+  - 进行中 + 未交卷：开始作业。
   - 进行中 + 已交卷：查看记录。
   - 已结束 + 已出分：查看解析。
   - 已结束 + 已交卷：等待出分。
   - 已结束 + 缺考：查看安排。
   - 未开始：查看安排。
-- 班级测试安排页 `#/class-exam-detail` 展示单场测试基础字段和参加入口。
-- 班级测试答题页 `#/class-exam-answer` 复用共享考试答题组件，支持单选、多选、判断、填空、简答、综合题。
-- 班级测试解析页 `#/class-exam-analysis` 复用共享考试题号导航和解析结构。
-- 班级测试保留基础作答、提交、判卷流程，但不做正式考试排行和跨校公示。
+- 作业安排页 `#/class-exam-detail` 展示单项作业基础字段和参加入口。
+- 作业答题页 `#/class-exam-answer` 复用共享考试答题组件，支持单选、多选、判断、填空、简答、综合题。
+- 作业解析页 `#/class-exam-analysis` 复用共享考试题号导航和解析结构。
+- 作业保留基础作答、提交、判卷流程，但不做正式考试排行和跨校公示。
 
 ### 错题本
 
 - 错题本 `#/wrong-book` 汇总课程、试卷和考试中的错题。
+- 错题本归入考试中心子模块，不再放在学习中心侧栏。
 - 错题本支持筛选：
   - 科目：全部、语文、数学、英语、当前班级专业大类名称。
   - 题型：全部、单选题、多选题、判断题、填空题、计算题等。
@@ -467,6 +487,7 @@ student-prototype-react/
 
 - 登录/注册：`#/login`
 - 个人中心：`#/profile`
+- 教师端：`#/teacher`
 - 注册时需要选择要加入的学校和目标专业；学校来自平台学校列表，目标专业为 19 个职教高考专业大类。
 - 右上角账号入口：
   - 游客：头像占位 + 登录/注册。
@@ -490,7 +511,13 @@ student-prototype-react/
 
 ### 运营后台
 
-- 运营后台入口在右上角 `演示控制` 浮层中，点击“进入运营后台”进入 `#/admin`。
+- 教师身份顶部主菜单显示“教师端”，进入 `#/teacher`；运营后台仍只通过 `场景预览` 浮层进入。
+- 教师端 `#/teacher` 按后端教学功能前置实现，不展示待办事项统计。
+- 教师端一级功能：
+  - 教学资源：查看学校授权的课程、课件、题库、试卷资源。
+  - 课程管理：组课、维护课程目录、课时、课件、课程试卷和课程答疑入口。
+  - 试卷管理：查看可用试卷，区分练习、作业和考试用卷场景。
+  - 班级管理：教师负责班级下的我的班级、作业、学生学情、答疑。
 - 运营后台不套用学生端导航和身份壳层。
 - 平台资讯管理 `#/admin/news`：
   - 资讯不提供封面。
@@ -517,7 +544,7 @@ student-prototype-react/
 - 课时状态只使用：未开始、进行中、已完成。
 - 试卷状态只使用：未开始、进行中、已完成。
 - 考试中心模拟考试状态独立于课程/课时/试卷状态，可使用：未开始、进行中、评审中、已公示。
-- 班级测试学生状态独立，可使用：未开始、缺考、已交卷、已出分。
+- 作业学生状态独立，可使用：未开始、缺考、已交卷、已出分。
 - 答疑状态不单独存枚举，当前由是否存在老师回复推导为未回复/已回复。
 - 当前状态字段仍分散在 `src/data/mockData.js` 和页面 helper 中；后续建议抽 `src/constants/status.js` 统一管理枚举、颜色、动作文案和旧状态归一化。
 - 不应再新增同义状态，例如：学习中、已学完、待完成。
@@ -528,9 +555,10 @@ student-prototype-react/
 
 - 改首页宣传文案：`src/pages/HomePages.jsx` / `HomePage`
 - 改首页推荐课程卡片：`src/pages/HomePages.jsx` / `HomePage`
+- 改报考指南或虚拟实训占位页：`src/pages/ServicePages.jsx`
 - 改资讯中心列表或弹窗：`src/pages/HomePages.jsx` / `NewsPage`、`NewsRichText`
 - 改推荐课程试看页：`src/pages/HomePages.jsx` / `CoursePreviewPage`
-- 改题库练习筛选、列表：`src/pages/PaperPages.jsx` / `PaperCenterPage`
+- 改试卷练习筛选、列表：`src/pages/PaperPages.jsx` / `PaperCenterPage`
 - 改试卷答题页：`src/pages/PaperPages.jsx` / `PaperAnswerPage`
 - 改试卷解析页：`src/pages/PaperPages.jsx` / `PaperAnalysisPage`
 - 改考试中心列表、筛选：`src/pages/ExamPages.jsx` / `ExamCenterPage`
@@ -547,11 +575,12 @@ student-prototype-react/
 - 改课程学习详情：`src/pages/LearningPages.jsx` / `CourseStudyPage`
 - 改课程课时播放：`src/pages/LearningPages.jsx` / `CourseLessonPage`
 - 改课程资料预览：`src/pages/LearningPages.jsx` / `CourseMaterialPage`
-- 改题库练习记录：`src/pages/LearningPages.jsx` / `PaperPracticePage`
-- 改班级测试：`src/pages/LearningPages.jsx` / `ClassExamPage`
-- 改班级测试安排：`src/pages/LearningPages.jsx` / `ClassExamDetailPage`
-- 改班级测试答题：`src/pages/LearningPages.jsx` / `ClassExamAnswerPage`
-- 改班级测试解析：`src/pages/LearningPages.jsx` / `ClassExamAnalysisPage`
+- 改试卷练习记录：`src/pages/LearningPages.jsx` / `PaperPracticePage`
+- 改作业：`src/pages/LearningPages.jsx` / `ClassExamPage`
+- 改作业安排：`src/pages/LearningPages.jsx` / `ClassExamDetailPage`
+- 改作业答题：`src/pages/LearningPages.jsx` / `ClassExamAnswerPage`
+- 改作业解析：`src/pages/LearningPages.jsx` / `ClassExamAnalysisPage`
+- 改教师端：`src/pages/TeacherPages.jsx` / `TeacherDashboardPage`
 - 改班级答疑：`src/pages/LearningPages.jsx` / `QAPage`
 - 改答疑详情：`src/pages/LearningPages.jsx` / `QADetailPage`
 - 改错题本：`src/pages/LearningPages.jsx` / `WrongBookPage`
@@ -563,7 +592,7 @@ student-prototype-react/
 - 改入校申请弹窗：`src/components/ui.jsx` / `SchoolApplyModal`
 - 改登录注册：`src/pages/ProfilePages.jsx` / `LoginPage`
 - 改 mock 数据：`src/data/mockData.js`
-- 改顶部栏、账号入口、演示控制、通用组件：`src/components/ui.jsx`
+- 改顶部栏、账号入口、场景预览、通用组件：`src/components/ui.jsx`
 - 改路由：`src/App.jsx`
 
 ---

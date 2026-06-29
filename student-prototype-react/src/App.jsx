@@ -23,12 +23,16 @@ import {
   WrongQuestionPage,
 } from "./pages/LearningPages";
 import { LoginPage, ProfilePage } from "./pages/ProfilePages";
+import { ApplicationGuidePage, VirtualTrainingPage } from "./pages/ServicePages";
+import { TeacherDashboardPage } from "./pages/TeacherPages";
 import { useEffect, useState } from "react";
 
 const routes = {
   "#/": HomePage,
   "#/news": NewsPage,
   "#/course-preview": CoursePreviewPage,
+  "#/application-guide": ApplicationGuidePage,
+  "#/virtual-training": VirtualTrainingPage,
   "#/papers": PaperPracticePage,
   "#/paper-answer": PaperAnswerPage,
   "#/paper-analysis": PaperAnalysisPage,
@@ -57,6 +61,7 @@ const routes = {
   "#/learning-record": LearningRecordPage,
   "#/profile": ProfilePage,
   "#/login": LoginPage,
+  "#/teacher": TeacherDashboardPage,
   "#/admin": AdminDashboardPage,
   "#/admin/news": AdminNewsPage,
   "#/admin/news/new": AdminNewsCreatePage,
