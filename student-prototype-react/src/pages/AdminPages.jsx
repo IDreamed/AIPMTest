@@ -1,12 +1,11 @@
 import { useMemo, useState } from "react";
 import { categories, news, recommendedCourses } from "../data/mockData";
-import { Button, Card, DataTable, Meta, Modal, PageHeader, Stat, Tag } from "../components/ui";
+import { Button, Card, DataTable, Meta, Modal, PageHeader, Pagination, Tag } from "../components/ui";
 
 const newsTypes = ["全部", "政策解读", "考试通知", "平台公告", "备考指南"];
 const publishStatuses = ["全部", "已发布", "草稿", "已下架"];
 const courseShelfStatuses = ["全部", "上架", "下架"];
 const courseSubjectOptions = ["全部", "语文", "数学", "英语", ...categories.map((item) => item.name)];
-const recommendedCourseLimit = 12;
 
 const adminNews = news.map((item, index) => ({
   ...item,
@@ -29,13 +28,7 @@ export function AdminDashboardPage() {
   return (
     <AdminShell>
       <PageHeader title="运营后台" />
-      <div className="grid gap-4 md:grid-cols-4">
-        <Stat label="已发布资讯" value={adminNews.filter((item) => item.status === "已发布").length} />
-        <Stat label="草稿资讯" value={adminNews.filter((item) => item.status === "草稿").length} />
-        <Stat label="推荐课程" value={courseLibrary.filter((item) => item.status === "推荐中").length} />
-        <Stat label="课程库课程" value={courseLibrary.length} />
-      </div>
-      <div className="mt-6 grid gap-5 md:grid-cols-2">
+      <div className="grid gap-5 md:grid-cols-2">
         <Card>
           <h2 className="m-0 text-lg">平台资讯管理</h2>
           <p className="mt-3 leading-7 text-muted">维护首页资讯、资讯中心列表和发布状态。</p>
@@ -126,17 +119,17 @@ export function AdminNewsPage() {
           </>
         )}
       />
-      <SimplePagination
+      <Pagination
         label="资讯列表"
         page={currentPage}
         pageSize={pageSize}
         total={rows.length}
-        totalPages={totalPages}
         onPageChange={setPage}
         onPageSizeChange={(size) => {
           setPageSize(size);
           setPage(1);
         }}
+        pageSizeOptions={[10, 20, 30]}
       />
       <AdminActionModal action={action} onClose={() => setAction(null)} />
     </AdminShell>
@@ -195,7 +188,6 @@ export function AdminRecommendCoursesPage() {
   const [pickerOpen, setPickerOpen] = useState(false);
   const [action, setAction] = useState(null);
   const [sortCourse, setSortCourse] = useState(null);
-  const recommendedCount = courseLibrary.filter((item) => item.status === "推荐中").length;
 
   const rows = useMemo(() => {
     return courseLibrary.filter((item) => item.status === "推荐中").filter((item) => matchCourseFilters(item, { subject, shelfStatus, keyword }));
@@ -205,12 +197,8 @@ export function AdminRecommendCoursesPage() {
     <AdminShell>
       <PageHeader title="首页推荐课程管理" action={<Button onClick={() => setPickerOpen(true)}>从课程库添加</Button>} />
       <Card className="mb-5">
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <h2 className="m-0 text-lg">推荐位容量</h2>
-            <p className="mb-0 mt-2 text-sm text-muted">首页推荐课程最多展示 {recommendedCourseLimit} 个，按排序值从大到小平铺展示；试看时长统一为每课时 5 分钟。</p>
-          </div>
-          <Tag tone={recommendedCount >= recommendedCourseLimit ? "amber" : "blue"}>{recommendedCount} / {recommendedCourseLimit}</Tag>
+        <div>
+          <h2 className="m-0 text-lg">推荐位规则</h2>
         </div>
       </Card>
       <Card className="mb-5 p-4">
@@ -302,28 +290,6 @@ function SelectFilter({ label, options, value, onChange }) {
   );
 }
 
-function SimplePagination({ label, page, pageSize, total, totalPages, onPageChange, onPageSizeChange }) {
-  const start = total ? (page - 1) * pageSize + 1 : 0;
-  const end = Math.min(total, page * pageSize);
-  return (
-    <Card className="mt-4">
-      <div className="flex items-center justify-between gap-4">
-        <span className="text-sm text-muted">{label}：第 {page} / {totalPages} 页，显示 {start}-{end} 条，共 {total} 条</span>
-        <div className="flex items-center gap-2">
-          <label className="flex items-center gap-2 text-sm text-muted">
-            每页
-            <select className="min-h-10 rounded-ui border border-line bg-white px-3 text-slate-700" value={pageSize} onChange={(event) => onPageSizeChange(Number(event.target.value))}>
-              {[10, 20, 30].map((size) => <option key={size} value={size}>{size} 条</option>)}
-            </select>
-          </label>
-          <Button tone="secondary" onClick={() => onPageChange(Math.max(1, page - 1))}>上一页</Button>
-          <Button tone="secondary" onClick={() => onPageChange(Math.min(totalPages, page + 1))}>下一页</Button>
-        </div>
-      </div>
-    </Card>
-  );
-}
-
 function NewsEditor({ item }) {
   const [notice, setNotice] = useState(null);
 
@@ -372,8 +338,8 @@ function CoursePickerModal({ open, onClose }) {
     <Modal className="w-[min(1080px,100%)]" open={open} title="从课程库选择课程" onClose={onClose}>
       <div className="grid gap-5 text-sm">
         <div className="rounded-ui border border-line bg-slate-50 p-4">
-          <strong>首页推荐位：{courseLibrary.filter((item) => item.status === "推荐中").length} / {recommendedCourseLimit}</strong>
-          <p className="mb-0 mt-2 text-muted">只可选择已上架课程。达到 {recommendedCourseLimit} 个后，需要先下架或移除已有推荐课程。添加时只配置试看课时数，每课时试看 5 分钟。</p>
+          <strong>选择推荐课程</strong>
+          <p className="mb-0 mt-2 text-muted">只可选择已上架课程。添加时只配置试看课时数，每课时试看 5 分钟。</p>
         </div>
         <Card className="p-4">
           <div className="grid gap-3 md:grid-cols-[220px_1fr]">
@@ -435,7 +401,7 @@ function CoursePickerModal({ open, onClose }) {
           </Card>
         ) : null}
         <div className="flex items-center justify-between gap-4 rounded-ui border border-line bg-white p-4">
-          <span className="text-sm text-muted">第 {currentPage} / {totalPages} 页，共 {rows.length} 门上架课程</span>
+          <span className="text-sm text-muted">第 {currentPage} / {totalPages} 页</span>
           <div className="flex gap-2">
             <Button tone="secondary" onClick={() => setPage((value) => Math.max(1, value - 1))}>上一页</Button>
             <Button tone="secondary" onClick={() => setPage((value) => Math.min(totalPages, value + 1))}>下一页</Button>

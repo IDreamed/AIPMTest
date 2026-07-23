@@ -24,7 +24,22 @@ import {
 } from "./pages/LearningPages";
 import { LoginPage, ProfilePage } from "./pages/ProfilePages";
 import { ApplicationGuidePage, VirtualTrainingPage } from "./pages/ServicePages";
-import { TeacherDashboardPage } from "./pages/TeacherPages";
+import {
+  TeacherAssignmentEditorPage,
+  TeacherAssignmentsPage,
+  TeacherAssignmentStatsPage,
+  TeacherAssignCoursePage,
+  TeacherClassesPage,
+  TeacherCourseBuilderPage,
+  TeacherCoursesPage,
+  TeacherGradingPage,
+  TeacherPapersPage,
+  TeacherQAPage,
+  TeacherQuestionBankPage,
+  TeacherResourcesPage,
+  TeacherStudentDetailPage,
+  TeacherStudentsPage,
+} from "./pages/TeacherPages";
 import { useEffect, useState } from "react";
 
 const routes = {
@@ -61,7 +76,21 @@ const routes = {
   "#/learning-record": LearningRecordPage,
   "#/profile": ProfilePage,
   "#/login": LoginPage,
-  "#/teacher": TeacherDashboardPage,
+  "#/teacher": TeacherResourcesPage,
+  "#/teacher/resources": TeacherResourcesPage,
+  "#/teacher/question-bank": TeacherQuestionBankPage,
+  "#/teacher/course-builder": TeacherCourseBuilderPage,
+  "#/teacher/courses": TeacherCoursesPage,
+  "#/teacher/papers": TeacherPapersPage,
+  "#/teacher/classes": TeacherClassesPage,
+  "#/teacher/assign-course": TeacherAssignCoursePage,
+  "#/teacher/assignments": TeacherAssignmentsPage,
+  "#/teacher/assignment-edit": TeacherAssignmentEditorPage,
+  "#/teacher/grading": TeacherGradingPage,
+  "#/teacher/assignment-stats": TeacherAssignmentStatsPage,
+  "#/teacher/students": TeacherStudentsPage,
+  "#/teacher/student-detail": TeacherStudentDetailPage,
+  "#/teacher/qa": TeacherQAPage,
   "#/admin": AdminDashboardPage,
   "#/admin/news": AdminNewsPage,
   "#/admin/news/new": AdminNewsCreatePage,

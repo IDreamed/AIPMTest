@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useId, useRef, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useId, useState } from "react";
 import { navItems, platformSchools, professionalCategories, prototypeRoles } from "../data/mockData";
 
 const PrototypeRoleContext = createContext(null);
@@ -15,22 +15,19 @@ export function AppShell({ children }) {
   const [open, setOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
   const [prototypeControlsOpen, setPrototypeControlsOpen] = useState(false);
+  const [annotationPanelOpen, setAnnotationPanelOpen] = useState(false);
+  const [annotations, setAnnotations] = useState([]);
   const [schoolApplyOpen, setSchoolApplyOpen] = useState(false);
   const [accessPrompt, setAccessPrompt] = useState(null);
-  const [annotations, setAnnotations] = useState([]);
   const [roleKey, setRoleKey] = useState(() => window.localStorage.getItem("prototype-role") || "visitor");
-  const [showNotes, setShowNotes] = useState(() => window.localStorage.getItem("prototype-notes") === "true");
   const hash = window.location.hash || "#/";
   const role = prototypeRoles.find((item) => item.key === roleKey) || prototypeRoles[0];
   const blockedStudentRoute = isProtectedStudentRoute(hash) && role.key !== "student";
+  const brandSubtitle = role.key === "teacher" ? "教师端教学平台" : "学生端学习平台";
 
   useEffect(() => {
     window.localStorage.setItem("prototype-role", role.key);
   }, [role.key]);
-
-  useEffect(() => {
-    window.localStorage.setItem("prototype-notes", String(showNotes));
-  }, [showNotes]);
 
   useEffect(() => {
     setAccountOpen(false);
@@ -71,21 +68,19 @@ export function AppShell({ children }) {
       roleKey: role.key,
       setRoleKey,
       roles: prototypeRoles,
-      showNotes,
-      setShowNotes,
       openSchoolApply,
       requestStudentAreaAccess,
       registerAnnotation,
       unregisterAnnotation,
     }}>
-      <div className="min-h-screen bg-wash" onClickCapture={handleShellClickCapture}>
-        <header className="sticky top-0 z-20 border-b border-line bg-white/95 backdrop-blur">
+      <div className="min-h-screen bg-[linear-gradient(180deg,#f7f9fc_0%,#f5f7fb_260px,#f5f7fb_100%)]" onClickCapture={handleShellClickCapture}>
+        <header className="sticky top-0 z-20 border-b border-slate-200/80 bg-white/90 shadow-[0_1px_0_rgba(15,23,42,0.03)] backdrop-blur">
           <div className="mx-auto flex min-h-[68px] w-[calc(100%_-_40px)] max-w-[1180px] flex-wrap items-center justify-between gap-4">
             <a href="#/" className="flex min-w-[210px] items-center gap-3">
-              <span className="grid h-9 w-9 place-items-center rounded-ui bg-gradient-to-br from-blue-600 to-teal-700 font-bold text-white">职</span>
+              <span className="grid h-10 w-10 place-items-center rounded-ui bg-gradient-to-br from-blue-600 to-teal-600 font-bold text-white shadow-[0_10px_24px_rgba(37,99,235,0.18)]">职</span>
               <span>
-                <strong className="block text-base">职教高考学习平台</strong>
-                <span className="text-xs text-muted">学生端学习平台</span>
+                <strong className="block text-[15px] font-semibold leading-5 text-slate-950">职教高考学习平台</strong>
+                <span className="text-xs leading-5 text-muted">{brandSubtitle}</span>
               </span>
             </a>
             <nav className={`${open ? "flex" : "hidden"} order-3 w-full gap-1 overflow-x-auto md:order-none md:flex md:w-auto`}>
@@ -93,8 +88,8 @@ export function AppShell({ children }) {
                 <a
                   key={item.path}
                   href={item.path}
-                  className={`rounded-ui px-3 py-2 text-slate-700 hover:bg-blue-50 hover:text-blue-600 ${
-                    activeNav(hash, item.path) ? "bg-blue-50 text-blue-600" : ""
+                  className={`rounded-ui px-3 py-2 text-sm font-medium transition ${
+                    activeNav(hash, item.path) ? "bg-blue-50 text-blue-700 shadow-[inset_0_0_0_1px_rgba(37,99,235,0.08)]" : "text-slate-600 hover:bg-slate-50 hover:text-slate-950"
                   }`}
                 >
                   {item.label}
@@ -172,16 +167,16 @@ export function AppShell({ children }) {
                       <option key={item.key} value={item.key}>{item.label}</option>
                     ))}
                   </select>
-                  <PrototypeNote>
-                    身份用于预览不同权限场景；教师账号默认不关联学生班级，顶部菜单额外显示“教师端”。
-                  </PrototypeNote>
                 </label>
                 <button
-                  className={`min-h-10 rounded-ui border px-3 py-2 text-sm ${showNotes ? "border-amber-500 bg-amber-50 text-amber-700" : "border-line bg-white text-slate-700"}`}
-                  onClick={() => setShowNotes((value) => !value)}
+                  className="min-h-10 rounded-ui border border-line bg-white px-3 py-2 text-sm text-slate-700 hover:bg-slate-50"
+                  onClick={() => {
+                    setPrototypeControlsOpen(false);
+                    setAnnotationPanelOpen(true);
+                  }}
                   type="button"
                 >
-                  {showNotes ? "隐藏标注" : `显示标注${annotations.length ? ` (${annotations.length})` : ""}`}
+                  页面标注{annotations.length ? ` (${annotations.length})` : ""}
                 </button>
                 <a
                   className="inline-flex min-h-10 items-center justify-center rounded-ui border border-line bg-white px-3 py-2 text-sm text-slate-700 hover:bg-slate-50"
@@ -204,7 +199,7 @@ export function AppShell({ children }) {
         </div>
         <SchoolApplyModal open={schoolApplyOpen} onClose={() => setSchoolApplyOpen(false)} />
         <AccessPromptModal prompt={accessPrompt} onClose={() => setAccessPrompt(null)} />
-        <AnnotationLayer annotations={annotations} visible={showNotes} />
+        <AnnotationPanel annotations={annotations} open={annotationPanelOpen} onClose={() => setAnnotationPanelOpen(false)} />
       </div>
     </PrototypeRoleContext.Provider>
   );
@@ -300,143 +295,96 @@ function AccessBlockedPanel({ roleKey }) {
   );
 }
 
-export function PageHeader({ title, desc, action }) {
+export function PageHeader({ title, action }) {
   return (
     <div className="mb-6 flex flex-col justify-between gap-4 md:flex-row md:items-end">
       <div>
-        <h1 className="m-0 text-2xl font-semibold tracking-normal">{title}</h1>
-        {desc ? <PrototypeNote>{desc}</PrototypeNote> : null}
+        <h1 className="m-0 flex items-center gap-3 text-[26px] font-semibold tracking-normal text-slate-950">
+          <span className="h-6 w-1 rounded-full bg-blue-600" />
+          {title}
+        </h1>
       </div>
-      {action}
+      {action ? <div className="flex shrink-0 flex-wrap items-center gap-2">{action}</div> : null}
     </div>
   );
 }
 
-export function PrototypeNote({ children }) {
+export function PrototypeNote() {
+  return null;
+}
+
+export function DesignAnnotation({ content, title, type = "设计" }) {
   const context = useContext(PrototypeRoleContext);
-  const anchorRef = useRef(null);
   const id = useId();
 
   useEffect(() => {
-    if (!context?.registerAnnotation || !children) return undefined;
-    context.registerAnnotation({ id, anchorRef, content: children });
+    if (!context?.registerAnnotation || !title || !content) return undefined;
+    context.registerAnnotation({ id, title, type, content });
     return () => context.unregisterAnnotation(id);
-  }, [children, context?.registerAnnotation, context?.unregisterAnnotation, id]);
+  }, [content, context?.registerAnnotation, context?.unregisterAnnotation, id, title, type]);
 
-  if (!children) return null;
-  return <span aria-hidden="true" className="pointer-events-none relative block h-0 w-full" ref={anchorRef} />;
+  return null;
 }
 
-function AnnotationLayer({ annotations, visible }) {
-  const [activeId, setActiveId] = useState(null);
-  const [positions, setPositions] = useState([]);
-
-  useEffect(() => {
-    if (!visible) {
-      setActiveId(null);
-      setPositions([]);
-      return undefined;
-    }
-
-    let frame = 0;
-    const updatePositions = () => {
-      cancelAnimationFrame(frame);
-      frame = requestAnimationFrame(() => {
-        const viewportWidth = window.innerWidth;
-        const viewportHeight = window.innerHeight;
-        setPositions(annotations.flatMap((annotation, index) => {
-          const anchor = annotation.anchorRef.current;
-          if (!anchor?.isConnected) return [];
-          const rect = anchor.getBoundingClientRect();
-          if (rect.top < 68 || rect.top > viewportHeight - 16) return [];
-          return [{
-            ...annotation,
-            index: index + 1,
-            x: Math.min(Math.max(rect.right, 20), viewportWidth - 20),
-            y: Math.min(Math.max(rect.top, 84), viewportHeight - 24),
-          }];
-        }));
-      });
-    };
-
-    updatePositions();
-    window.addEventListener("resize", updatePositions);
-    window.addEventListener("scroll", updatePositions, true);
-    return () => {
-      cancelAnimationFrame(frame);
-      window.removeEventListener("resize", updatePositions);
-      window.removeEventListener("scroll", updatePositions, true);
-    };
-  }, [annotations, visible]);
-
-  if (!visible) return null;
+function AnnotationPanel({ annotations, onClose, open }) {
+  if (!open) return null;
 
   return (
-    <div className="pointer-events-none fixed inset-0 z-50" aria-label="需求标注层">
-      {positions.map((annotation) => {
-        const open = activeId === annotation.id;
-        const placeLeft = annotation.x > window.innerWidth / 2;
-        return (
-          <div
-            className="pointer-events-auto fixed"
-            key={annotation.id}
-            style={{ left: annotation.x, top: annotation.y, transform: "translate(-50%, -50%)" }}
-            onMouseEnter={() => setActiveId(annotation.id)}
-            onMouseLeave={() => setActiveId(null)}
-          >
-            <button
-              aria-expanded={open}
-              aria-label={`查看需求标注 ${annotation.index}`}
-              className="grid h-7 w-7 place-items-center rounded-full border-2 border-white bg-amber-500 text-xs font-bold text-white shadow-lift ring-2 ring-amber-200"
-              onClick={() => setActiveId((current) => current === annotation.id ? null : annotation.id)}
-              type="button"
-            >
-              {annotation.index}
-            </button>
-            {open ? (
-              <div
-                className={`absolute top-1/2 w-[min(340px,calc(100vw_-_56px))] -translate-y-1/2 rounded-ui border border-amber-300 bg-amber-50 p-4 text-sm leading-6 text-amber-950 shadow-lift ${
-                  placeLeft ? "right-10" : "left-10"
-                }`}
-                role="note"
-              >
-                <div className="mb-1 text-xs font-semibold text-amber-700">需求标注 {annotation.index}</div>
-                <div>{annotation.content}</div>
-              </div>
-            ) : null}
+    <aside className="fixed bottom-4 right-4 top-20 z-50 flex w-[min(360px,calc(100vw_-_32px))] flex-col overflow-hidden rounded-ui border border-slate-200 bg-white shadow-lift" aria-label="页面标注浮层">
+      <div className="flex items-center justify-between gap-3 border-b border-slate-100 px-4 py-3">
+        <div>
+          <strong className="block text-sm text-slate-950">页面标注</strong>
+          <span className="mt-1 block text-xs text-muted">{annotations.length} 条</span>
+        </div>
+        <button className="rounded-ui border border-line bg-white px-3 py-2 text-sm text-slate-700 hover:bg-slate-50" onClick={onClose} type="button">关闭</button>
+      </div>
+      <div className="flex-1 overflow-y-auto p-4">
+        {annotations.length ? (
+          <div className="grid gap-3">
+            {annotations.map((annotation, index) => (
+              <section className="rounded-ui border border-slate-200 bg-slate-50 p-4" key={annotation.id}>
+                <div className="flex items-start justify-between gap-3">
+                  <strong className="text-sm text-slate-950">{index + 1}. {annotation.title}</strong>
+                  <Tag tone="blue">{annotation.type}</Tag>
+                </div>
+                <div className="mt-3 text-sm leading-6 text-slate-700">{annotation.content}</div>
+              </section>
+            ))}
           </div>
-        );
-      })}
-    </div>
+        ) : (
+          <div className="grid h-full min-h-40 place-items-center text-sm text-muted">当前页面暂无标注</div>
+        )}
+      </div>
+    </aside>
   );
 }
 
 export function Card({ children, className = "" }) {
-  return <section className={`rounded-ui border border-line bg-white p-5 shadow-panel ${className}`}>{children}</section>;
+  return <section className={`rounded-ui border border-slate-200 bg-white p-5 shadow-[0_12px_30px_rgba(15,23,42,0.045)] ${className}`}>{children}</section>;
 }
 
-export function Button({ children, className = "", href, tone = "primary", onClick }) {
+export function Button({ children, className = "", disabled = false, href, tone = "primary", onClick, type = "button" }) {
   const cls = {
-    primary: "border-blue-600 bg-blue-600 text-white hover:bg-blue-700",
-    secondary: "border-line bg-white text-ink hover:bg-slate-50",
-    ghost: "border-transparent bg-blue-50 text-blue-600 hover:bg-blue-100",
-    warning: "border-amber-600 bg-amber-600 text-white",
+    primary: "border-blue-600 bg-blue-600 text-white shadow-[0_8px_18px_rgba(37,99,235,0.16)] hover:bg-blue-700",
+    secondary: "border-slate-200 bg-white text-slate-800 hover:border-slate-300 hover:bg-slate-50",
+    ghost: "border-blue-100 bg-blue-50 text-blue-700 hover:border-blue-200 hover:bg-blue-100",
+    warning: "border-amber-600 bg-amber-600 text-white shadow-[0_8px_18px_rgba(217,119,6,0.14)] hover:bg-amber-700",
   }[tone];
-  const buttonClassName = `inline-flex h-10 min-h-10 items-center justify-center gap-2 whitespace-nowrap rounded-ui border px-4 text-sm font-medium leading-none ${cls} ${className}`;
+  const buttonClassName = `inline-flex h-10 min-h-10 items-center justify-center gap-2 whitespace-nowrap rounded-ui border px-4 text-sm font-medium leading-none transition focus:outline-none focus:ring-2 focus:ring-blue-100 disabled:cursor-not-allowed disabled:opacity-45 ${cls} ${className}`;
   if (href) return <a className={buttonClassName} href={href} onClick={onClick}>{children}</a>;
-  return <button className={buttonClassName} onClick={onClick}>{children}</button>;
+  return <button className={buttonClassName} disabled={disabled} onClick={onClick} type={type}>{children}</button>;
 }
 
 export function Tag({ children, className = "", tone = "gray" }) {
   const cls = {
-    gray: "bg-slate-100 text-slate-700",
-    blue: "bg-blue-50 text-blue-600",
-    green: "bg-green-50 text-green-700",
-    amber: "bg-amber-50 text-amber-700",
-    red: "bg-red-50 text-red-700",
-    cyan: "bg-cyan-50 text-cyan-700",
+    gray: "border-slate-200 bg-slate-50 text-slate-700",
+    blue: "border-blue-100 bg-blue-50 text-blue-700",
+    green: "border-emerald-100 bg-emerald-50 text-emerald-700",
+    amber: "border-amber-100 bg-amber-50 text-amber-700",
+    red: "border-red-100 bg-red-50 text-red-700",
+    cyan: "border-cyan-100 bg-cyan-50 text-cyan-700",
   }[tone];
-  return <span className={`inline-flex h-7 min-h-7 items-center justify-center whitespace-nowrap rounded-full px-3 text-xs font-medium leading-none ${cls} ${className}`}>{children}</span>;
+  return <span className={`inline-flex h-7 min-h-7 items-center justify-center whitespace-nowrap rounded-full border px-3 text-xs font-medium leading-none ${cls} ${className}`}>{children}</span>;
 }
 
 export function Meta({ children, className = "" }) {
@@ -469,6 +417,51 @@ export function FilterChip({ children, active = true, className = "" }) {
     >
       {children}
     </span>
+  );
+}
+
+export function FilterButtonGroup({ label, options, value, onChange, labelClassName = "", optionClassName = "" }) {
+  return (
+    <div className="flex flex-wrap items-center gap-3 text-sm">
+      <span className={`font-semibold text-slate-800 ${labelClassName}`}>{label}</span>
+      <div className="flex flex-wrap gap-2">
+        {options.map((option) => {
+          const item = typeof option === "string" ? { label: option, value: option } : option;
+          const active = value === item.value;
+          return (
+            <button
+              className={`min-h-9 rounded-ui border px-4 font-medium transition ${
+                active ? "border-blue-600 bg-blue-600 text-white shadow-[0_6px_14px_rgba(37,99,235,0.14)]" : "border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50"
+              } ${optionClassName}`}
+              key={item.value}
+              onClick={() => onChange(item.value)}
+              type="button"
+            >
+              {item.label}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+export function SegmentedTabs({ tabs, active, onChange, className = "" }) {
+  return (
+    <div className={`mb-5 flex gap-2 overflow-x-auto rounded-ui border border-slate-200 bg-white p-2 shadow-[0_10px_24px_rgba(15,23,42,0.035)] ${className}`}>
+      {tabs.map((tab) => (
+        <button
+          className={`min-h-10 whitespace-nowrap rounded-ui px-5 text-sm font-medium transition ${
+            active === tab.key ? "bg-blue-600 text-white shadow-[0_6px_14px_rgba(37,99,235,0.14)]" : "text-slate-600 hover:bg-slate-50 hover:text-slate-950"
+          }`}
+          key={tab.key}
+          onClick={() => onChange(tab.key)}
+          type="button"
+        >
+          {tab.label}
+        </button>
+      ))}
+    </div>
   );
 }
 
@@ -595,12 +588,12 @@ export function DataTable({ columns, rows, renderRow, gridTemplateColumns }) {
   const gridStyle = { gridTemplateColumns: gridTemplateColumns || `repeat(${columns.length}, minmax(0, 1fr))` };
 
   return (
-    <div className="overflow-hidden rounded-ui border border-line bg-white">
-      <div className="hidden min-h-12 items-center gap-4 bg-slate-50 px-4 py-3 text-xs font-medium leading-none text-muted md:grid [&>*]:self-center" style={gridStyle}>
+    <div className="overflow-x-auto rounded-ui border border-slate-200 bg-white shadow-[0_10px_24px_rgba(15,23,42,0.035)]">
+      <div className="hidden min-h-12 items-center gap-4 border-b border-slate-200 bg-slate-50/90 px-4 py-3 text-xs font-semibold uppercase leading-none text-slate-500 md:grid [&>*]:self-center" style={gridStyle}>
         {columns.map((column) => <span className="flex min-w-0 items-center" key={column}>{column}</span>)}
       </div>
       {rows.map((row, index) => (
-        <div key={row.title || index} className="grid min-h-[64px] gap-3 border-t border-line px-4 py-4 leading-6 md:items-center md:[&>*]:self-center [&>*]:min-w-0" style={gridStyle}>
+        <div key={row.id || row.title || index} className="grid min-h-[68px] gap-3 border-b border-slate-100 px-4 py-4 leading-6 transition last:border-b-0 hover:bg-blue-50/30 md:items-center md:[&>*]:self-center [&>*]:min-w-0" style={gridStyle}>
           {renderRow(row)}
         </div>
       ))}
@@ -613,10 +606,10 @@ export function Pagination({ total, page, pageSize, onPageChange, onPageSizeChan
   const currentPage = Math.min(page, totalPages);
   const start = total ? (currentPage - 1) * pageSize + 1 : 0;
   const end = Math.min(total, currentPage * pageSize);
-  const pageButtonClass = "inline-flex min-h-10 items-center justify-center rounded-ui border border-line bg-white px-4 py-2 text-ink hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50";
+  const pageButtonClass = "inline-flex min-h-10 items-center justify-center rounded-ui border border-slate-200 bg-white px-4 py-2 text-slate-800 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50";
 
   return (
-    <Card className="mt-4">
+    <Card className="mt-4 py-4">
       <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
         <p className="m-0 text-sm text-muted">
           {label}：第 {currentPage} / {totalPages} 页，显示 {start}-{end} 条，共 {total} 条
@@ -680,9 +673,9 @@ export function SchoolApplyModal({ open, onClose }) {
 
         <ApplySection title="入校信息">
           <div className="grid gap-4 md:grid-cols-2">
-            <ApplyFormField label="要加入的学校">
+            <ApplyFormField label="申请的学校">
               <select className="min-h-10 rounded-ui border border-line bg-white px-3" defaultValue="">
-                <option value="" disabled>请选择学校</option>
+                <option value="" disabled>请选择申请的学校</option>
                 {platformSchools.map((school) => <option key={school}>{school}</option>)}
               </select>
             </ApplyFormField>

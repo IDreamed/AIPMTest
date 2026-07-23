@@ -259,6 +259,20 @@ export function LoginPage() {
           ) : (
             <>
               <label className="grid gap-2 text-sm">
+                申请的学校
+                <select className="min-h-10 rounded-ui border border-line bg-white px-3" defaultValue="">
+                  <option value="" disabled>请选择申请的学校</option>
+                  {platformSchools.map((school) => <option key={school}>{school}</option>)}
+                </select>
+              </label>
+              <label className="grid gap-2 text-sm">
+                目标专业
+                <select className="min-h-10 rounded-ui border border-line bg-white px-3" defaultValue="">
+                  <option value="" disabled>请选择目标专业</option>
+                  {professionalCategories.map((category) => <option key={category}>{category}</option>)}
+                </select>
+              </label>
+              <label className="grid gap-2 text-sm">
                 手机号
                 <input className="min-h-10 rounded-ui border border-line px-3" placeholder="请输入手机号" />
               </label>
@@ -283,20 +297,6 @@ export function LoginPage() {
               <label className="grid gap-2 text-sm">
                 确认密码
                 <input className="min-h-10 rounded-ui border border-line px-3" placeholder="请再次输入密码" type="password" />
-              </label>
-              <label className="grid gap-2 text-sm">
-                要加入的学校
-                <select className="min-h-10 rounded-ui border border-line bg-white px-3" defaultValue="">
-                  <option value="" disabled>请选择要加入的学校</option>
-                  {platformSchools.map((school) => <option key={school}>{school}</option>)}
-                </select>
-              </label>
-              <label className="grid gap-2 text-sm">
-                目标专业
-                <select className="min-h-10 rounded-ui border border-line bg-white px-3" defaultValue="">
-                  <option value="" disabled>请选择目标专业</option>
-                  {professionalCategories.map((category) => <option key={category}>{category}</option>)}
-                </select>
               </label>
               <Button href="#/profile" tone="ghost" onClick={() => setRoleKey("registered")}>注册并提交认证</Button>
               <button className="text-sm text-blue-600 hover:text-blue-700" onClick={() => setActiveMode("login")} type="button">

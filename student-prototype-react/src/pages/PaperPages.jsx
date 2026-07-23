@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { categories, cultureSubjects, papers } from "../data/mockData";
-import { Button, Card, DataTable, Meta, PageHeader, Pagination, PrototypeNote, Stat, Tag, usePrototypeRole } from "../components/ui";
+import { Button, Card, DataTable, FilterButtonGroup, Meta, PageHeader, Pagination, PrototypeNote, Stat, Tag, usePrototypeRole } from "../components/ui";
 
 const paperAnalysisQuestions = [
   {
@@ -154,7 +154,7 @@ function AnswerInput({ questionType }) {
     return (
       <div className="mt-5 grid gap-3">
         {["A. 函数图像为直线", "B. 斜率决定倾斜方向", "C. 截距影响与 y 轴交点", "D. 定义域一定为全体实数"].map((item) => (
-          <label key={item} className="flex gap-3 rounded-ui border border-line p-4"><input type="checkbox" />{item}</label>
+          <label key={item} className="flex gap-3 rounded-ui border border-slate-200 p-4 transition hover:border-blue-200 hover:bg-blue-50/30"><input type="checkbox" />{item}</label>
         ))}
       </div>
     );
@@ -164,24 +164,24 @@ function AnswerInput({ questionType }) {
     return (
       <div className="mt-5 grid gap-3">
         {["正确", "错误"].map((item) => (
-          <label key={item} className="flex gap-3 rounded-ui border border-line p-4"><input type="radio" name="judge" />{item}</label>
+          <label key={item} className="flex gap-3 rounded-ui border border-slate-200 p-4 transition hover:border-blue-200 hover:bg-blue-50/30"><input type="radio" name="judge" />{item}</label>
         ))}
       </div>
     );
   }
 
   if (questionType === "填空题") {
-    return <input className="mt-5 min-h-12 w-full rounded-ui border border-line px-4" placeholder="请输入答案" />;
+    return <input className="mt-5 min-h-12 w-full rounded-ui border border-slate-200 px-4" placeholder="请输入答案" />;
   }
 
   if (questionType === "简答题") {
-    return <textarea className="mt-5 min-h-[150px] w-full rounded-ui border border-line p-4" placeholder="请输入作答内容" />;
+    return <textarea className="mt-5 min-h-[150px] w-full rounded-ui border border-slate-200 p-4" placeholder="请输入作答内容" />;
   }
 
   return (
     <div className="mt-5 grid gap-3">
       {["A. 5", "B. 6", "C. 7", "D. 8"].map((item) => (
-        <label key={item} className="flex gap-3 rounded-ui border border-line p-4"><input type="radio" name="single" />{item}</label>
+        <label key={item} className="flex gap-3 rounded-ui border border-slate-200 p-4 transition hover:border-blue-200 hover:bg-blue-50/30"><input type="radio" name="single" />{item}</label>
       ))}
     </div>
   );
@@ -351,7 +351,7 @@ export function PaperCenterPage() {
       </PrototypeNote>
       <Card className="mb-5 p-4">
         <div className="grid gap-4">
-          <FilterButtons label="类型" options={subjectTypes} value={selectedSubjectType} onChange={setSelectedSubjectType} />
+          <FilterButtonGroup label="类型" labelClassName="w-12" options={subjectTypes} value={selectedSubjectType} onChange={setSelectedSubjectType} />
           <div className="flex flex-wrap items-start gap-3 text-sm">
             <span className="w-12 pt-2 font-semibold">{isProfessional ? "专业" : "科目"}</span>
             <div className="grid flex-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
@@ -387,8 +387,8 @@ export function PaperCenterPage() {
       </Card>
 
       <div className="my-5 grid gap-4 rounded-ui border border-line bg-white p-4">
-        <FilterButtons label="来源" options={paperSources} value={selectedSource} onChange={setSelectedSource} />
-        <FilterButtons label="分类" options={paperTypes} value={selectedType} onChange={setSelectedType} />
+        <FilterButtonGroup label="来源" labelClassName="w-12" options={paperSources} value={selectedSource} onChange={setSelectedSource} />
+        <FilterButtonGroup label="分类" labelClassName="w-12" options={paperTypes} value={selectedType} onChange={setSelectedType} />
         <label className="flex flex-wrap items-center gap-3 text-sm">
           <span className="w-12 font-semibold">年份</span>
           <select className="min-h-10 rounded-ui border border-line px-3" value={selectedYear} onChange={(event) => setSelectedYear(event.target.value)}>
@@ -493,13 +493,13 @@ function normalizePaperStatus(status) {
 
 function PaperListButton({ children, href, tone = "primary" }) {
   const cls = {
-    primary: "border-blue-600 bg-blue-600 text-white hover:bg-blue-700",
-    secondary: "border-line bg-white text-ink hover:bg-slate-50",
-    ghost: "border-transparent bg-blue-50 text-blue-600 hover:bg-blue-100",
+    primary: "border-blue-600 bg-blue-600 text-white shadow-[0_6px_14px_rgba(37,99,235,0.14)] hover:bg-blue-700",
+    secondary: "border-slate-200 bg-white text-slate-800 hover:border-slate-300 hover:bg-slate-50",
+    ghost: "border-blue-100 bg-blue-50 text-blue-700 hover:border-blue-200 hover:bg-blue-100",
   }[tone];
 
   return (
-    <a className={`inline-flex min-h-9 w-full items-center justify-center rounded-ui border px-2 text-center text-xs ${cls}`} href={href}>
+    <a className={`inline-flex min-h-9 w-full items-center justify-center rounded-ui border px-2 text-center text-xs font-medium transition ${cls}`} href={href}>
       {children}
     </a>
   );
@@ -512,26 +512,6 @@ function formatElapsedTime(seconds) {
 
   if (hour > 0) return `${hour}时${String(minute).padStart(2, "0")}分${String(second).padStart(2, "0")}秒`;
   return `${minute}分${String(second).padStart(2, "0")}秒`;
-}
-
-function FilterButtons({ label, options, value, onChange }) {
-  return (
-    <div className="flex flex-wrap items-center gap-3 text-sm">
-      <span className="w-12 font-semibold">{label}</span>
-      <div className="flex flex-wrap gap-2">
-        {options.map((option) => (
-          <button
-            className={`min-h-9 rounded-ui px-4 ${value === option ? "bg-blue-600 text-white" : "text-slate-700 hover:bg-slate-50"}`}
-            key={option}
-            onClick={() => onChange(option)}
-            type="button"
-          >
-            {option}
-          </button>
-        ))}
-      </div>
-    </div>
-  );
 }
 
 export function PaperAnswerPage() {
@@ -551,6 +531,7 @@ export function PaperAnswerPage() {
   }));
   const answerQuestions = getAllPaperQuestions(answerGroups);
   const activeQuestion = answerQuestions.find((question) => question.key === activeKey) || answerQuestions[0];
+  const activeIndex = Math.max(0, answerQuestions.findIndex((question) => question.key === activeQuestion.key));
   const activeQuestionType = getQuestionType(activeQuestion);
   const activeIsComposite = activeQuestion.groupTitle.includes("综合题");
   const answeredCount = answerQuestions.filter((question) => question.status === "answered").length;
@@ -585,8 +566,19 @@ export function PaperAnswerPage() {
           </h2>
           <AnswerInput questionType={activeQuestionType} />
           <Meta>
-            <Button tone="secondary">上一题</Button>
-            <Button>下一题</Button>
+            <Button
+              disabled={activeIndex <= 0}
+              tone="secondary"
+              onClick={() => setActiveKey(answerQuestions[Math.max(0, activeIndex - 1)].key)}
+            >
+              上一题
+            </Button>
+            <Button
+              disabled={activeIndex >= answerQuestions.length - 1}
+              onClick={() => setActiveKey(answerQuestions[Math.min(answerQuestions.length - 1, activeIndex + 1)].key)}
+            >
+              下一题
+            </Button>
             <Button
               tone={isCurrentMarked ? "secondary" : "warning"}
               onClick={() => setMarkedQuestions((items) => (

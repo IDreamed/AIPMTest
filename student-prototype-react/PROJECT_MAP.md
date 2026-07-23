@@ -1,19 +1,26 @@
 # PROJECT_MAP
 
-> 用途：学生端前端原型的跨对话协作索引。新对话优先读取本文件，再决定是否读取具体源码。
+> 用途：职教高考前端原型的跨对话协作索引。新对话优先读取本文件，再决定是否读取具体源码。
 > 原则：本文只记录当前实现、产品边界和定位信息，不记录过程性讨论。
+
+> **当前状态：教师端原型未完成。** 已实现内容仅代表一期最小演示闭环，尚未完成真实接口、正式权限、完整数据联动和研发验收。
 
 ---
 
 ## 1. 项目概况
 
-- 项目名称：职教高考轻量化教考系统学生端前端交互原型
+- 项目名称：职教高考轻量化教考系统前端交互原型
 - 项目路径：`H:\Document\projects\student-prototype-react`
 - 工作区路径：`H:\Document\projects`
 - Git 位置：`H:\Document\projects\student-prototype-react\.git`
 - 技术栈：React + Tailwind + Vite
 - 路由方式：Hash 路由，不使用 `react-router`
-- 原型目标：用于客户演示的可交互学生端原型，不追求上线代码，但需要多轮可控修改。
+- 原型目标：用于客户演示的一期教学管理与学生学习闭环前端原型，不追求上线代码，但需要多轮可控修改。
+- 整体 PRD 详见：`项目整体PRD.md`。
+- 一期交付目标详见：`一期项目交付目标.md`。
+- Axure 页面前移范围、当前冲突和待确认业务口径详见：`前端化需求澄清清单.md`。
+- 一期教师端不是占位入口，而是把后端已实现、Axure 已导出的教师教学功能前端化；教师端按前台业务端体验实现，不直接照搬后台管理界面。
+- 平台管理端始终是后端管理端，功能基本已实现；本 React 原型不重做平台管理端，但需求变更会带来部分后端界面调整。
 
 ---
 
@@ -23,11 +30,12 @@
 - 前端改动完成后优先执行 `npm.cmd run build` 验证。
 - 改完说明修改结果、关键影响和验证结果。
 - 页面以真实业务场景构建，不把开发说明或产品解释当作页面正文。
-- 与界面无关的业务说明放到 `PrototypeNote`；标注由全局独立覆盖层展示，不参与页面布局。
-- 学生可见提示按真实使用场景表达，说明当前结果和下一步操作，不出现原型、验证、样例、占位符或后续扩展等研发文案。
-- 身份切换和标注按钮是原型展示控件，当前收纳在右上角 `场景预览` 浮层，不进入顶部主导航。
+- 业务规则、数据来源和研发说明不进入业务页面；经确认且对设计、开发有直接价值的内容可通过非侵入式页面标注展示。
+- 页面只保留真实业务数据、状态、操作反馈和必要的空状态，不展示权限自证、功能介绍或实现说明。
+- 身份切换和页面标注入口收纳在右上角 `场景预览` 浮层，不进入顶部主导航。
+- 标注只记录确认后的字段口径、交互规则和开发约束；禁止录入废案、功能介绍、后台猜测、待办或权限自证。
 - 预览身份包含游客、认证审核中、认证未通过、班级学生和教师。
-- 教师身份默认不加入学生班级，不能进入学生学习和考试功能；顶部主菜单额外显示“教师端”，跳转 `#/teacher`。
+- 教师身份默认不加入学生班级，不能进入学生学习和考试功能；顶部主菜单额外显示“教师端”，跳转 `#/teacher`，默认进入教学资源页。
 - 指定页面修改时，优先按本文定位目标文件；只有全局一致性调整时才做全局搜索。
 
 ---
@@ -64,20 +72,20 @@ student-prototype-react/
 
 - `src/components/ui.jsx`
   - 全局原型壳层与通用 UI。
-  - 包含：`AppShell`、`usePrototypeRole`、`PrototypeNote`、`PageHeader`、`Card`、`Button`、`Tag`、`Meta`、`DataTable`、`Pagination`、`Modal`、`SchoolApplyModal`、`Stat`。
+  - 包含：`AppShell`、`usePrototypeRole`、`DesignAnnotation`、`PageHeader`、`Card`、`Button`、`Tag`、`Meta`、`DataTable`、`Pagination`、`Modal`、`SchoolApplyModal`、`Stat`。
   - 包含列表型页面通用组件：`ListPageFrame`、`FilterPanel`、`FilterTagRow`、`FilterChip`、`ListDivider`、`ListToolbar`、`SelectControl`、`TextControl`、`SearchControl`、`AdminDataTable`、`AdminPagination`。
   - `DataTable` 支持自定义列宽。
   - 顶部右侧账号入口：游客显示头像占位和登录/注册；登录后显示头像、用户名和下拉菜单。
   - 登录后账号下拉包含：个人中心、退出登录。
   - 顶部主导航不展示个人中心；个人中心入口只通过账号下拉进入。
-  - `场景预览` 浮层在右上角，包含身份切换和标注开关。
-  - 标注开启后，页面中的 `PrototypeNote` 以编号浮点锚定对应元素，点击或悬停展开说明；标注层独立于业务界面，不撑开页面间距。
-  - 需求标注优先说明数据来源、权限、字段含义和计算方式；接口不明确时使用“待开发确认”。
+  - `场景预览` 浮层在右上角，包含身份切换、页面标注入口和运营后台入口。
+  - 页面标注在独立右侧浮层中展示，不占页面布局；没有有效标注时显示空状态。
+  - `PrototypeNote` 仅作为旧废案兼容空组件保留，不注册或展示；新标注必须使用 `DesignAnnotation`，并提供标题、类型和精炼内容。
   - 全局拦截未登录/未入校用户进入学习中心、试卷练习、考试中心等学生功能区，按身份提示登录/注册或进入个人中心。
   - `SchoolApplyModal` 仅用于个人中心中再次申请入校，不再作为独立申请加入学校入口。
 
 - `src/components/examWorkflows.jsx`
-  - 共享考试/测试答题与解析组件。
+  - 共享考试/作业答题与解析组件。
   - 包含：考试题组 mock、题目状态样式、题号导航、题号状态图例、题型输入组件、题组标准化工具。
   - 正式考试、作业答题和作业解析复用该文件的题号导航与答题组件。
 
@@ -105,8 +113,13 @@ student-prototype-react/
   - 个人中心、登录/注册。
 - `src/pages/TeacherPages.jsx`
   - 教师端前台功能页。
-  - 一级功能包含：教学资源、课程管理、试卷管理、班级管理。
-  - 班级管理下包含：我的班级、作业、学生学情、答疑。
+  - 已按前台业务端方式补齐教师端多页面原型，不直接照搬 Axure 后台页面。
+  - 一级能力包含：教学资源、题库资源、组课管理、我的课程、试卷管理、我的班级、班级派课、班级作业、学生管理、答疑管理。
+  - 教学资源和题库资源分别对应 Axure 学校侧资源库查看、题库查看；二者统一按“科目/专业 → 资源库 → 四级知识点”级联筛选。资源另筛资源类型和名称，题库另筛题型、难度和名称。
+  - 课程与试卷直接绑定科目/专业，不绑定资源库；资源库和知识点只用于资源、题目及组卷选题。
+  - 班级作业支持列表、新建/编辑、批阅、单次作业统计；答疑管理支持留言式回复弹窗。
+  - 我的班级支持新建班级；学生管理支持添加学生、单人调整班级和批量分班，并用浏览器本地数据保持原型操作结果。
+  - 教师端功能来源参考根目录 `Axure后台页面功能清单.md` 和 `后台功能与设计说明.md`。
 - `src/pages/ServicePages.jsx`
   - 报考指南、虚拟实训占位页面。
 
@@ -166,7 +179,23 @@ student-prototype-react/
 账号与权限区
 #/profile           ProfilePages.jsx / ProfilePage
 #/login             ProfilePages.jsx / LoginPage
-#/teacher           TeacherPages.jsx / TeacherDashboardPage
+
+教师端区
+#/teacher                    TeacherPages.jsx / TeacherResourcesPage
+#/teacher/resources          TeacherPages.jsx / TeacherResourcesPage
+#/teacher/question-bank      TeacherPages.jsx / TeacherQuestionBankPage
+#/teacher/course-builder     TeacherPages.jsx / TeacherCourseBuilderPage
+#/teacher/courses            TeacherPages.jsx / TeacherCoursesPage
+#/teacher/papers             TeacherPages.jsx / TeacherPapersPage
+#/teacher/classes            TeacherPages.jsx / TeacherClassesPage
+#/teacher/assign-course      TeacherPages.jsx / TeacherAssignCoursePage
+#/teacher/assignments        TeacherPages.jsx / TeacherAssignmentsPage
+#/teacher/assignment-edit    TeacherPages.jsx / TeacherAssignmentEditorPage
+#/teacher/grading            TeacherPages.jsx / TeacherGradingPage
+#/teacher/assignment-stats   TeacherPages.jsx / TeacherAssignmentStatsPage
+#/teacher/students           TeacherPages.jsx / TeacherStudentsPage
+#/teacher/student-detail     TeacherPages.jsx / TeacherStudentDetailPage
+#/teacher/qa                 TeacherPages.jsx / TeacherQAPage
 
 运营后台区
 #/admin                       AdminPages.jsx / AdminDashboardPage
@@ -186,9 +215,9 @@ student-prototype-react/
 ### 首页与公开访问
 
 - 首页 `#/` 是公开访问页。
-- 首页包含后台轮播图、学习中心/考试中心/报考指南/虚拟实训快捷入口、推荐课程、资讯摘要。
+- 首页包含后台轮播图、学习中心/考试中心/虚拟实训/报考指南快捷入口、推荐课程、资讯摘要。
 - 首页轮播由后台配置，当前 mock 数据保留图片和跳转链接字段；前端轮播只做图片展示，不触发跳转。
-- 首页入口卡片为：学习中心、考试中心、报考指南、虚拟实训。
+- 首页入口卡片为：学习中心、考试中心、虚拟实训、报考指南；顶部菜单保持同样顺序。
 - 学习中心、考试中心和虚拟实训入口统一校验学生身份：
   - 游客点击提示登录/注册。
   - 已注册但未认证通过或认证未通过用户提示未加入学校，并引导进入个人中心。
@@ -327,13 +356,14 @@ student-prototype-react/
 - 学习中心默认页是“我的课程”，不是学习任务摘要或综合工作台。
 - 学习中心首页采用左侧菜单 + 右侧课程卡片平铺：
   - 左侧展示学生头像占位、姓名、学校、班级。
-  - 左侧菜单：我的课程、作业、学习记录。
-  - 左侧菜单均展示对应数量统计。
+  - 左侧菜单：我的课程、作业、我的答疑、学习记录。
+  - 左侧菜单只承担一级导航，不展示跨模块汇总统计。
   - 右侧默认展示当前学生被学校/老师安排的课程卡片。
 - 学习中心总标题由统一布局展示，所有一级子页保持同一顶部占位，切换时左侧菜单不漂移。
 - 学习中心一级子页保持统一布局，均展示同一套左侧学生信息和导航：
   - `#/learning`
   - `#/class-exam`
+  - `#/qa`
   - `#/learning-record`
 - 我的课程卡片展示：
   - 本校 / 官方标签。
@@ -364,7 +394,7 @@ student-prototype-react/
   - 总分。
   - 状态。
   - 操作。
-- 试卷练习列表上方展示练习试卷、进行中、已完成，不重复展示当前科目。
+- 试卷练习列表上方只保留科目筛选，不展示练习试卷、进行中、已完成等列表级汇总统计。
 - 快速练习/随机组卷需求暂不明确，当前试卷练习页不展示快速练习入口。
 - 试卷练习列表点击试卷名称进入继续练习或解析。
 - 试卷练习列表包含分页控件，当前每页条数可选 10、20、30。
@@ -475,20 +505,21 @@ student-prototype-react/
 
 ### 班级答疑
 
-- 班级答疑 `#/qa` 展示答疑列表、统计和分页。
+- 我的答疑 `#/qa` 展示答疑列表和分页，不展示列表级汇总统计。
 - `#/qa` 不展示发起提问表单。
 - 学生从答疑列表进入单条答疑记录 `#/qa-detail?id=...`。
 - 发起提问入口位于课程学习详情和课时播放页面，面向当前班级老师。
 - 课程学习详情中的提问默认关联当前课程，可选择具体课时。
 - 课时播放页中的提问默认关联当前课程和当前课时。
-- 答疑详情 `#/qa-detail` 展示同一问题下的学生提问、老师回复、待补充说明和继续追问。
+- 答疑不设置提问标题字段；列表以课程/课时识别记录。
+- 答疑详情 `#/qa-detail` 按时间展示发送人和答疑信息，并支持继续追问。
 
 ### 账号与权限
 
 - 登录/注册：`#/login`
 - 个人中心：`#/profile`
 - 教师端：`#/teacher`
-- 注册时需要选择要加入的学校和目标专业；学校来自平台学校列表，目标专业为 19 个职教高考专业大类。
+- 注册时需要先选择申请的学校和目标专业；学校来自平台学校列表，目标专业为 19 个职教高考专业大类。
 - 右上角账号入口：
   - 游客：头像占位 + 登录/注册。
   - 注册用户/班级学生：头像 + 用户名，下拉包含个人中心、退出登录。
@@ -504,7 +535,7 @@ student-prototype-react/
   - 认证未通过 / 已拒绝：可在个人中心再次申请入校，打开 `SchoolApplyModal`。
 - `查看审核` 弹窗展示本次提交审核的信息。
 - 再次申请入校弹窗 `SchoolApplyModal`：
-  - 字段：要加入的学校、目标专业、申请说明。
+  - 字段：申请的学校、目标专业、申请说明。
   - 学校下拉来自平台学校列表。
   - 目标专业下拉为 19 个职教高考专业大类。
   - 不再提供身份证明图片上传。
@@ -512,12 +543,15 @@ student-prototype-react/
 ### 运营后台
 
 - 教师身份顶部主菜单显示“教师端”，进入 `#/teacher`；运营后台仍只通过 `场景预览` 浮层进入。
-- 教师端 `#/teacher` 按后端教学功能前置实现，不展示待办事项统计。
-- 教师端一级功能：
-  - 教学资源：查看学校授权的课程、课件、题库、试卷资源。
-  - 课程管理：组课、维护课程目录、课时、课件、课程试卷和课程答疑入口。
-  - 试卷管理：查看可用试卷，区分练习、作业和考试用卷场景。
-  - 班级管理：教师负责班级下的我的班级、作业、学生学情、答疑。
+- 教师端 `#/teacher` 默认进入教学资源，按后端已实现教师教学功能前端化，不展示教师工作台、经营类或跨模块统计看板。
+- 教师端已实现原型页面：
+  - 教学资源：资源库查看、题库查看、筛选、资源和题目预览。
+  - 组课管理：基础信息、课程目录、课件资料、课程试卷维护。
+  - 我的课程：课程列表、课程维护和预览入口。
+  - 试卷管理：试卷列表、新建试卷、组卷设置和试卷预览。
+  - 班级教务：我的班级、班级派课、学生详情、学习详情。
+  - 班级作业：列表、新建/编辑班级作业、阅卷、单次作业统计。
+  - 答疑管理：查看学生问题、回复问题、多轮追问回复。
 - 运营后台不套用学生端导航和身份壳层。
 - 平台资讯管理 `#/admin/news`：
   - 资讯不提供封面。
@@ -580,14 +614,14 @@ student-prototype-react/
 - 改作业安排：`src/pages/LearningPages.jsx` / `ClassExamDetailPage`
 - 改作业答题：`src/pages/LearningPages.jsx` / `ClassExamAnswerPage`
 - 改作业解析：`src/pages/LearningPages.jsx` / `ClassExamAnalysisPage`
-- 改教师端：`src/pages/TeacherPages.jsx` / `TeacherDashboardPage`
+- 改教师端：`src/pages/TeacherPages.jsx`
 - 改班级答疑：`src/pages/LearningPages.jsx` / `QAPage`
 - 改答疑详情：`src/pages/LearningPages.jsx` / `QADetailPage`
 - 改错题本：`src/pages/LearningPages.jsx` / `WrongBookPage`
 - 改错题解析兜底页：`src/pages/LearningPages.jsx` / `WrongQuestionPage`
 - 改错题练习兜底页：`src/pages/LearningPages.jsx` / `WrongPracticePage`
 - 改学习记录：`src/pages/LearningPages.jsx` / `LearningRecordPage`
-- 改考试/测试共享答题组件：`src/components/examWorkflows.jsx`
+- 改考试/作业共享答题组件：`src/components/examWorkflows.jsx`
 - 改个人中心：`src/pages/ProfilePages.jsx` / `ProfilePage`
 - 改入校申请弹窗：`src/components/ui.jsx` / `SchoolApplyModal`
 - 改登录注册：`src/pages/ProfilePages.jsx` / `LoginPage`

@@ -1,7 +1,10 @@
 import { useState } from "react";
-import { exams } from "../data/mockData";
+import { classes, exams } from "../data/mockData";
+import { ExamSectionShell } from "../components/examLayout";
 import { examAnalysisQuestions, examQuestionGroups, ExamAnswerInput, ExamQuestionNavigator, ExamQuestionStatusLegend, getAllExamQuestions, getExamQuestionType } from "../components/examWorkflows";
-import { Button, Card, DataTable, Meta, Modal, PageHeader, PrototypeNote, Stat, Tag, usePrototypeRole } from "../components/ui";
+import { Button, Card, DataTable, FilterButtonGroup, Meta, Modal, PageHeader, PrototypeNote, SegmentedTabs, Stat, Tag, usePrototypeRole } from "../components/ui";
+
+const PLATFORM_EXAM_TYPE = "平台联考";
 
 const examRankRows = [
   { rank: 1, name: "李同学", school: "示范中职学校", score: 296, objective: 176, subjective: 120, status: "已出分" },
@@ -23,12 +26,11 @@ export function ExamCenterPage() {
   const currentExams = getCurrentExamRows(roleKey);
 
   return (
-    <>
-      <PageHeader
-        title="我的考试"
-        desc="查看正在进行和即将开始的考试；已结束的考试可在考试记录中查询。"
-      />
-      <ExamTabs active="current" />
+    <ExamSectionShell
+      active="current"
+      title="当前考试"
+      desc="查看正在进行和即将开始的考试；已结束的考试可在考试记录中查询。"
+    >
       <PrototypeNote>
         当前考试来自考试发布数据，并按学生班级权限过滤；仅显示未开始、进行中且学生尚未交卷的考试。参加状态由考试状态、权限和交卷记录共同计算。
       </PrototypeNote>
@@ -36,71 +38,14 @@ export function ExamCenterPage() {
       <PrototypeNote className="mt-5">
         当前考试按开始时间排列，正在进行的考试优先显示；已交卷和已结束的考试进入考试记录。
       </PrototypeNote>
-    </>
-  );
-}
-
-function ExamTabs({ active }) {
-  return (
-    <nav className="mb-5 flex flex-wrap gap-2 border-b border-line">
-      <a
-        className={`-mb-px inline-flex min-h-11 items-center border-b-2 px-4 text-sm font-semibold ${
-          active === "current" ? "border-blue-600 text-blue-700" : "border-transparent text-muted hover:text-slate-900"
-        }`}
-        href="#/exams"
-      >
-        当前考试
-      </a>
-      <a
-        className={`-mb-px inline-flex min-h-11 items-center border-b-2 px-4 text-sm font-semibold ${
-          active === "records" ? "border-blue-600 text-blue-700" : "border-transparent text-muted hover:text-slate-900"
-        }`}
-        href="#/my-exams"
-      >
-        考试记录
-      </a>
-      <a
-        className="-mb-px inline-flex min-h-11 items-center border-b-2 border-transparent px-4 text-sm font-semibold text-muted hover:text-slate-900"
-        href="#/papers"
-      >
-        试卷练习
-      </a>
-      <a
-        className="-mb-px inline-flex min-h-11 items-center border-b-2 border-transparent px-4 text-sm font-semibold text-muted hover:text-slate-900"
-        href="#/wrong-book"
-      >
-        错题本
-      </a>
-    </nav>
-  );
-}
-
-function ExamFilterButtons({ label, options, value, onChange }) {
-  return (
-    <div className="flex flex-wrap items-center gap-3 text-sm">
-      <span className="font-semibold text-slate-700">{label}</span>
-      <div className="flex flex-wrap gap-2">
-        {options.map((option) => (
-          <button
-            className={`min-h-9 rounded-ui border px-4 transition ${
-              value === option ? "border-blue-600 bg-blue-50 text-blue-700" : "border-line bg-white hover:bg-slate-50"
-            }`}
-            key={option}
-            onClick={() => onChange(option)}
-            type="button"
-          >
-            {option}
-          </button>
-        ))}
-      </div>
-    </div>
+    </ExamSectionShell>
   );
 }
 
 function getCurrentExamRows(roleKey) {
   return exams
     .filter((exam) => (
-      exam.type === "模拟考试"
+      exam.type === PLATFORM_EXAM_TYPE
       && ["未开始", "进行中"].includes(exam.status)
       && !exam.submitted
       && hasExamPermission(exam, roleKey)
@@ -111,11 +56,11 @@ function getCurrentExamRows(roleKey) {
 function getRecordExamRows(roleKey) {
   return exams
     .filter((exam) => (
-      exam.type === "模拟考试"
+      exam.type === PLATFORM_EXAM_TYPE
       && hasExamPermission(exam, roleKey)
       && (exam.submitted || ["评审中", "已公示"].includes(exam.status))
     ))
-    .sort((a, b) => String(b.startAt || b.time).localeCompare(String(a.startAt || a.time), "zh-Hans-CN"));
+    .sort((a, b) => String(a.startAt || a.time).localeCompare(String(b.startAt || b.time), "zh-Hans-CN"));
 }
 
 function getExamRecordStatus(exam) {
@@ -146,13 +91,11 @@ function CurrentExamList({ exams: currentExams, roleKey }) {
     </div>
   );
 }
-
 function ExamCardSection({ title, exams: rows, roleKey, muted = false }) {
   return (
     <section>
       <div className="mb-3 flex items-center justify-between gap-3">
         <h2 className="m-0 text-lg">{title}</h2>
-        <span className="text-sm text-muted">共 {rows.length} 场</span>
       </div>
       <div className="grid gap-4">
         {rows.map((exam) => <ExamTaskCard exam={exam} key={exam.id} muted={muted} roleKey={roleKey} />)}
@@ -191,14 +134,14 @@ function ExamTaskCard({ exam, roleKey, muted = false }) {
 }
 
 function hasExamPermission(exam, roleKey) {
-  return exam.type === "模拟考试" && roleKey === "student";
+  return exam.type === PLATFORM_EXAM_TYPE && roleKey === "student";
 }
 
 function sortExamCenterRows(a, b) {
   const statusOrder = { 进行中: 0, 未开始: 1 };
   const statusDiff = (statusOrder[a.status] ?? 9) - (statusOrder[b.status] ?? 9);
   if (statusDiff !== 0) return statusDiff;
-  return String(a.startAt || a.time).localeCompare(String(b.startAt || b.time), "zh-Hans-CN");
+  return String(b.startAt || b.time).localeCompare(String(a.startAt || a.time), "zh-Hans-CN");
 }
 
 function getExamListTitle(exam) {
@@ -324,7 +267,7 @@ function ExamAction({ exam, roleKey }) {
 function getExamPermissionCopy(exam, roleKey, permitted) {
   if (permitted) {
     return {
-      title: "你可以参加本场模拟考试",
+      title: `你可以参加本场${PLATFORM_EXAM_TYPE}`,
       desc: "本场考试面向当前班级学生开放，可先查看考试详情；考试开始后可进入答题。",
       action: null,
     };
@@ -333,7 +276,7 @@ function getExamPermissionCopy(exam, roleKey, permitted) {
   if (roleKey === "visitor") {
     return {
       title: "登录后查看可参加考试",
-      desc: "模拟考试仅面向已入校并加入指定班级的学生开放，请先登录并完成入校认证。",
+      desc: `${PLATFORM_EXAM_TYPE}仅面向已入校并加入指定班级的学生开放，请先登录并完成入校认证。`,
       action: <Button href="#/login">登录/注册</Button>,
     };
   }
@@ -341,7 +284,7 @@ function getExamPermissionCopy(exam, roleKey, permitted) {
   if (roleKey === "registered") {
     return {
       title: "完成入校认证后参加考试",
-      desc: "当前账号尚未加入学校，认证通过并加入班级后才能参加模拟考试。",
+      desc: `当前账号尚未加入学校，认证通过并加入班级后才能参加${PLATFORM_EXAM_TYPE}。`,
       action: <Button href="#/profile">查看认证</Button>,
     };
   }
@@ -355,56 +298,42 @@ function getExamPermissionCopy(exam, roleKey, permitted) {
 
 export function MyExamsPage() {
   const { roleKey } = usePrototypeRole();
+  const currentMajor = classes[0]?.category || "专业课";
   const [statusFilter, setStatusFilter] = useState("全部");
   const [subjectFilter, setSubjectFilter] = useState("全部");
   const recordExams = getRecordExamRows(roleKey);
   const filteredRecords = recordExams.filter((exam) => {
     const statusMatched = statusFilter === "全部" || getExamRecordStatus(exam).label === statusFilter;
     const subjectMatched = subjectFilter === "全部"
-      || (subjectFilter === "专业课" ? exam.subject === "专业课" : exam.subject === subjectFilter);
+      || (subjectFilter === currentMajor ? exam.subject === "专业课" && exam.category === currentMajor : exam.subject === subjectFilter);
     return statusMatched && subjectMatched;
   });
-  const submittedCount = recordExams.filter((exam) => getExamRecordStatus(exam).label === "已交卷").length;
-  const reviewingCount = recordExams.filter((exam) => getExamRecordStatus(exam).label === "评阅中").length;
-  const publishedCount = recordExams.filter((exam) => getExamRecordStatus(exam).label === "已公示").length;
-  const missedCount = recordExams.filter((exam) => getExamRecordStatus(exam).label === "缺考").length;
-
   if (roleKey !== "student") {
     return (
-      <>
-        <PageHeader title="我的考试" desc="完成入校认证后查看当前考试、考试记录和成绩。" />
-        <ExamTabs active="records" />
+      <ExamSectionShell active="records" title="考试记录" desc="完成入校认证后查看当前考试、考试记录和成绩。">
         <Card>
           <h2 className="m-0 text-xl">完成入校认证后查看考试记录</h2>
-          <p className="mb-0 mt-3 leading-7 text-muted">模拟考试仅面向已入校并加入指定班级的学生开放。</p>
+          <p className="mb-0 mt-3 leading-7 text-muted">{PLATFORM_EXAM_TYPE}仅面向已入校并加入指定班级的学生开放。</p>
           <Meta><Button href="#/profile">查看认证</Button><Button href="#/exams" tone="secondary">返回考试中心</Button></Meta>
         </Card>
-      </>
+      </ExamSectionShell>
     );
   }
 
   return (
-    <>
-      <PageHeader
-        title="我的考试"
-        desc="考试记录展示已经结束的可参加考试，可查看成绩、缺考记录、答题解析和排行。"
-      />
-      <ExamTabs active="records" />
-      <div className="grid gap-4 md:grid-cols-5">
-        <Stat label="历史考试" value={recordExams.length} />
-        <Stat label="已交卷" value={submittedCount} />
-        <Stat label="评阅中" value={reviewingCount} />
-        <Stat label="已公示" value={publishedCount} />
-        <Stat label="缺考" value={missedCount} />
-      </div>
-      <Card className="mt-5 grid gap-4 p-4">
-        <ExamFilterButtons
+    <ExamSectionShell
+      active="records"
+      title="考试记录"
+      desc="考试记录展示已经结束的可参加考试，可查看成绩、缺考记录、答题解析和排行。"
+    >
+      <Card className="grid gap-4 p-4">
+        <FilterButtonGroup
           label="科目"
-          options={["全部", "语文", "数学", "英语", "专业课"]}
+          options={["全部", "语文", "数学", "英语", currentMajor]}
           value={subjectFilter}
           onChange={setSubjectFilter}
         />
-        <ExamFilterButtons
+        <FilterButtonGroup
           label="考试状态"
           options={["全部", "已交卷", "评阅中", "已公示", "缺考"]}
           value={statusFilter}
@@ -451,7 +380,7 @@ export function MyExamsPage() {
         )}
       </div>
       <PrototypeNote className="mt-5">考试记录展示所有已结束的可参加考试，包括已交卷、评阅中、已公示和缺考。</PrototypeNote>
-    </>
+    </ExamSectionShell>
   );
 }
 
@@ -493,7 +422,7 @@ function ExamRecordActions({ exam, participation, canSeeScore, recordStatus }) {
 export function ExamDetailPage() {
   const { roleKey } = usePrototypeRole();
   const params = new URLSearchParams((window.location.hash.split("?")[1] || ""));
-  const mockExams = exams.filter((item) => item.type === "模拟考试");
+  const mockExams = exams.filter((item) => item.type === PLATFORM_EXAM_TYPE);
   const exam = mockExams.find((item) => item.id === params.get("id")) || mockExams[0];
   const permitted = hasExamPermission(exam, roleKey);
   const participation = getExamParticipation(exam, roleKey);
@@ -502,7 +431,7 @@ export function ExamDetailPage() {
   const permissionCopy = getExamPermissionCopy(exam, roleKey, permitted);
   const resultSummary = getExamResultSummary(exam, participation, canSeeResult);
   const examIntro = exam.intro || [
-    "本场模拟考试面向已入校并加入指定班级的学生开放。",
+    `本场${PLATFORM_EXAM_TYPE}面向已入校并加入指定班级的学生开放。`,
     "请认真阅读考试说明，了解考试范围、时间安排和作答要求。",
   ];
   const timeStages = [
@@ -519,7 +448,7 @@ export function ExamDetailPage() {
         action={canEnter ? <Button href="#/exam-answer">开始考试</Button> : null}
       />
       <div className="grid gap-4 md:grid-cols-4">
-        <Stat label="考试类型" value="模拟考试" />
+        <Stat label="考试类型" value={exam.type} />
         <Stat label="专业" value={exam.category} />
         <Stat label="状态" value={exam.status} />
         <Stat label="参加状态" value={participation.label} />
@@ -605,7 +534,7 @@ export function ExamRankPage() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
   const params = new URLSearchParams((window.location.hash.split("?")[1] || ""));
-  const mockExams = exams.filter((item) => item.type === "模拟考试");
+  const mockExams = exams.filter((item) => item.type === PLATFORM_EXAM_TYPE);
   const exam = mockExams.find((item) => item.id === params.get("id")) || mockExams[0];
   const pagination = activeTab === "student"
     ? { total: 308, label: "考生排行" }
@@ -615,30 +544,17 @@ export function ExamRankPage() {
   return (
     <>
       <PageHeader title="考试排行" desc={`查看 ${exam.title} 的考生排行和学校排行。`} action={<Button href={`#/exam-detail?id=${exam.id}`} tone="ghost">返回考试详情</Button>} />
-      <div className="grid gap-4 md:grid-cols-4">
-        <Stat label="考试类型" value={exam.type} />
-        <Stat label="科目/大类" value={exam.subject === "专业课" ? exam.category : exam.subject} />
-        <Stat label="参考人数" value="308" />
-        <Stat label="我的排名" value="12" />
-      </div>
-      <div className="my-5 flex gap-2 overflow-x-auto rounded-ui border border-line bg-white p-2">
-        {[
-          ["student", "考生排行"],
-          ["school", "学校排行"],
-        ].map(([key, label]) => (
-          <button
-            className={`min-h-10 rounded-ui px-5 ${activeTab === key ? "bg-blue-600 text-white" : "text-slate-700 hover:bg-slate-50"}`}
-            key={key}
-            onClick={() => {
-              setActiveTab(key);
-              setPage(1);
-            }}
-            type="button"
-          >
-            {label}
-          </button>
-        ))}
-      </div>
+      <SegmentedTabs
+        active={activeTab}
+        onChange={(key) => {
+          setActiveTab(key);
+          setPage(1);
+        }}
+        tabs={[
+          { key: "student", label: "考生排行" },
+          { key: "school", label: "学校排行" },
+        ]}
+      />
       {activeTab === "student" ? (
         <DataTable
           columns={["排名", "考生", "学校", "总分", "客观/主观", "状态"]}
@@ -675,7 +591,7 @@ export function ExamRankPage() {
       <Card className="mt-4">
         <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
           <p className="m-0 text-sm text-muted">
-            {pagination.label}：第 {page} / {totalPages} 页，共 {pagination.total} 条
+            {pagination.label}：第 {page} / {totalPages} 页
           </p>
           <div className="flex flex-wrap items-center gap-2">
             <label className="flex items-center gap-2 text-sm text-muted">
@@ -703,7 +619,7 @@ export function ExamRankPage() {
 
 export function ExamAnalysisPage() {
   const params = new URLSearchParams((window.location.hash.split("?")[1] || ""));
-  const mockExams = exams.filter((item) => item.type === "模拟考试");
+  const mockExams = exams.filter((item) => item.type === PLATFORM_EXAM_TYPE);
   const exam = mockExams.find((item) => item.id === params.get("id")) || mockExams[0];
   const analysisGroups = examQuestionGroups.map((group) => ({
     ...group,
@@ -776,7 +692,6 @@ export function ExamAnalysisPage() {
           </Card>
           <Card className="self-start md:sticky md:top-5">
             <h3>题号导航</h3>
-            <p className="leading-7 text-muted">点击题号查看对应题目、答案与解析，题号颜色表示本题结果状态。</p>
             <ExamQuestionNavigator activeKey={activeKey} groups={analysisGroups} onSelect={(question) => setActiveKey(question.key)} />
             <ExamQuestionStatusLegend />
           </Card>

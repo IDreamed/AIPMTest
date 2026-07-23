@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { courseMaterials, coursePapers, homeBanners, news, recommendedCourses } from "../data/mockData";
-import { Button, Card, Meta, Modal, PageHeader, PrototypeNote, Tag, usePrototypeRole } from "../components/ui";
+import { Button, Card, Meta, Modal, PageHeader, PrototypeNote, SegmentedTabs, Tag, usePrototypeRole } from "../components/ui";
 
 const newsCategories = ["全部", "政策解读", "考试通知", "平台公告", "备考指南"];
 
@@ -17,10 +17,10 @@ export function HomePage() {
   const [activeNews, setActiveNews] = useState(null);
   const banner = homeBanners[activeBanner] || homeBanners[0];
   const entryCards = [
-    { title: "学习中心", desc: "进入班级课程、作业、学习记录和课程答疑。", href: "#/learning", tone: "from-blue-600 to-cyan-600", requiresStudent: true },
-    { title: "考试中心", desc: "查看考试、考试记录、试卷练习和错题本。", href: "#/exams", tone: "from-rose-600 to-orange-500", requiresStudent: true },
-    { title: "报考指南", desc: "查看职教高考报考政策、报名流程和备考信息。", href: "#/application-guide", tone: "from-teal-600 to-emerald-500", requiresStudent: false },
-    { title: "虚拟实训", desc: "进入专业虚拟实训场景，开展技能学习与训练。", href: "#/virtual-training", tone: "from-violet-600 to-fuchsia-500", requiresStudent: true },
+    { title: "学习中心", desc: "继续班级课程、查看作业和学习记录。", href: "#/learning", tone: "bg-blue-600", meta: "课程 / 作业 / 答疑", icon: "学", requiresStudent: true },
+    { title: "考试中心", desc: "参加当前考试，复盘记录、练习和错题。", href: "#/exams", tone: "bg-rose-600", meta: "考试 / 练习 / 错题", icon: "考", requiresStudent: true },
+    { title: "虚拟实训", desc: "进入专业实训内容，完成技能训练。", href: "#/virtual-training", tone: "bg-violet-600", meta: "专业训练", icon: "训", requiresStudent: true },
+    { title: "报考指南", desc: "查看政策、流程和备考说明。", href: "#/application-guide", tone: "bg-teal-600", meta: "公开访问", icon: "指", requiresStudent: false },
   ];
 
   function showPrevBanner() {
@@ -33,12 +33,22 @@ export function HomePage() {
 
   return (
     <>
-      <section className="relative overflow-hidden rounded-ui border border-line bg-white shadow-panel">
+      <section className="relative overflow-hidden rounded-ui border border-slate-200 bg-white shadow-[0_16px_40px_rgba(15,23,42,0.08)]">
         <img
           alt=""
           className="h-[260px] w-full object-cover md:h-[420px]"
           src={banner.image}
         />
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(15,23,42,.78)_0%,rgba(15,23,42,.46)_48%,rgba(15,23,42,.12)_100%)]" />
+        <div className="absolute left-10 top-1/2 max-w-xl -translate-y-1/2 text-white">
+          <Tag className="border-white/25 bg-white/15 text-white" tone="gray">职教高考备考服务</Tag>
+          <h1 className="mb-0 mt-5 text-[34px] font-semibold leading-tight">课程、练习、作业和考试集中在一个学习闭环里</h1>
+          <p className="mb-0 mt-4 max-w-lg text-base leading-7 text-white/82">学生按班级任务继续学习，教师围绕资源、作业和学情完成教学支持。</p>
+          <Meta>
+            <Button href="#/learning">进入学习中心</Button>
+            <Button href="#/exams" tone="secondary">查看考试中心</Button>
+          </Meta>
+        </div>
         {homeBanners.length > 1 ? (
           <>
             <button
@@ -76,16 +86,22 @@ export function HomePage() {
       <section className="mt-5 grid gap-4 md:grid-cols-2">
         {entryCards.map((item) => (
           <a
-            className="group overflow-hidden rounded-ui border border-line bg-white p-5 shadow-panel transition hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-lg"
+            className="group flex min-h-[132px] items-start gap-4 overflow-hidden rounded-ui border border-slate-200 bg-white p-5 shadow-[0_12px_30px_rgba(15,23,42,0.045)] transition hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-[0_18px_42px_rgba(15,23,42,0.08)]"
             href={item.href}
             key={item.title}
             onClick={(event) => {
               if (item.requiresStudent && !requestStudentAreaAccess()) event.preventDefault();
             }}
           >
-            <span className={`mb-4 block h-1.5 rounded-full bg-gradient-to-r ${item.tone}`} />
-            <strong className="text-xl text-slate-900">{item.title}</strong>
-            <p className="mb-0 mt-3 min-h-[52px] leading-7 text-muted">{item.desc}</p>
+            <span className={`grid h-12 w-12 shrink-0 place-items-center rounded-ui ${item.tone} text-lg font-semibold text-white shadow-[0_10px_24px_rgba(15,23,42,0.12)]`}>{item.icon}</span>
+            <span className="min-w-0">
+              <span className="flex items-center justify-between gap-3">
+                <strong className="text-xl text-slate-950">{item.title}</strong>
+                <span className="text-sm text-blue-600 opacity-0 transition group-hover:opacity-100">进入</span>
+              </span>
+              <span className="mt-2 block text-xs font-medium text-slate-500">{item.meta}</span>
+              <span className="mt-3 block leading-7 text-muted">{item.desc}</span>
+            </span>
           </a>
         ))}
         <PrototypeNote className="md:col-span-2">报考指南无需登录即可查看；学习中心、考试中心和虚拟实训仅对已加入学校的学生开放。</PrototypeNote>
@@ -99,21 +115,20 @@ export function HomePage() {
             <a
               href="#/course-preview"
               key={course.title}
-              className="group flex flex-col overflow-hidden rounded-ui border border-line bg-white shadow-panel transition hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-lg"
+              className="group flex min-h-[292px] flex-col overflow-hidden rounded-ui border border-slate-200 bg-white shadow-[0_12px_30px_rgba(15,23,42,0.045)] transition hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-[0_18px_42px_rgba(15,23,42,0.08)]"
             >
               <div className="relative aspect-[16/9] overflow-hidden text-white" style={{ background: course.accent }}>
-                <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(15,23,42,.1),rgba(15,23,42,.38))]" />
-                <div className="absolute -right-8 bottom-0 h-24 w-24 rounded-full bg-white/20" />
-                <div className="absolute -right-2 bottom-4 h-24 w-16 rounded-t-full bg-white/30" />
-                <div className="relative grid h-full place-items-center p-4 text-center">
-                  <strong className="text-xl leading-7">{course.title}</strong>
+                <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(15,23,42,.18),rgba(15,23,42,.52))]" />
+                <div className="relative flex h-full flex-col justify-between p-4">
+                  <Tag className="w-fit border-white/25 bg-white/15 text-white" tone="gray">{course.subject}</Tag>
+                  <strong className="max-w-[210px] text-lg leading-7">{course.highlight}</strong>
                 </div>
               </div>
-              <div className="grid flex-1 gap-3 p-4">
-                <h3 className="m-0 text-base font-semibold leading-6 text-slate-900">{course.title}</h3>
-                <div className="grid gap-2 text-sm leading-6 text-muted">
+              <div className="flex flex-1 flex-col gap-3 p-4">
+                <h3 className="m-0 text-base font-semibold leading-6 text-slate-950">{course.title}</h3>
+                <div className="mt-auto flex items-center justify-between gap-3 border-t border-slate-100 pt-3 text-sm leading-6 text-muted">
                   <span>{course.subject} · {course.lessonCount} 课时</span>
-                  <span>发布人：{course.creator}</span>
+                  <span>创建人：{course.creator}</span>
                 </div>
               </div>
             </a>
@@ -123,16 +138,16 @@ export function HomePage() {
 
       <section className="mt-9">
         <PageHeader title="资讯中心" desc="首页展示最新政策、考试通知和备考信息，学生可直接查看全文。" action={<Button href="#/news" tone="ghost">查看更多资讯</Button>} />
-        <PrototypeNote>首页资讯只读取已发布数据，按发布时间倒序取最近 3 条；字段包括类型、标题、摘要、正文和发布时间。</PrototypeNote>
-        <Card>
-          {news.slice(0, 3).map((item) => (
-            <div key={item.id} className="flex flex-col justify-between gap-4 border-b border-line py-4 last:border-0 md:flex-row md:items-center">
-              <div>
-                <Meta><Tag tone="cyan">{item.type}</Tag><Tag>{item.date}</Tag></Meta>
-                <strong className="mt-3 block">{item.title}</strong>
-                <p className="mt-1 text-muted">{item.summary}</p>
+        <PrototypeNote>首页资讯只读取已发布数据，按发布时间倒序取最近 4 条；字段包括类型、标题、摘要、正文和发布时间。</PrototypeNote>
+        <Card className="p-0">
+          {news.slice(0, 4).map((item) => (
+            <div key={item.id} className="flex flex-col justify-between gap-4 border-b border-slate-100 px-5 py-5 transition last:border-0 hover:bg-slate-50/70 md:flex-row md:items-center">
+              <div className="min-w-0">
+                <Meta className="mt-0"><Tag tone="cyan">{item.type}</Tag><Tag>{item.date}</Tag></Meta>
+                <strong className="mt-3 block text-slate-950">{item.title}</strong>
+                <p className="mb-0 mt-1 text-muted">{item.summary}</p>
               </div>
-              <Button tone="secondary" onClick={() => setActiveNews(item)}>查看</Button>
+              <Button className="shrink-0" tone="secondary" onClick={() => setActiveNews(item)}>查看详情</Button>
             </div>
           ))}
         </Card>
@@ -261,7 +276,7 @@ export function CoursePreviewPage() {
             </div>
             <PrototypeNote className="mt-3">推荐课程不展示价格，试看时长仅适用于已开放的视频课时。</PrototypeNote>
           </div>
-          <Button href="#/course-preview">开始试看</Button>
+          <Button onClick={() => setActiveLesson(0)}>开始试看</Button>
         </div>
       </Card>
 
@@ -296,18 +311,7 @@ export function CoursePreviewPage() {
         </Card>
       </div>
 
-      <div className="mb-5 flex gap-2 overflow-x-auto rounded-ui border border-line bg-white p-2">
-        {tabs.map((tab) => (
-          <button
-            className={`min-h-10 rounded-ui px-5 ${activeTab === tab.key ? "bg-blue-600 text-white" : "text-slate-700 hover:bg-slate-50"}`}
-            key={tab.key}
-            onClick={() => setActiveTab(tab.key)}
-            type="button"
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
+      <SegmentedTabs active={activeTab} onChange={setActiveTab} tabs={tabs} />
 
       {activeTab === "detail" ? (
         <Card>
